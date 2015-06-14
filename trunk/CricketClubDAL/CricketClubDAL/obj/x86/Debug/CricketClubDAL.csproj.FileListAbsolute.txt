@@ -5,13 +5,6 @@ C:\Users\Graham\Documents\Visual Studio 2008\Projects\CricketClubDAL\CricketClub
 C:\Users\Graham\Documents\Visual Studio 2008\Projects\CricketClubDAL\CricketClubDAL\obj\x86\Debug\CricketClubDAL.pdb
 C:\Users\Graham\Documents\Visual Studio 2008\Projects\CricketClubDAL\CricketClubDAL\bin\x86\Debug\CricketClubDomain.dll
 C:\Users\Graham\Documents\Visual Studio 2008\Projects\CricketClubDAL\CricketClubDAL\bin\x86\Debug\CricketClubDomain.pdb
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\bin\x86\Debug\CricketClubDAL.dll
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\bin\x86\Debug\CricketClubDAL.pdb
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\bin\x86\Debug\CricketClubDomain.dll
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\bin\x86\Debug\CricketClubDomain.pdb
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\obj\x86\Debug\ResolveAssemblyReference.cache
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\obj\x86\Debug\CricketClubDAL.dll
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\obj\x86\Debug\CricketClubDAL.pdb
 C:\Documents and Settings\ponting\Desktop\VCCLibs\CricketClubDAL\CricketClubDAL\obj\x86\Debug\ResolveAssemblyReference.cache
 C:\Documents and Settings\ponting\Desktop\VCCLibs\CricketClubDAL\CricketClubDAL\bin\x86\Debug\CricketClubDAL.dll
 C:\Documents and Settings\ponting\Desktop\VCCLibs\CricketClubDAL\CricketClubDAL\bin\x86\Debug\CricketClubDAL.pdb
@@ -19,3 +12,10 @@ C:\Documents and Settings\ponting\Desktop\VCCLibs\CricketClubDAL\CricketClubDAL\
 C:\Documents and Settings\ponting\Desktop\VCCLibs\CricketClubDAL\CricketClubDAL\bin\x86\Debug\CricketClubDomain.pdb
 C:\Documents and Settings\ponting\Desktop\VCCLibs\CricketClubDAL\CricketClubDAL\obj\x86\Debug\CricketClubDAL.dll
 C:\Documents and Settings\ponting\Desktop\VCCLibs\CricketClubDAL\CricketClubDAL\obj\x86\Debug\CricketClubDAL.pdb
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\bin\x86\Debug\CricketClubDAL.dll
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\bin\x86\Debug\CricketClubDAL.pdb
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\bin\x86\Debug\CricketClubDomain.dll
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\bin\x86\Debug\CricketClubDomain.pdb
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\obj\x86\Debug\CricketClubDAL.dll
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\obj\x86\Debug\CricketClubDAL.pdb

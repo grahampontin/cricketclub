@@ -3,3 +3,10 @@ C:\Users\Graham\Documents\Visual Studio 2008\Projects\CricketClubDAL\CricketClub
 C:\Users\Graham\Documents\Visual Studio 2008\Projects\CricketClubDAL\CricketClubDAL\bin\Debug\CricketClubDAL.pdb
 C:\Users\Graham\Documents\Visual Studio 2008\Projects\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.dll
 C:\Users\Graham\Documents\Visual Studio 2008\Projects\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.pdb
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\bin\Debug\CricketClubDAL.dll
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\bin\Debug\CricketClubDAL.pdb
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\bin\Debug\CricketClubDomain.dll
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\bin\Debug\CricketClubDomain.pdb
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.dll
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.pdb
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.csprojResolveAssemblyReference.cache

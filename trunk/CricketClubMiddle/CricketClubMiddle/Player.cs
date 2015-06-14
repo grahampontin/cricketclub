@@ -580,15 +580,20 @@ namespace CricketClubMiddle
 
         public int GetMatchesPlayed()
         {
-            return _battingStatsData.Count;
+            return TheGreaterOf(_battingStatsData.Count, _bowlingStatsData.Count);
+        }
+
+        private int TheGreaterOf(int valueOne, int valueTwo)
+        {
+            return valueOne >= valueTwo ? valueOne : valueTwo;
         }
 
         public int GetMatchesPlayed(DateTime startDate, DateTime endDate, List<MatchType> matchType, Venue venue)
         {
-            return FilterData(_battingStatsData, startDate, endDate, matchType, venue).Count();
-            
+            int battingCount = FilterData(_battingStatsData, startDate, endDate, matchType, venue).Count();
+            int bowlingCount = FilterBowlingData(_bowlingStatsData, startDate, endDate, matchType, venue).Count();
+            return TheGreaterOf(battingCount,bowlingCount);
         }
-
 
 
         public int GetInnings(int MatchID)

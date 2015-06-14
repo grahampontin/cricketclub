@@ -1,5 +1,0 @@
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubAccounts\bin\x86\Debug\CricketClubAccounts.dll
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubAccounts\bin\x86\Debug\CricketClubAccounts.pdb
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubAccounts\obj\x86\Debug\ResolveAssemblyReference.cache
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubAccounts\obj\x86\Debug\CricketClubAccounts.dll
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubAccounts\obj\x86\Debug\CricketClubAccounts.pdb
