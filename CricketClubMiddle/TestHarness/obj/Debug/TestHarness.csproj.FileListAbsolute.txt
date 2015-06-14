@@ -8,3 +8,17 @@ C:\Users\Graham\Documents\Visual Studio 2008\Projects\CricketClubMiddle\TestHarn
 C:\Users\Graham\Documents\Visual Studio 2008\Projects\CricketClubMiddle\TestHarness\obj\Debug\ResolveAssemblyReference.cache
 C:\Users\Graham\Documents\Visual Studio 2008\Projects\CricketClubMiddle\TestHarness\obj\Debug\TestHarness.exe
 C:\Users\Graham\Documents\Visual Studio 2008\Projects\CricketClubMiddle\TestHarness\obj\Debug\TestHarness.pdb
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\TestHarness\bin\Debug\TestHarness.exe.config
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\TestHarness\bin\Debug\TestHarness.exe
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\TestHarness\bin\Debug\TestHarness.pdb
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\TestHarness\bin\Debug\CricketClubAccounts.dll
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\TestHarness\bin\Debug\CricketClubDomain.dll
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\TestHarness\bin\Debug\CricketClubMiddle.dll
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\TestHarness\bin\Debug\CricketClubDAL.dll
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\TestHarness\bin\Debug\CricketClubDomain.pdb
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\TestHarness\bin\Debug\CricketClubAccounts.pdb
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\TestHarness\bin\Debug\CricketClubMiddle.pdb
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\TestHarness\bin\Debug\CricketClubDAL.pdb
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\TestHarness\obj\Debug\TestHarness.exe
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\TestHarness\obj\Debug\TestHarness.pdb
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\TestHarness\obj\Debug\TestHarness.csprojResolveAssemblyReference.cache

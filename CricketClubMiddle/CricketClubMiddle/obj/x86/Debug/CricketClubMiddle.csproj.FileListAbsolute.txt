@@ -16,15 +16,6 @@ C:\Visual Studio Express Projects\CricketClubMiddle\CricketClubMiddle\bin\x86\De
 C:\Visual Studio Express Projects\CricketClubMiddle\CricketClubMiddle\obj\x86\Debug\ResolveAssemblyReference.cache
 C:\Visual Studio Express Projects\CricketClubMiddle\CricketClubMiddle\obj\x86\Debug\CricketClubMiddle.dll
 C:\Visual Studio Express Projects\CricketClubMiddle\CricketClubMiddle\obj\x86\Debug\CricketClubMiddle.pdb
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\bin\x86\Debug\CricketClubMiddle.dll
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\bin\x86\Debug\CricketClubMiddle.pdb
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\bin\x86\Debug\CricketClubDAL.dll
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\bin\x86\Debug\CricketClubDomain.dll
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\bin\x86\Debug\CricketClubDomain.pdb
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\bin\x86\Debug\CricketClubDAL.pdb
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\obj\x86\Debug\ResolveAssemblyReference.cache
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\obj\x86\Debug\CricketClubMiddle.dll
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\obj\x86\Debug\CricketClubMiddle.pdb
 C:\Documents and Settings\ponting\Desktop\VCCLibs\CricketClubMiddle\CricketClubMiddle\obj\x86\Debug\ResolveAssemblyReference.cache
 C:\Documents and Settings\ponting\Desktop\VCCLibs\CricketClubMiddle\CricketClubMiddle\obj\x86\Debug\CricketClubMiddle.pdb
 C:\Documents and Settings\ponting\Desktop\VCCLibs\CricketClubMiddle\CricketClubMiddle\bin\x86\Debug\CricketClubMiddle.dll
@@ -34,3 +25,12 @@ C:\Documents and Settings\ponting\Desktop\VCCLibs\CricketClubMiddle\CricketClubM
 C:\Documents and Settings\ponting\Desktop\VCCLibs\CricketClubMiddle\CricketClubMiddle\bin\x86\Debug\CricketClubDomain.pdb
 C:\Documents and Settings\ponting\Desktop\VCCLibs\CricketClubMiddle\CricketClubMiddle\bin\x86\Debug\CricketClubDAL.pdb
 C:\Documents and Settings\ponting\Desktop\VCCLibs\CricketClubMiddle\CricketClubMiddle\obj\x86\Debug\CricketClubMiddle.dll
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\bin\x86\Debug\CricketClubMiddle.dll
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\bin\x86\Debug\CricketClubMiddle.pdb
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\bin\x86\Debug\CricketClubDAL.dll
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\bin\x86\Debug\CricketClubDomain.dll
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\bin\x86\Debug\CricketClubDAL.pdb
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\bin\x86\Debug\CricketClubDomain.pdb
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\obj\x86\Debug\CricketClubMiddle.dll
+C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubMiddle\CricketClubMiddle\obj\x86\Debug\CricketClubMiddle.pdb
