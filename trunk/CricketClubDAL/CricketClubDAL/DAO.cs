@@ -1572,12 +1572,16 @@ namespace CricketClubDAL
 
         private void AddBallToMatch(Ball ball, int matchId)
         {
-            //
+            db.ExecuteInsertOrUpdate("insert into ballbyball_data ")
         }
 
         private void UpdatePlayerState(PlayerState playerState, int matchId)
         {
-            //
+            db.ExecuteInsertOrUpdate("update ballbyball_team set state='" + playerState.State + "' where match_id = " +
+                                     matchId + " and player_id = " + playerState.PlayerId);
+            db.ExecuteInsertOrUpdate("update ballbyball_team set position='" + playerState.Position + "' where match_id = " +
+                                     matchId + " and player_id = " + playerState.PlayerId);
+
         }
     }
 }
