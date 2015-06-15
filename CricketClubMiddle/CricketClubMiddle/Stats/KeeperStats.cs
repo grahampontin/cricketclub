@@ -116,7 +116,7 @@ namespace CricketClubMiddle.Stats
 
                 return Math.Round(runs / innings, 2);
             }
-            catch (DivideByZeroException e)
+            catch (DivideByZeroException)
             {
                 return 0;
             }
@@ -134,7 +134,7 @@ namespace CricketClubMiddle.Stats
 
                 return Math.Round((totalruns - runs) / (totalInning - innings), 2);
             }
-            catch (DivideByZeroException e)
+            catch (DivideByZeroException)
             {
                 return 0;
             }

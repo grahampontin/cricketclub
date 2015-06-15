@@ -16,7 +16,7 @@ namespace CricketClubMiddle.Web
             //init the base class!!!//
             base.OnInit(e);
 
-            string LogonPage = ConfigurationSettings.AppSettings["logonPage"];
+            string LogonPage = ConfigurationManager.AppSettings["logonPage"];
 
             HttpCookie usernameCookie = Request.Cookies["VCCUsername"];
             string username = "";

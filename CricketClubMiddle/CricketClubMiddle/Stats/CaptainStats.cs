@@ -104,7 +104,7 @@ namespace CricketClubMiddle.Stats
             {
                 return Math.Round((decimal)FilteredMatchData.Where(a => a.TossWinner != null && a.TossWinner.ID == a.Us.ID).Count() / (decimal)GetGamesInCharge() * 100, 2);
             }
-            catch (DivideByZeroException e)
+            catch (DivideByZeroException)
             {
                 return 0;
             }
@@ -116,7 +116,7 @@ namespace CricketClubMiddle.Stats
             {
                 return Math.Round((decimal)FilteredMatchData.Where(a => a.TossWinner != null && a.TossWinner.ID == a.Us.ID).Where(a => a.TossWinnerBatted).Count() / (decimal)FilteredMatchData.Where(a => a.TossWinner != null && a.TossWinner.ID == a.Us.ID).Count() * 100, 2);
             }
-            catch (DivideByZeroException e)
+            catch (DivideByZeroException)
             {
                 return 0;
             }
@@ -131,7 +131,7 @@ namespace CricketClubMiddle.Stats
 
                 return Math.Round(runs / innings, 2);
             }
-            catch (DivideByZeroException e)
+            catch (DivideByZeroException)
             {
                 return 0;
             }
@@ -149,7 +149,7 @@ namespace CricketClubMiddle.Stats
 
                 return Math.Round((totalruns - runs) / (totalInning - innings), 2);
             }
-            catch (DivideByZeroException e)
+            catch (DivideByZeroException)
             {
                 return 0;
             }

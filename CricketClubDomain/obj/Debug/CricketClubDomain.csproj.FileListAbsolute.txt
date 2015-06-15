@@ -7,3 +7,8 @@ C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDoma
 C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDomain\bin\Debug\CricketClubDomain.pdb
 C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDomain\obj\Debug\CricketClubDomain.dll
 C:\Users\Graham\Documents\Visual Studio 2008\Projects\CCCheckout\CricketClubDomain\obj\Debug\CricketClubDomain.pdb
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDomain\bin\Debug\CricketClubDomain.dll
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDomain\bin\Debug\CricketClubDomain.pdb
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDomain\obj\Debug\CricketClubDomain.dll
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDomain\obj\Debug\CricketClubDomain.pdb
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDomain\obj\Debug\CricketClubDomain.csprojResolveAssemblyReference.cache

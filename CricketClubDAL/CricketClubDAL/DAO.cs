@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Linq;
 using CricketClubDomain;
 
 namespace CricketClubDAL
@@ -1027,7 +1028,7 @@ namespace CricketClubDAL
             {
                 ChatID = (int) db.ExecuteSQLAndReturnSingleResult(sql);
             }
-            catch (NullReferenceException e)
+            catch (NullReferenceException)
             {
                 ChatID = 0;
             }
@@ -1329,7 +1330,7 @@ namespace CricketClubDAL
                     (int) db.ExecuteSQLAndReturnSingleResult("select max([ImageID]) as [ID] from [Match_Photos]") +
                     1;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 //
             }
@@ -1405,7 +1406,7 @@ namespace CricketClubDAL
             {
                 ChatID = (int) db.ExecuteSQLAndReturnSingleResult(sql);
             }
-            catch (NullReferenceException e)
+            catch (NullReferenceException)
             {
                 ChatID = 0;
             }
@@ -1486,10 +1487,7 @@ namespace CricketClubDAL
             {
                 return s.Replace("'", "''");
             }
-            else
-            {
-                return " ";
-            }
+            return " ";
         }
 
         public bool IsBallByBallCoverageInProgress(int matchId)
@@ -1524,25 +1522,21 @@ namespace CricketClubDAL
 
         public MatchState GetCurrentBallByBallState(int matchId)
         {
-            MatchState matchState = new MatchState();
-            IEnumerable<Row> result = db.QueryMany("select * from ballbyball_team t, players p where match_id=" + matchId + " and t.player_id = p.player_id");
-            List<PlayerState> states = new List<PlayerState>();
-            foreach (Row row in result)
-            {
-                var playerState = new PlayerState
-                                      {
-                                          PlayerId = row.GetInt("player_id"),
-                                          State = row.GetString("state"),
-                                          PlayerName = row.GetString("player_name"),
-                                          Position = row.GetInt("position")
-                                      };
-                states.Add(playerState);
-            }
-            matchState.Players = states.ToArray();
+            var matchState = new MatchState();
+            var result = db.QueryMany("select * from ballbyball_team t, players p where match_id=" + matchId + " and t.player_id = p.player_id");
+            matchState.Players = result.Select(PlayerStateFromRow).ToArray();
             matchState.Score = GetBallByBallTotalScore(matchId);
             matchState.LastCompletedOver = GetLastCompletedOver(matchId);
-            matchState.RunRate = matchState.LastCompletedOver == 0 ? 0 : matchState.Score/matchState.LastCompletedOver;
+            matchState.RunRate = matchState.LastCompletedOver == 0 ? 0 : Math.Round(((decimal)matchState.Score/matchState.LastCompletedOver), 2);
             return matchState;
+        }
+
+        private static PlayerState PlayerStateFromRow(Row row)
+        {
+            return new PlayerState
+            {
+                PlayerId = row.GetInt("player_id"), State = row.GetString("state"), PlayerName = row.GetString("player_name"), Position = row.GetInt("position")
+            };
         }
 
         private int GetLastCompletedOver(int matchId)
@@ -1563,16 +1557,20 @@ namespace CricketClubDAL
             {
                 UpdatePlayerState(playerState, matchId);
             }
+            int ballNumber = 0;
             foreach (var ball in matchState.Over.Balls)
             {
-                AddBallToMatch(ball, matchId);
+                ballNumber++;
+                int thisOver = matchState.LastCompletedOver+1;
+                AddBallToMatch(ball, matchId, thisOver, ballNumber);
             }
             
         }
 
-        private void AddBallToMatch(Ball ball, int matchId)
+        private void AddBallToMatch(Ball ball, int matchId, int overNumber, int ballNumber)
         {
-            db.ExecuteInsertOrUpdate("insert into ballbyball_data ")
+            db.ExecuteInsertOrUpdate(string.Format("insert into ballbyball_data (ball, over_number, type, value, player_id, match_id, bowler) VALUES ({0},{1},{2},{3},{4},{5},{6})", 
+                ballNumber, overNumber, ball.Thing, ball.Amount, ball.Batsman, matchId, ball.Bowler));
         }
 
         private void UpdatePlayerState(PlayerState playerState, int matchId)

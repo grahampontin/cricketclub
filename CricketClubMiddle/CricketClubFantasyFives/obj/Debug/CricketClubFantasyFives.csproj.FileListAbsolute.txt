@@ -1,0 +1,11 @@
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\bin\Debug\CricketClubFantasyFives.dll
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\bin\Debug\CricketClubFantasyFives.pdb
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\bin\Debug\CricketClubMiddle.dll
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\bin\Debug\CricketClubDomain.dll
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\bin\Debug\CricketClubDAL.dll
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\bin\Debug\CricketClubMiddle.pdb
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\bin\Debug\CricketClubDomain.pdb
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\bin\Debug\CricketClubDAL.pdb
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\obj\Debug\CricketClubFantasyFives.csprojResolveAssemblyReference.cache
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\obj\Debug\CricketClubFantasyFives.dll
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\obj\Debug\CricketClubFantasyFives.pdb

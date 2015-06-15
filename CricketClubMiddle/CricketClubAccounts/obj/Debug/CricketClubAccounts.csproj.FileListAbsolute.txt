@@ -1,0 +1,5 @@
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubAccounts\bin\Debug\CricketClubAccounts.dll
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubAccounts\bin\Debug\CricketClubAccounts.pdb
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubAccounts\obj\Debug\CricketClubAccounts.csprojResolveAssemblyReference.cache
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubAccounts\obj\Debug\CricketClubAccounts.dll
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubAccounts\obj\Debug\CricketClubAccounts.pdb
