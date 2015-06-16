@@ -92,6 +92,7 @@
     <Compile Include="BowlingStatsEntryData.cs" />
     <Compile Include="ChatData.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="ExtrasData.cs" />
     <Compile Include="FoWDataLine.cs" />
     <Compile Include="MatchData.cs" />
@@ -102,6 +103,7 @@
     <Compile Include="PhotoCommentData.cs" />
     <Compile Include="PhotoData.cs" />
     <Compile Include="PlayerData.cs" />
+    <Compile Include="PlayerState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BattingCardLineData.cs" />
     <Compile Include="SettingData.cs" />

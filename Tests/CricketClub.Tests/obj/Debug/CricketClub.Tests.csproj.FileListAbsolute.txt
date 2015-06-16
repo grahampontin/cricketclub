@@ -15,3 +15,4 @@ C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\bin\Debug\n
 C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\obj\Debug\CricketClub.Tests.csprojResolveAssemblyReference.cache
 C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\obj\Debug\CricketClub.Tests.dll
 C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\obj\Debug\CricketClub.Tests.pdb
+C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\bin\Debug\CricketClub.Tests.dll.config

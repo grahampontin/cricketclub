@@ -1569,7 +1569,7 @@ namespace CricketClubDAL
 
         private void AddBallToMatch(Ball ball, int matchId, int overNumber, int ballNumber)
         {
-            db.ExecuteInsertOrUpdate(string.Format("insert into ballbyball_data (ball, over_number, type, value, player_id, match_id, bowler) VALUES ({0},{1},{2},{3},{4},{5},{6})", 
+            db.ExecuteInsertOrUpdate(string.Format("insert into ballbyball_data (ball, over_number, type, value, player_id, match_id, bowler) VALUES ({0},{1},'{2}',{3},{4},{5},'{6}')", 
                 ballNumber, overNumber, ball.Thing, ball.Amount, ball.Batsman, matchId, ball.Bowler));
         }
 

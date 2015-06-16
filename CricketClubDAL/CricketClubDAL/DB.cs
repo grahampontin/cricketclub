@@ -9,6 +9,8 @@ namespace CricketClubDAL
 {
     public class Db
     {
+        private static string connectionString;
+
         private static OleDbConnection OpenConnection()
         {
             var conn = new OleDbConnection(GetScorebookConnectionString());
@@ -19,17 +21,22 @@ namespace CricketClubDAL
 
         private static string GetScorebookConnectionString()
         {
-            string key = "ProdDB";
-            if (Environment.MachineName.Contains("BIG-PC") || Environment.MachineName.Contains("LAPTOP"))
+            if (connectionString == null)
             {
-                key = "LocalDB";
+                string key = "ProdDB";
+                if (Environment.MachineName.Contains("BIG-PC") || Environment.MachineName.Contains("TABLET"))
+                {
+                    key = "LocalDB";
+                }
+                ConnectionStringSettings cnxStr = ConfigurationManager.ConnectionStrings[key];
+                Console.Out.WriteLine("Connecting to: " + key + " @" + cnxStr.ConnectionString);
+                if (cnxStr == null)
+                    throw new ConfigurationErrorsException("ConnectionString '" + key +
+                                                           "' was not found in the configuration file.");
+                connectionString = cnxStr.ConnectionString;
             }
-            Console.Out.WriteLine("Connecting to: " + key);
-            ConnectionStringSettings cnxStr = ConfigurationManager.ConnectionStrings[key];
-            if (cnxStr == null)
-                throw new ConfigurationErrorsException("ConnectionString '" + key +
-                                                       "' was not found in the configuration file.");
-            return cnxStr.ConnectionString;
+            
+            return connectionString;
         }
 
         public DataRow ExecuteSQLAndReturnFirstRow(string sql)
