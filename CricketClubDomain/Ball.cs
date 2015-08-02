@@ -1,7 +1,16 @@
-﻿namespace CricketClubDomain
+﻿using System.Security;
+
+namespace CricketClubDomain
 {
     public class Ball
     {
+        public const string Runs = "";
+        public const string Byes = "b";
+        public const string LegByes = "lb";
+        public const string Wides = "wd";
+        public const string NoBall = "nb";
+        public const string Penalty = "p";
+
         //number, thing, batsman, batsmanName, bowler, wicket
         public int Amount;
         public int Batsman;

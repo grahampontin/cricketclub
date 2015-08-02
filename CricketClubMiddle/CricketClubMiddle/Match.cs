@@ -650,7 +650,26 @@ namespace CricketClubMiddle
 
         public void UpdateCurrentBallByBallState(MatchState stateFromClient)
         {
+            if (stateFromClient.Over.Balls.Any(b => string.IsNullOrEmpty(b.Bowler)))
+            {
+                throw new InvalidOperationException("Cannot add a ball with a blank bowler");
+            }
             dao.UpdateCurrentBallByBallState(stateFromClient, ID);
+        }
+
+        public static IEnumerable<Match> GetInProgressGames()
+        {
+            return GetAll().Where(m => m.GetIsBallByBallInProgress());
+        }
+
+        public bool GetIsBallByBallInProgress()
+        {
+            return dao.IsBallByBallCoverageInProgress(ID);
+        }
+
+        public int BallByBallOver
+        {
+            get { return GetCurrentBallByBallState().LastCompletedOver; }
         }
     }
 }

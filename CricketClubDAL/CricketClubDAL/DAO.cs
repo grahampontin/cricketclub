@@ -1528,7 +1528,47 @@ namespace CricketClubDAL
             matchState.Score = GetBallByBallTotalScore(matchId);
             matchState.LastCompletedOver = GetLastCompletedOver(matchId);
             matchState.RunRate = matchState.LastCompletedOver == 0 ? 0 : Math.Round(((decimal)matchState.Score/matchState.LastCompletedOver), 2);
+            var bowlersResult = db.QueryMany("select distinct(bowler) from ballbyball_data where match_id=" + matchId);
+            matchState.Bowlers = bowlersResult.Select(r => r.GetString("bowler")).ToArray();
+            matchState.MatchId = matchId;
             return matchState;
+        }
+
+        public Dictionary<int, int> GetPlayerScores(HashSet<int> playerIds, int matchId)
+        {
+            IEnumerable<Ball> balls = GetAllBallsForMatch(matchId);
+            return balls.Where(b => playerIds.Contains(b.Batsman))
+                .GroupBy(b => b.Batsman)
+                .ToDictionary(g => g.Key, ScoreFromBalls);
+
+        }
+
+        private IEnumerable<Ball> GetAllBallsForMatch(int matchId)
+        {
+            throw new NotImplementedException();
+        }
+
+        private int ScoreFromBalls(IEnumerable<Ball> balls)
+        {
+            return balls.Aggregate(0, (score, ball) => score + RunsFromBall(ball));
+        }
+
+        private int RunsFromBall(Ball ball)
+        {
+            switch (ball.Thing)
+            {
+                case Ball.Runs :
+                    return ball.Amount;
+                case Ball.Byes:
+                case Ball.LegByes:
+                case Ball.Wides:
+                case Ball.Penalty:
+                    return 0;
+                case Ball.NoBall:
+                    return ball.Amount - 1;
+                default:
+                    return 0;
+            }
         }
 
         private static PlayerState PlayerStateFromRow(Row row)

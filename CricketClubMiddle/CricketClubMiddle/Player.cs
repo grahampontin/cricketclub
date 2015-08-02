@@ -327,11 +327,13 @@ namespace CricketClubMiddle
             return matches;
         }
 
-        public int GetNumberOfMatchesPlayedIn()
+        public int NumberOfMatchesPlayedThisSeason
         {
-            var matches = (from a in _battingStatsData
-                           select a).Count();
-            return matches;
+            get
+            {
+                return _battingStatsData.Count(b => b.MatchDate.Year == DateTime.Now.Year);    
+            }
+            
         }
 
         public bool PlayedInMatch(int MatchID)
