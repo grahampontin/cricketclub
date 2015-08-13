@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using CricketClubDAL;
 using CricketClubDomain;
+using CricketClubMiddle.Stats;
 using NUnit.Framework;
 
 namespace CricketClub.Tests
@@ -47,9 +48,9 @@ namespace CricketClub.Tests
             };
             da.UpdateCurrentBallByBallState(matchState, matchId);
 
-            MatchState currentBallByBallState = da.GetCurrentBallByBallState(matchId);
+            BallByBallMatch currentBallByBallState = BallByBallMatch.Load(matchId);
 
-            Assert.AreEqual(matchState, currentBallByBallState);
+            Assert.AreEqual(matchState, currentBallByBallState.GetMatchState());
         }
     }
 }

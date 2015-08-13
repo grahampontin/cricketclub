@@ -6,18 +6,18 @@ namespace CricketClubDomain
         public string PlayerName;
         public int Position;
         public string State;
+        public int CurrentScore;
 
         protected bool Equals(PlayerState other)
         {
-            return PlayerId == other.PlayerId && string.Equals(PlayerName, other.PlayerName) &&
-                   Position == other.Position && string.Equals(State, other.State);
+            return PlayerId == other.PlayerId && string.Equals(PlayerName, other.PlayerName) && Position == other.Position && string.Equals(State, other.State) && CurrentScore == other.CurrentScore;
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
+            if (obj.GetType() != this.GetType()) return false;
             return Equals((PlayerState) obj);
         }
 
@@ -25,17 +25,18 @@ namespace CricketClubDomain
         {
             unchecked
             {
-                int hashCode = PlayerId;
+                var hashCode = PlayerId;
                 hashCode = (hashCode*397) ^ (PlayerName != null ? PlayerName.GetHashCode() : 0);
                 hashCode = (hashCode*397) ^ Position;
                 hashCode = (hashCode*397) ^ (State != null ? State.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ CurrentScore;
                 return hashCode;
             }
         }
 
         public override string ToString()
         {
-            return string.Format("PlayerId: {0}, PlayerName: {1}, Position: {2}, State: {3}", PlayerId, PlayerName, Position, State);
+            return $"PlayerId: {PlayerId}, PlayerName: {PlayerName}, Position: {Position}, State: {State}, CurrentScore: {CurrentScore}";
         }
     }
 }

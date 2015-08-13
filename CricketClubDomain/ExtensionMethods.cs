@@ -11,5 +11,23 @@ namespace CricketClubDomain
         {
             return "[" + string.Join(" | ", array.Select(t=>t.ToString()).ToArray()) + "]";
         }
+
+        public static TValue GetValueOrInitializeDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue)
+        {
+            if (!dictionary.ContainsKey(key))
+            {
+                dictionary.Add(key, defaultValue);
+            }
+            return dictionary[key];
+
+        }
+
+        public static T[] Add<T>(this T[] array, T value)
+        {
+            
+            var list = array?.ToList() ?? new List<T>();
+            list.Add(value);
+            return list.ToArray();
+        }
     }
 }

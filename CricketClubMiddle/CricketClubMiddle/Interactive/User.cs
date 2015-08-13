@@ -142,7 +142,7 @@ namespace CricketClubMiddle.Interactive
         private int PermissionMask
         {
             get {
-                return _data.Permissions;   
+                return _data.Permissions;    
             }
             set { _data.Permissions = value; }
         }

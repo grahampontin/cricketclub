@@ -643,9 +643,9 @@ namespace CricketClubMiddle
             get { return HomeTeam + " vs " + AwayTeam + " (" + MatchDateString + ")"; }
         }
 
-        public MatchState GetCurrentBallByBallState()
+        public BallByBallMatch GetCurrentBallByBallState()
         {
-            return dao.GetCurrentBallByBallState(ID);
+            return BallByBallMatch.Load(ID);
         }
 
         public void UpdateCurrentBallByBallState(MatchState stateFromClient)
@@ -667,9 +667,7 @@ namespace CricketClubMiddle
             return dao.IsBallByBallCoverageInProgress(ID);
         }
 
-        public int BallByBallOver
-        {
-            get { return GetCurrentBallByBallState().LastCompletedOver; }
-        }
+        // ReSharper disable once UnusedMember.Global
+        public int BallByBallOver => GetCurrentBallByBallState().LastCompletedOver;
     }
 }

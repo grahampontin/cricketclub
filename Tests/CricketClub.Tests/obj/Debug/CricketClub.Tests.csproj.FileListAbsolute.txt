@@ -16,3 +16,5 @@ C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\obj\Debug\C
 C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\obj\Debug\CricketClub.Tests.dll
 C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\obj\Debug\CricketClub.Tests.pdb
 C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\bin\Debug\CricketClub.Tests.dll.config
+C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\bin\Debug\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll
+C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\bin\Debug\Microsoft.VisualStudio.QualityTools.UnitTestFramework.xml

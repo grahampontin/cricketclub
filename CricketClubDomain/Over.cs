@@ -8,6 +8,7 @@ namespace CricketClubDomain
     public class Over
     {
         public Ball[] Balls;
+        public int OverNumber;
 
         protected bool Equals(Over other)
         {

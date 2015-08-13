@@ -124,6 +124,13 @@ namespace CricketClubDAL
         {
             return ExecuteSqlAndReturnAllRows(sql).Tables[0].Rows.Cast<DataRow>().Select(row => new Row(row));
         }
+
+        public IEnumerable<T> QueryMany<T>(string sql, Func<Row, T> extractor)
+        {
+            return ExecuteSqlAndReturnAllRows(sql).Tables[0].Rows.Cast<DataRow>().Select(row => new Row(row)).Select(extractor);
+        }
+
+
     }
 
     public class Row
@@ -153,6 +160,16 @@ namespace CricketClubDAL
         public int GetInt(int index, int valueIfNull)
         {
             object value = dataRow[index];
+            if (value is DBNull)
+            {
+                return valueIfNull;
+            }
+            return Convert.ToInt32(value);
+        }
+
+        public int GetInt(string columnName, int valueIfNull)
+        {
+            object value = dataRow[columnName];
             if (value is DBNull)
             {
                 return valueIfNull;
