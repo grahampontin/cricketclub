@@ -1400,14 +1400,15 @@ namespace CricketClubDAL
             return result.GetInt(0) > 0;
         }
 
-        public void StartBallByBallCoverage(int id, IEnumerable<int> playerIds)
+        public void StartBallByBallCoverage(int id, IEnumerable<int> playerIds, MatchData matchConditions)
         {
             try
             {
                 foreach (int playerId in playerIds)
                 {
                     db.ExecuteInsertOrUpdate($"insert into ballbyball_team(match_id,player_id) values ({id},{playerId})");
-                }    
+                } 
+                UpdateMatch(matchConditions);   
             } catch(Exception ex)
             {
                
@@ -1527,4 +1528,5 @@ namespace CricketClubDAL
 
         }
     }
+
 }

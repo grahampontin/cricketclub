@@ -88,6 +88,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BallByBallMatchConditions.cs" />
     <Compile Include="Chat.cs" />
     <Compile Include="ChatItem.cs" />
     <Compile Include="InternalCache.cs" />

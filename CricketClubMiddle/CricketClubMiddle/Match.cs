@@ -625,11 +625,18 @@ namespace CricketClubMiddle
             return new MatchReport(ID, folder);
         }
 
-        public void StartBallByBallCoverage(IEnumerable<int> playerIds)
+        public void StartBallByBallCoverage(BallByBallMatchConditions ballByBallMatchConditions)
         {
             if (!dao.IsBallByBallCoverageInProgress(ID))
             {
-                dao.StartBallByBallCoverage(ID, playerIds);    
+                data.CaptainID = ballByBallMatchConditions.Captain;
+                data.WicketKeeperID = ballByBallMatchConditions.Keeper;
+                data.WonToss = ballByBallMatchConditions.WonToss;
+                data.Batted = ballByBallMatchConditions.Batted;
+                data.WasDeclarationGame = ballByBallMatchConditions.Declaration;
+                data.Overs = ballByBallMatchConditions.Overs;
+
+                dao.StartBallByBallCoverage(ID, ballByBallMatchConditions.PlayerIds, this.data);    
             }
             else
             {
