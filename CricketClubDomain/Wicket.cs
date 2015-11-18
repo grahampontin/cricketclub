@@ -12,5 +12,10 @@ namespace CricketClubDomain
         public string ModeOfDismissal;
         public string Fielder;
         public string Description;
+
+        public override string ToString()
+        {
+            return $"Player: {Player}, ModeOfDismissal: {ModeOfDismissal}, Fielder: {Fielder}, Description: {Description}";
+        }
     }
 }

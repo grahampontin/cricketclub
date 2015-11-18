@@ -4,3 +4,7 @@
 *.dll
 CricketClubDAL/CricketClubDAL/obj/Debug/CricketClubDAL.csprojResolveAssemblyReference.cache
 *.dll
+*.dll
+*.dll
+*.pdb
+*.cache

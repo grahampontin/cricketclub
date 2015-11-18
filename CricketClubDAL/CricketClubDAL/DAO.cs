@@ -1450,6 +1450,7 @@ namespace CricketClubDAL
                     Batsman = r.GetInt("player_id"),
                     Bowler = r.GetString("bowler"),
                     Thing = r.GetString("type"),
+                    Angle = r.GetDecimal("angle"),
 
                 };
                 if (r.GetInt("out_player_id", -1) != -1)
@@ -1509,7 +1510,7 @@ namespace CricketClubDAL
             }
 
             db.ExecuteInsertOrUpdate(
-                $"insert into ballbyball_data (ball, over_number, type, value, player_id, match_id, bowler, out_player_id, dismissal_id, fielder, description) VALUES ({ballNumber},{overNumber},'{ball.Thing}',{ball.Amount},{ball.Batsman},{matchId},'{ball.Bowler}',{outPlayerId},{dismissalId},'{fielder}','{description}')");
+                $"insert into ballbyball_data (ball, over_number, type, value, player_id, match_id, bowler, out_player_id, dismissal_id, fielder, description, angle) VALUES ({ballNumber},{overNumber},'{ball.Thing}',{ball.Amount},{ball.Batsman},{matchId},'{ball.Bowler}',{outPlayerId},{dismissalId},'{fielder}','{description}', {ball.Angle})");
         }
 
         private int GetDismissalId(string ballByBallCode)

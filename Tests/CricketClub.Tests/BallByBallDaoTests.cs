@@ -31,12 +31,12 @@ namespace CricketClub.Tests
                 {
                     Balls = new Ball[]
                     {
-                        new Ball(1,"Run",1,"Graham", "A chap", null), 
-                        new Ball(1,"Wide",2,"Oli", "A chap", null), 
-                        new Ball(4,"Run",2,"Oli", "A chap", null), 
-                        new Ball(4,"Run",2,"Oli", "A chap", null), 
-                        new Ball(0,"Run",2,"Oli", "A chap", new Wicket(){Description = "Out", Fielder = "", ModeOfDismissal = "b", Player = 2}), 
-                        new Ball(6,"Run",3,"Nick", "A chap", null), 
+                        new Ball(1,"Run",1,"Graham", "A chap", null, 1.22m), 
+                        new Ball(1,"Wide",2,"Oli", "A chap", null, 1.22m), 
+                        new Ball(4,"Run",2,"Oli", "A chap", null, 1.22m), 
+                        new Ball(4,"Run",2,"Oli", "A chap", null, 1.22m), 
+                        new Ball(0,"Run",2,"Oli", "A chap", new Wicket(){Description = "Out", Fielder = "", ModeOfDismissal = "b", Player = 2}, 1.22m), 
+                        new Ball(6,"Run",3,"Nick", "A chap", null, 1.22m), 
                     }
                 },
                 Players = new PlayerState[]

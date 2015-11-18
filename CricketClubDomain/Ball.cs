@@ -18,8 +18,9 @@ namespace CricketClubDomain
         public string Bowler;
         public string Thing;
         public Wicket Wicket;
+        public decimal Angle;
 
-        public Ball(int amount, string thing, int batsman, string batsmanName, string bowler, Wicket wicket)
+        public Ball(int amount, string thing, int batsman, string batsmanName, string bowler, Wicket wicket, decimal angle)
         {
             Amount = amount;
             Thing = thing;
@@ -27,6 +28,7 @@ namespace CricketClubDomain
             BatsmanName = batsmanName;
             Bowler = bowler;
             Wicket = wicket;
+            Angle = angle;
         }
 
         public Ball()
@@ -64,8 +66,7 @@ namespace CricketClubDomain
 
         public override string ToString()
         {
-            return string.Format("Amount: {0}, BatsmanName: {1}, Bowler: {2}, Thing: {3}, Wicket: {4}, Batsman: {5}",
-                Amount, BatsmanName, Bowler, Thing, Wicket, Batsman);
+            return $"Amount: {Amount}, Batsman: {Batsman}, BatsmanName: {BatsmanName}, Bowler: {Bowler}, Thing: {Thing}, Wicket: {Wicket}, Angle: {Angle}";
         }
     }
 }

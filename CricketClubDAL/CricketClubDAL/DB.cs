@@ -152,6 +152,11 @@ namespace CricketClubDAL
             return Convert.ToInt32(dataRow[columnName]);
         }
 
+        public decimal GetDecimal(string columnName)
+        {
+            return Convert.ToDecimal(dataRow[columnName]);
+        }
+
         public string GetString(string columnName)
         {
             return dataRow[columnName].ToString();
