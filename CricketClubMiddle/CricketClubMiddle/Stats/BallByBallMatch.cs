@@ -68,10 +68,10 @@ namespace CricketClubMiddle.Stats
             return new MatchState()
             {
                 Bowlers = overs.SelectMany(o=>o.Balls).Select(b=>b.Bowler).Distinct().ToArray(),
-                LastCompletedOver = overs.Max(o=>o.OverNumber),
+                LastCompletedOver = !overs.Any() ? 0 : overs.Max(o=>o.OverNumber),
                 MatchId = matchId,
                 Score = GetScore(),
-                RunRate = GetScore()/(decimal)overs.Count(),
+                RunRate = !overs.Any() ? 0 :GetScore()/(decimal)overs.Count(),
                 Players = GetPlayerStates()
                 
             };
