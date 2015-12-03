@@ -95,6 +95,7 @@
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="ExtrasData.cs" />
     <Compile Include="FoWDataLine.cs" />
+    <Compile Include="HonorsBoardEntry.cs" />
     <Compile Include="MatchData.cs" />
     <Compile Include="MatchReportData.cs" />
     <Compile Include="MatchState.cs" />

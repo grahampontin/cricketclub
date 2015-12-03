@@ -1508,9 +1508,10 @@ namespace CricketClubDAL
                 fielder = ball.Wicket.Fielder;
                 description = ball.Wicket.Description;
             }
+            string angle = ball.Angle.HasValue ? ball.Angle.Value.ToString(CultureInfo.InvariantCulture) : "null";
 
             db.ExecuteInsertOrUpdate(
-                $"insert into ballbyball_data (ball, over_number, type, value, player_id, match_id, bowler, out_player_id, dismissal_id, fielder, description, angle) VALUES ({ballNumber},{overNumber},'{ball.Thing}',{ball.Amount},{ball.Batsman},{matchId},'{ball.Bowler}',{outPlayerId},{dismissalId},'{fielder}','{description}', {ball.Angle})");
+                $"insert into ballbyball_data (ball, over_number, type, value, player_id, match_id, bowler, out_player_id, dismissal_id, fielder, description, angle) VALUES ({ballNumber},{overNumber},'{ball.Thing}',{ball.Amount},{ball.Batsman},{matchId},'{ball.Bowler}',{outPlayerId},{dismissalId},'{fielder}','{description}', {angle})");
         }
 
         private int GetDismissalId(string ballByBallCode)
@@ -1528,6 +1529,17 @@ namespace CricketClubDAL
                                      matchId + " and player_id = " + playerState.PlayerId);
 
         }
-    }
 
+        public IEnumerable<HonorsBoardEntry> GetHonorsBoard()
+        {
+            var entries = db.ExecuteSqlAndReturnAllRows("select * from honors_board", r => new HonorsBoardEntry
+            {
+                Season = r.GetInt("season"),
+                CaptainId = r.GetInt("captain_id"),
+                ViceCaptainId = r.GetInt("vice_captain_id"),
+                PlayerOfTheYear = r.GetInt("player_of_the_year_id")
+            });
+            return entries;
+        }
+    }
 }

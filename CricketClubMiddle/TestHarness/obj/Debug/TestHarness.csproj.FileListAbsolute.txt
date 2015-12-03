@@ -34,4 +34,3 @@ C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\TestHarness\bin\D
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\TestHarness\obj\Debug\TestHarness.csprojResolveAssemblyReference.cache
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\TestHarness\obj\Debug\TestHarness.exe
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\TestHarness\obj\Debug\TestHarness.pdb
-C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\TestHarness\bin\Debug\CricketClubAccounts.pdb

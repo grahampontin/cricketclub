@@ -1,4 +1,5 @@
-﻿using System.Security;
+﻿using System;
+using System.Security;
 
 namespace CricketClubDomain
 {
@@ -18,9 +19,9 @@ namespace CricketClubDomain
         public string Bowler;
         public string Thing;
         public Wicket Wicket;
-        public decimal Angle;
+        public decimal? Angle;
 
-        public Ball(int amount, string thing, int batsman, string batsmanName, string bowler, Wicket wicket, decimal angle)
+        public Ball(int amount, string thing, int batsman, string batsmanName, string bowler, Wicket wicket, decimal? angle)
         {
             Amount = amount;
             Thing = thing;

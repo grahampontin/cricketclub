@@ -97,6 +97,13 @@ namespace CricketClubDAL
             }
         }
 
+        public IEnumerable<T> ExecuteSqlAndReturnAllRows<T>(string sql, Func<Row, T> rowConverter)
+        {
+            var dataSet = ExecuteSqlAndReturnAllRows(sql);
+            return dataSet.Tables[0].Rows.Cast<DataRow>().Select(r=>new Row(r)).Select(rowConverter);
+        }
+
+
         public DataSet ExecuteSqlAndReturnAllRows(string sql)
         {
             try
@@ -152,9 +159,11 @@ namespace CricketClubDAL
             return Convert.ToInt32(dataRow[columnName]);
         }
 
-        public decimal GetDecimal(string columnName)
+        public decimal? GetDecimal(string columnName)
         {
-            return Convert.ToDecimal(dataRow[columnName]);
+            var value = dataRow[columnName];
+            return value is DBNull ? (decimal?)null : Convert.ToDecimal(value);
+            
         }
 
         public string GetString(string columnName)
