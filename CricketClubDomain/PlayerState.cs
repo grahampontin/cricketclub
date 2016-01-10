@@ -7,6 +7,8 @@ namespace CricketClubDomain
         public int Position;
         public string State;
         public int CurrentScore;
+        public const string Batting = "Batting";
+        public const string Out = "Out";
 
         protected bool Equals(PlayerState other)
         {

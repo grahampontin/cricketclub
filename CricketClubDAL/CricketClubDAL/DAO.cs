@@ -1435,7 +1435,7 @@ namespace CricketClubDAL
         }
 
 
-        public IEnumerable<Over> GetAllBallsForMatch(int matchId)
+        public IList<Over> GetAllBallsForMatch(int matchId)
         {
             Dictionary<int,  Over> overs = new Dictionary<int, Over>();
 
@@ -1466,7 +1466,7 @@ namespace CricketClubDAL
                 over.Balls = over.Balls.Add(ball);
 
             }
-            return overs.Values;
+            return overs.Select(e=>e.Value).ToList();
         }
 
         

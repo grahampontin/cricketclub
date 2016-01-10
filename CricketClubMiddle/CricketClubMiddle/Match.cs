@@ -676,5 +676,28 @@ namespace CricketClubMiddle
 
         // ReSharper disable once UnusedMember.Global
         public int BallByBallOver => GetCurrentBallByBallState().LastCompletedOver;
+
+        public LiveScorecard GetLiveScorecard()
+        {
+            var currentBallByBallState = GetCurrentBallByBallState();
+            var liveScorecard = new LiveScorecard();
+            liveScorecard.OnStrikeBatsman = currentBallByBallState.GetOnStrikeBatsmanDetails();
+            liveScorecard.OtherBatsman = currentBallByBallState.GetOtherBatsmanDetails();
+            liveScorecard.LastBatsmanOut = currentBallByBallState.GetLastBatsmanOutDetails();
+            liveScorecard.Opposition = Opposition.Name;
+            liveScorecard.LastCompletedOver = currentBallByBallState.LastCompletedOver;
+            liveScorecard.OversRemaining = WasDeclaration ? 0 : Overs - currentBallByBallState.LastCompletedOver;
+            liveScorecard.DeclarationGame = WasDeclaration;
+            var matchState = currentBallByBallState.GetMatchState();
+            liveScorecard.Score = matchState.Score;
+            liveScorecard.Wickets = matchState.Players.Count(p => p.State==PlayerState.Out);
+            liveScorecard.RunRate = matchState.LastCompletedOver == 0
+                ? 0
+                : Math.Round((decimal) matchState.Score/matchState.LastCompletedOver, 2);
+            liveScorecard.CurrentPartnership =
+                currentBallByBallState.GetPartnership(liveScorecard.OnStrikeBatsman.PlayerId,
+                    liveScorecard.OtherBatsman.PlayerId);
+            return liveScorecard;
+        }
     }
 }
