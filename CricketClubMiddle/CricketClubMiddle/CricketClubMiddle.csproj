@@ -100,6 +100,7 @@
     <Compile Include="NewsItem.cs" />
     <Compile Include="Interactive\PhotoComment.cs" />
     <Compile Include="Security\Permissions.cs" />
+    <Compile Include="Stats\BallByBallHelpers.cs" />
     <Compile Include="Stats\BallByBallMatch.cs" />
     <Compile Include="Stats\BatsmanInningsDetails.cs" />
     <Compile Include="Stats\BowlingStats.cs" />
@@ -117,6 +118,7 @@
     <Compile Include="Stats\BattingCardLine.cs" />
     <Compile Include="Stats\KeeperStats.cs" />
     <Compile Include="Stats\Partnership.cs" />
+    <Compile Include="Stats\PartnershipsAndFallOfWickets.cs" />
     <Compile Include="Stats\StatsHelper.cs" />
     <Compile Include="Stats\TeamStats.cs" />
     <Compile Include="Stats\VenueStats.cs" />

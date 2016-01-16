@@ -1422,7 +1422,7 @@ namespace CricketClubDAL
 
         private void LogException(string message, Exception exception)
         {
-            LogMessage(message, exception.StackTrace, "ERROR", DateTime.Now, exception.InnerException.StackTrace);
+            LogMessage(message, exception.StackTrace, "ERROR", DateTime.Now, exception.InnerException?.StackTrace);
         }
 
         public List<PlayerState> GetPlayerStates(int matchId)
@@ -1435,7 +1435,7 @@ namespace CricketClubDAL
         }
 
 
-        public IList<Over> GetAllBallsForMatch(int matchId)
+        public List<Over> GetAllBallsForMatch(int matchId)
         {
             Dictionary<int,  Over> overs = new Dictionary<int, Over>();
 

@@ -694,9 +694,27 @@ namespace CricketClubMiddle
             liveScorecard.RunRate = matchState.LastCompletedOver == 0
                 ? 0
                 : Math.Round((decimal) matchState.Score/matchState.LastCompletedOver, 2);
+
+            var partnershipsAndFallOfWickets = currentBallByBallState.GetPartnershipsAndFallOfWickets();
+
             liveScorecard.CurrentPartnership =
-                currentBallByBallState.GetPartnership(liveScorecard.OnStrikeBatsman.PlayerId,
+                partnershipsAndFallOfWickets.GetPartnershipData(liveScorecard.OnStrikeBatsman.PlayerId,
                     liveScorecard.OtherBatsman.PlayerId);
+
+            var currentPartnershipIndex = partnershipsAndFallOfWickets.Partnerships.IndexOf(liveScorecard.CurrentPartnership);
+            if (currentPartnershipIndex == 0)
+            {
+                liveScorecard.PreviousPartnership = null;
+            }
+            else
+            {
+                liveScorecard.PreviousPartnership =
+                    partnershipsAndFallOfWickets.Partnerships[currentPartnershipIndex - 1];
+            }
+            liveScorecard.LastManOut = partnershipsAndFallOfWickets.FallOfWickets.Last();
+
+            liveScorecard.CompletedOvers = currentBallByBallState.Overs;
+
             return liveScorecard;
         }
     }

@@ -9,11 +9,11 @@ namespace CricketClubMiddle.Stats
 {
     public class BallByBallMatch
     {
-        private readonly IList<Over> overs;
+        private readonly List<Over> overs;
         private readonly List<PlayerState> playerStates;
         private readonly int matchId;
 
-        private BallByBallMatch(IList<Over> overs, List<PlayerState> playerStates, int matchId)
+        private BallByBallMatch(List<Over> overs, List<PlayerState> playerStates, int matchId)
         {
             this.overs = overs;
             this.playerStates = playerStates;
@@ -25,6 +25,11 @@ namespace CricketClubMiddle.Stats
             get { return overs.Any() ? overs.Max(o => o.OverNumber) : 0; }
         }
 
+        public List<Over> Overs
+        {
+            get { return overs; }
+        }
+
         public static BallByBallMatch Load(int matchId)
         {
             var dao = new Dao();
@@ -33,34 +38,7 @@ namespace CricketClubMiddle.Stats
 
         public Dictionary<int, int> GetPlayerScores(HashSet<int> playerIds)
         {
-            IEnumerable<Ball> balls = overs.SelectMany(o => o.Balls);
-            return balls.Where(b => playerIds.Contains(b.Batsman))
-                .GroupBy(b => b.Batsman)
-                .ToDictionary(g => g.Key, ScoreFromBalls);
-
-        }
-
-        private int ScoreFromBalls(IEnumerable<Ball> balls)
-        {
-            return balls.Aggregate(0, (score, ball) => score + RunsFromBall(ball));
-        }
-
-        private int RunsFromBall(Ball ball)
-        {
-            switch (ball.Thing)
-            {
-                case Ball.Runs:
-                    return ball.Amount;
-                case Ball.Byes:
-                case Ball.LegByes:
-                case Ball.Wides:
-                case Ball.Penalty:
-                    return 0;
-                case Ball.NoBall:
-                    return ball.Amount - 1;
-                default:
-                    return 0;
-            }
+            return BallByBallHelpers.GetPlayerScoresFromBalls(playerIds, overs.SelectMany(o => o.Balls));
         }
 
         public MatchState GetMatchState()
@@ -86,7 +64,12 @@ namespace CricketClubMiddle.Stats
 
         private int GetScore()
         {
-            return overs.SelectMany(o => o.Balls).Sum(b => b.Amount);
+            return GetScoreForBalls(overs.SelectMany(o => o.Balls));
+        }
+
+        private int GetScoreForBalls(IEnumerable<Ball> balls)
+        {
+            return balls.Sum(b => b.Amount);
         }
 
         public BatsmanInningsDetails GetOnStrikeBatsmanDetails()
@@ -123,12 +106,12 @@ namespace CricketClubMiddle.Stats
             batsmanInningsDetails.StrikeRate = ballsFaced == 0 ? 0 : Math.Round((decimal) playerScore*100/ballsFaced, 2);
 
             var ballsForThisBowler = allBallsFacedByThisBatsman.Where(b => b.Bowler == bowler).ToList();
-            batsmanInningsDetails.ScoreForThisBowler = ScoreFromBalls(ballsForThisBowler);
+            batsmanInningsDetails.ScoreForThisBowler = BallByBallHelpers.ScoreFromBalls(ballsForThisBowler);
             batsmanInningsDetails.BallsFacedFromThisBowler = ballsForThisBowler.Count;
 
             var ballsFacedInLastTenOvers =
                 overs.Where(o => o.OverNumber > LastCompletedOver - 10).SelectMany(o => o.Balls.Where(b=>b.Batsman==playerId)).ToList();
-            batsmanInningsDetails.ScoreForLastTenOvers = ScoreFromBalls(ballsFacedInLastTenOvers);
+            batsmanInningsDetails.ScoreForLastTenOvers = BallByBallHelpers.ScoreFromBalls(ballsFacedInLastTenOvers);
             batsmanInningsDetails.BallsFacedInLastTenOvers = ballsFacedInLastTenOvers.Count;
 
             batsmanInningsDetails.Matches = player.GetMatchesPlayed();
@@ -180,24 +163,56 @@ namespace CricketClubMiddle.Stats
             return overs.OrderBy(o => o.OverNumber).SelectMany(over => over.Balls);
         }
 
-        public Partnership GetPartnership(int playerId1, int playerId2)
+        public PartnershipsAndFallOfWickets GetPartnershipsAndFallOfWickets()
         {
             List<Partnership> partnerships = new List<Partnership>();
             List<FallOfWicket> fallOfWickets = new List<FallOfWicket>();
-            playerStates.Where(ps => ps.Position <= 2); 
+            var openingPair = playerStates.Where(ps => ps.Position <= 2 && ps.Position >0).ToList();
+            if (openingPair.Count != 2)
+            {
+                throw new Exception("There should always be 2 batsmen to open an innings", new Exception());
+            }
             var balls = GetSortedBallsFirstToLast();
-            Partnership partnership = null;
+            Partnership partnership = new Partnership(openingPair[0].PlayerId, openingPair[1].PlayerId);
             foreach (var ball in balls)
             {
-                if (partnership == null)
-                {
-                    partnership = new Partnership();
-                }
+                partnership.Balls.Add(ball);
                 if (ball.Wicket != null)
                 {
-                    ball.Wicket.
+                    partnerships.Add(partnership);
+
+                    var ballsToThisPointInTime = partnerships.SelectMany(p => p.Balls).ToList();
+                    var playerScores = BallByBallHelpers.GetPlayerScoresFromBalls(new HashSet<int>(partnership.PlayerIds), ballsToThisPointInTime);
+                    var outGoingPlayer = ball.Wicket.Player;
+                    var notOutPlayer = partnership.PlayerIds.Single(p=>p!=outGoingPlayer);
+                    var fallOfWicket = new FallOfWicket(partnerships.Count, 
+                        GetScoreForBalls(ballsToThisPointInTime), 
+                        outGoingPlayer, 
+                        playerScores[outGoingPlayer], 
+                        notOutPlayer, 
+                        playerScores[notOutPlayer], 
+                        GetBatsmanInningsDetails(outGoingPlayer), 
+                        BallByBallHelpers.GetOversAsString(ballsToThisPointInTime), 
+                        partnership, ball.Wicket, ball.Bowler);
+
+                    fallOfWickets.Add(
+                        fallOfWicket);
+
+                    var lastBatsman = playerStates.Where(
+                        ps => ps.PlayerId == partnership.PlayerId1 || ps.PlayerId == partnership.PlayerId2)
+                        .Max(ps => ps.Position);
+                    if (lastBatsman == 11)
+                    {
+                        break;
+                    }
+                    int nextManInBattingAt = lastBatsman + 1;
+                    var nextBatsman = playerStates.Single(ps => ps.Position==nextManInBattingAt).PlayerId;
+
+                    partnership = new Partnership(notOutPlayer, nextBatsman);
                 }
             }
+            partnerships.Add(partnership);
+            return new PartnershipsAndFallOfWickets(partnerships, fallOfWickets);
         }
     }
 }

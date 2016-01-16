@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using CricketClubDomain;
 using CricketClubMiddle.Stats;
 
 namespace CricketClubMiddle
@@ -14,5 +16,10 @@ namespace CricketClubMiddle
         public int Score { get; set; }
         public int Wickets { get; set; }
         public decimal RunRate { get; set; }
+        public Partnership CurrentPartnership { get; set; }
+        public Partnership PreviousPartnership { get; set; }
+        public FallOfWicket LastManOut { get; set; }
+
+        public List<Over> CompletedOvers { get; set; }
     }
 }
