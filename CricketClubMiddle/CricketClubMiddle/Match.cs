@@ -713,7 +713,7 @@ namespace CricketClubMiddle
             }
             liveScorecard.LastManOut = partnershipsAndFallOfWickets.FallOfWickets.Last();
 
-            liveScorecard.CompletedOvers = currentBallByBallState.Overs;
+            liveScorecard.CompletedOvers = currentBallByBallState.GetOverSummaries();
 
             return liveScorecard;
         }

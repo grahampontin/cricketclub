@@ -9,6 +9,7 @@ namespace CricketClubDomain
     {
         public Ball[] Balls;
         public int OverNumber;
+        public string Commentary;
 
         protected bool Equals(Over other)
         {

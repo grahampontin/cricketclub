@@ -1439,7 +1439,13 @@ namespace CricketClubDAL
         {
             Dictionary<int,  Over> overs = new Dictionary<int, Over>();
 
-            var rows = db.QueryMany("select * from ballbyball_data where match_id = " + matchId);
+            string sql =
+                "select over_number, value, d.player_id, bowler, [type], angle, p.player_name as batsman_name, out_p.player_name as out_batsman_name, out_player_id, fielder, dismissal_id, description " +
+                "from ballbyball_data d inner " +
+                "join thevilla_admin.Players p on d.player_id = p.player_id " +
+                "left outer join thevilla_admin.Players out_p on d.out_player_id = out_p.player_id where match_id = ";
+
+            var rows = db.QueryMany(sql + matchId);
             foreach (var r in rows)
             {
                 var overNumber = r.GetInt("over_number");
@@ -1451,6 +1457,7 @@ namespace CricketClubDAL
                     Bowler = r.GetString("bowler"),
                     Thing = r.GetString("type"),
                     Angle = r.GetDecimal("angle"),
+                    BatsmanName = r.GetString("batsman_name")
 
                 };
                 if (r.GetInt("out_player_id", -1) != -1)
@@ -1460,16 +1467,34 @@ namespace CricketClubDAL
                         ModeOfDismissal = GetDismissalText(r.GetInt("dismissal_id")),
                         Description = r.GetString("description"),
                         Fielder = r.GetString("fielder"),
-                        Player = r.GetInt("out_player_id")
+                        Player = r.GetInt("out_player_id"),
+                        PlayerName = r.GetString("out_batsman_name"),
+                        Bowler= r.GetString("bowler")
                     };
                 }
+                
                 over.Balls = over.Balls.Add(ball);
 
             }
-            return overs.Select(e=>e.Value).ToList();
+            var oversToReturn = overs.Select(e=>e.Value).ToList();
+            AddCommentaryToOvers(matchId, oversToReturn);
+            return oversToReturn;
         }
 
-        
+        private void AddCommentaryToOvers(int matchId, List<Over> oversToReturn)
+        {
+            var keyValuePairs = db.ExecuteSqlAndReturnAllRows("select * from ballbyball_commentary where match_id =" + matchId,
+                row => new KeyValuePair<int, string>(row.GetInt("over_number"), row.GetString("commentary")));
+            var commentaryLookup = keyValuePairs.ToDictionary(p => p.Key, p => p.Value);
+            foreach (var over in oversToReturn)
+            {
+                if (commentaryLookup.ContainsKey(over.OverNumber))
+                {
+                    over.Commentary = commentaryLookup[over.OverNumber];
+                }
+            }
+        }
+
 
         private static PlayerState PlayerStateFromRow(Row row)
         {
@@ -1485,14 +1510,21 @@ namespace CricketClubDAL
             {
                 UpdatePlayerState(playerState, matchId);
             }
+            int thisOver = matchState.LastCompletedOver + 1;
+            AddOverCommentary(matchState.Over, matchId, thisOver);
             int ballNumber = 0;
             foreach (var ball in matchState.Over.Balls)
             {
                 ballNumber++;
-                int thisOver = matchState.LastCompletedOver+1;
                 AddBallToMatch(ball, matchId, thisOver, ballNumber);
             }
             
+        }
+
+        private void AddOverCommentary(Over over, int matchId, int overNumber)
+        {
+            db.ExecuteInsertOrUpdate("insert into ballbyball_commentary(match_id, over_number, commentary) values (" +
+                                     matchId + "," + overNumber + ", '"+SafeForSql(over.Commentary)+"')");
         }
 
         private void AddBallToMatch(Ball ball, int matchId, int overNumber, int ballNumber)

@@ -214,5 +214,20 @@ namespace CricketClubMiddle.Stats
             partnerships.Add(partnership);
             return new PartnershipsAndFallOfWickets(partnerships, fallOfWickets);
         }
+
+        public List<OverSummary> GetOverSummaries()
+        {
+            var overSummaries = new List<OverSummary>();
+            var oversToThisPointInTime = new List<Over>();
+            foreach (var over in Overs.OrderBy(o=>o.OverNumber))
+            {
+                oversToThisPointInTime.Add(over);
+                overSummaries.Add(new OverSummary(over, 
+                    GetScoreForBalls(oversToThisPointInTime.SelectMany(o=>o.Balls)), 
+                    oversToThisPointInTime.SelectMany(o=>o.Balls).Count(b=>b.Wicket!=null), 
+                    GetScoreForBalls(over.Balls)));
+            }
+            return overSummaries;
+        }
     }
 }

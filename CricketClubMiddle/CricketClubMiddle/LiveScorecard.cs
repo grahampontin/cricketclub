@@ -20,6 +20,6 @@ namespace CricketClubMiddle
         public Partnership PreviousPartnership { get; set; }
         public FallOfWicket LastManOut { get; set; }
 
-        public List<Over> CompletedOvers { get; set; }
+        public List<OverSummary> CompletedOvers { get; set; }
     }
 }
