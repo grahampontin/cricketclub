@@ -84,7 +84,7 @@ namespace CricketClubMiddle.Stats
             return onStrikeBatsman;
         }
 
-        private BatsmanInningsDetails GetBatsmanInningsDetails(int playerId)
+        public BatsmanInningsDetails GetBatsmanInningsDetails(int playerId)
         {
             var lastBall = overs.Last().Balls.Last();
             var bowler = lastBall.Bowler;
@@ -228,6 +228,119 @@ namespace CricketClubMiddle.Stats
                     GetScoreForBalls(over.Balls)));
             }
             return overSummaries;
+        }
+
+        public BowlerInningsDetails GetBowlerOneDetails()
+        {
+            string bowlerOne = GetBowlerOne();
+            return GetBowlerDetails(bowlerOne);
+        }
+        public BowlerInningsDetails GetBowlerTwoDetails()
+        {
+            string bowlerTwo = GetBowlerTwo();
+            return GetBowlerDetails(bowlerTwo);
+        }
+
+        private string GetBowlerTwo()
+        {
+            return GetSortedBallsLastToFirst().Select(b => b.Bowler).First(b => b != GetBowlerOne());
+        }
+
+        private BowlerInningsDetails GetBowlerDetails(string bowlerName)
+        {
+            var bowlerInningsDetails = new BowlerInningsDetails();
+            bowlerInningsDetails.Name = bowlerName;
+
+            var oversBowledByThisBowler = overs.Where(o => o.Balls.Select(b => b.Bowler).Contains(bowlerName)).ToList();
+
+            var bowlingDetails = GetBowlingInningsDetailsForOvers(oversBowledByThisBowler, bowlerName);
+
+            bowlerInningsDetails.Details = bowlingDetails;
+
+            var oversInThisSpell = GetOversInLastSpell(bowlerName);
+            bowlerInningsDetails.JustThisSpell = GetBowlingInningsDetailsForOvers(oversInThisSpell, bowlerName);
+
+            return bowlerInningsDetails;
+        }
+
+        private List<Over> GetOversInLastSpell(string bowlerOne)
+        {
+            int oversSinceThisBowlerLastBowled = 0;
+            List<Over> spell = new List<Over>();
+            foreach (var over in overs)
+            {
+                if (over.WasBowledBy(bowlerOne))
+                {
+                    spell.Add(over);
+                    oversSinceThisBowlerLastBowled = 0;
+                }
+                else
+                {
+                    oversSinceThisBowlerLastBowled ++;
+                    if (!spell.Any())
+                    {
+                        continue;
+                    }
+                    if (oversSinceThisBowlerLastBowled > 1)
+                    {
+                        break;
+                    }
+                }
+            }
+            return spell;
+        }
+
+        private BowlingDetails GetBowlingInningsDetailsForOvers(List<Over> oversBowledByThisBowler, string bowlerOne)
+        {
+            var ballsForThisBowler = oversBowledByThisBowler.SelectMany(o => o.Balls).Where(b => b.Bowler == bowlerOne).ToList();
+
+            var bowlingDetails = new BowlingDetails();
+            
+            bowlingDetails.Dots = ballsForThisBowler.Count(b => b.Amount == 0 || b.IsFieldingExtra());
+            bowlingDetails.Fours = ballsForThisBowler.Count(b => b.Amount == 4 && !b.IsFieldingExtra());
+            bowlingDetails.Sixes = ballsForThisBowler.Count(b => b.Amount == 6 && !b.IsFieldingExtra());
+            bowlingDetails.Overs = oversBowledByThisBowler.Count;
+            bowlingDetails.Maidens = overs.Count(o => o.IsMaiden());
+            bowlingDetails.Wides = ballsForThisBowler.Where(b => b.IsWide).Sum(b => b.Amount);
+            bowlingDetails.NoBalls = ballsForThisBowler.Where(b => b.IsNoBall).Sum(b => b.Amount);
+            bowlingDetails.Runs = ballsForThisBowler.Where(b => !b.IsFieldingExtra()).Sum(b => b.Amount);
+            bowlingDetails.Wickets = ballsForThisBowler.Count(b => b.IsBowlersWicket());
+            bowlingDetails.Economy = Math.Round(((decimal) bowlingDetails.Runs)/bowlingDetails.Overs,2);
+
+            return bowlingDetails;
+        }
+
+
+        private string GetBowlerOne()
+        {
+            return GetSortedBallsLastToFirst().First().Bowler;
+        }
+
+        public LiveExtras GetExtras()
+        {
+            var liveExtras = new LiveExtras();
+            foreach (var ball in overs.SelectMany(o=>o.Balls))
+            {
+                switch (ball.Thing)
+                {
+                    case Ball.Wides:
+                        liveExtras.Wides += ball.Amount;
+                        break;
+                    case Ball.Byes:
+                        liveExtras.Byes += ball.Amount;
+                        break;
+                    case Ball.LegByes:
+                        liveExtras.LegByes += ball.Amount;
+                        break;
+                    case Ball.NoBall:
+                        liveExtras.NoBalls += ball.Amount;
+                        break;
+                    case Ball.Penalty:
+                        liveExtras.Penalty += ball.Amount;
+                        break;
+                }
+            }
+            return liveExtras;
         }
     }
 }

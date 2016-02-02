@@ -702,18 +702,25 @@ namespace CricketClubMiddle
                     liveScorecard.OtherBatsman.PlayerId);
 
             var currentPartnershipIndex = partnershipsAndFallOfWickets.Partnerships.IndexOf(liveScorecard.CurrentPartnership);
-            if (currentPartnershipIndex == 0)
-            {
-                liveScorecard.PreviousPartnership = null;
-            }
-            else
-            {
-                liveScorecard.PreviousPartnership =
-                    partnershipsAndFallOfWickets.Partnerships[currentPartnershipIndex - 1];
-            }
+
+            liveScorecard.PreviousPartnership = currentPartnershipIndex == 0 ? null : partnershipsAndFallOfWickets.Partnerships[currentPartnershipIndex - 1];
             liveScorecard.LastManOut = partnershipsAndFallOfWickets.FallOfWickets.Last();
 
+            liveScorecard.FallOfWickets = partnershipsAndFallOfWickets.FallOfWickets;
+
             liveScorecard.CompletedOvers = currentBallByBallState.GetOverSummaries();
+
+            liveScorecard.BowlerOneDetails = currentBallByBallState.GetBowlerOneDetails();
+            liveScorecard.BowlerTwoDetails = currentBallByBallState.GetBowlerTwoDetails();
+
+            var liveBattingCard = new LiveBattingCard();
+            var liveBattingCardEntries = currentBallByBallState.GetMatchState().Players.Where(ps=>ps.State!=PlayerState.Waiting).ToDictionary(playerState => playerState.Position.ToString(), playerState => new LiveBattingCardEntry
+            {
+                BatsmanInningsDetails = currentBallByBallState.GetBatsmanInningsDetails(playerState.PlayerId), Wicket = partnershipsAndFallOfWickets.FallOfWickets.FirstOrDefault(f => f.OutGoingPlayerId == playerState.PlayerId)?.Wicket
+            });
+            liveBattingCard.Players = liveBattingCardEntries;
+            liveBattingCard.Extras = currentBallByBallState.GetExtras();
+            liveScorecard.LiveBattingCard = liveBattingCard;
 
             return liveScorecard;
         }

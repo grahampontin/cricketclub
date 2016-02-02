@@ -69,5 +69,18 @@ namespace CricketClubDomain
         {
             return $"Amount: {Amount}, Batsman: {Batsman}, BatsmanName: {BatsmanName}, Bowler: {Bowler}, Thing: {Thing}, Wicket: {Wicket}, Angle: {Angle}";
         }
+
+        public bool IsFieldingExtra()
+        {
+            return Thing == Byes || Thing == LegByes || Thing == Penalty;
+        }
+
+        public bool IsWide => Thing == Wides;
+        public bool IsNoBall => Thing == NoBall;
+
+        public bool IsBowlersWicket()
+        {
+            return Wicket != null && !Wicket.IsRunOut;
+        }
     }
 }

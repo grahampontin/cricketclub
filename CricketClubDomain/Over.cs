@@ -33,5 +33,15 @@ namespace CricketClubDomain
         {
             return string.Format("Balls: {0}", Balls);
         }
+
+        public bool IsMaiden()
+        {
+            return Balls.All(ball => ball.Amount == 0 || ball.IsFieldingExtra());
+        }
+
+        public bool WasBowledBy(string bowlerOne)
+        {
+            return Balls.Select(b => b.Bowler).Contains(bowlerOne);
+        }
     }
 }

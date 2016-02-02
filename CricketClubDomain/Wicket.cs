@@ -15,6 +15,8 @@ namespace CricketClubDomain
         public string PlayerName;
         public string Bowler;
 
+        public bool IsRunOut => ModeOfDismissal == "run out";
+
         public override string ToString()
         {
             return $"Player: {Player}, ModeOfDismissal: {ModeOfDismissal}, Fielder: {Fielder}, Description: {Description}, PlayerName: {PlayerName}, Bowler: {Bowler}";

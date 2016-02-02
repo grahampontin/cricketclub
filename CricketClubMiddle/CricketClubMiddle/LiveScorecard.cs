@@ -20,6 +20,34 @@ namespace CricketClubMiddle
         public Partnership PreviousPartnership { get; set; }
         public FallOfWicket LastManOut { get; set; }
 
+        public List<FallOfWicket> FallOfWickets { get; set; }
+
         public List<OverSummary> CompletedOvers { get; set; }
+
+        public BowlerInningsDetails BowlerOneDetails { get; set; }
+        public BowlerInningsDetails BowlerTwoDetails { get; set; }
+
+        public LiveBattingCard LiveBattingCard { get; set; }
+    }
+
+    public class LiveBattingCard
+    {
+        public Dictionary<string, LiveBattingCardEntry> Players;
+        public LiveExtras Extras;
+    }
+
+    public class LiveBattingCardEntry
+    {
+        public BatsmanInningsDetails BatsmanInningsDetails;
+        public Wicket Wicket;
+    }
+
+    public class LiveExtras
+    {
+        public int Byes;
+        public int LegByes;
+        public int Wides;
+        public int NoBalls;
+        public int Penalty;
     }
 }

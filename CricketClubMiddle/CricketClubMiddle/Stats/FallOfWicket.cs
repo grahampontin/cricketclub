@@ -78,5 +78,10 @@ namespace CricketClubMiddle.Stats
         }
 
         public string OutgoingPlayerName => outGoingPlayer.Name;
+
+        public int OutGoingPlayerId
+        {
+            get { return outGoingPlayerId; }
+        }
     }
 }
