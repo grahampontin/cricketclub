@@ -267,7 +267,7 @@ namespace CricketClubMiddle.Stats
         {
             int oversSinceThisBowlerLastBowled = 0;
             List<Over> spell = new List<Over>();
-            foreach (var over in overs)
+            foreach (var over in overs.Select(o=>o).Reverse())
             {
                 if (over.WasBowledBy(bowlerOne))
                 {
@@ -300,9 +300,9 @@ namespace CricketClubMiddle.Stats
             bowlingDetails.Fours = ballsForThisBowler.Count(b => b.Amount == 4 && !b.IsFieldingExtra());
             bowlingDetails.Sixes = ballsForThisBowler.Count(b => b.Amount == 6 && !b.IsFieldingExtra());
             bowlingDetails.Overs = oversBowledByThisBowler.Count;
-            bowlingDetails.Maidens = overs.Count(o => o.IsMaiden());
+            bowlingDetails.Maidens = oversBowledByThisBowler.Count(o => o.IsMaiden());
             bowlingDetails.Wides = ballsForThisBowler.Where(b => b.IsWide).Sum(b => b.Amount);
-            bowlingDetails.NoBalls = ballsForThisBowler.Where(b => b.IsNoBall).Sum(b => b.Amount);
+            bowlingDetails.NoBalls = ballsForThisBowler.Count(b => b.IsNoBall);
             bowlingDetails.Runs = ballsForThisBowler.Where(b => !b.IsFieldingExtra()).Sum(b => b.Amount);
             bowlingDetails.Wickets = ballsForThisBowler.Count(b => b.IsBowlersWicket());
             bowlingDetails.Economy = Math.Round(((decimal) bowlingDetails.Runs)/bowlingDetails.Overs,2);
@@ -333,7 +333,7 @@ namespace CricketClubMiddle.Stats
                         liveExtras.LegByes += ball.Amount;
                         break;
                     case Ball.NoBall:
-                        liveExtras.NoBalls += ball.Amount;
+                        liveExtras.NoBalls += 1;
                         break;
                     case Ball.Penalty:
                         liveExtras.Penalty += ball.Amount;
