@@ -24,9 +24,13 @@ namespace CricketClubDAL
             if (connectionString == null)
             {
                 string key = "ProdDB";
-                if (Environment.MachineName.Contains("BIG-PC") || Environment.MachineName.Contains("TABLET"))
+                if (Environment.MachineName.Contains("TABLET"))
                 {
                     key = "LocalDB";
+                }
+                if (Environment.MachineName.Contains("BIG-PC"))
+                {
+                    key = "BigPC";
                 }
                 ConnectionStringSettings cnxStr = ConfigurationManager.ConnectionStrings[key];
                 Console.Out.WriteLine("Connecting to: " + key + " @" + cnxStr.ConnectionString);
