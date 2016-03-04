@@ -677,10 +677,37 @@ namespace CricketClubMiddle
         // ReSharper disable once UnusedMember.Global
         public int BallByBallOver => GetCurrentBallByBallState().LastCompletedOver;
 
+        public bool OppositionInningsComplete
+        {
+            get
+            {
+                return GetCurrentBallByBallState().OppositionInningsComplete;
+            }
+        }
+
+        public bool OppositionBattedFirst
+        {
+            get { return (TossWinner == Us && !TossWinnerBatted) || (TossWinner != Us && TossWinnerBatted); } 
+        }
+
+        public bool OurInningsComplete
+        {
+            get
+            {
+                var currentBallByBallState = GetCurrentBallByBallState();
+                return currentBallByBallState.LastCompletedOver == Overs || currentBallByBallState.GetMatchState().Players.Count(p => p.State == PlayerState.Out) == 10;
+            }
+        }
+
+        public int OppositionBallByBallOver => GetCurrentBallByBallState().OppositionOver;
+
         public LiveScorecard GetLiveScorecard()
         {
             var currentBallByBallState = GetCurrentBallByBallState();
             var liveScorecard = new LiveScorecard();
+            liveScorecard.WonToss = WonToss;
+            liveScorecard.TossWinnerBatted = TossWinnerBatted;
+            liveScorecard.Overs = Overs;
             liveScorecard.OnStrikeBatsman = currentBallByBallState.GetOnStrikeBatsmanDetails();
             liveScorecard.OtherBatsman = currentBallByBallState.GetOtherBatsmanDetails();
             liveScorecard.LastBatsmanOut = currentBallByBallState.GetLastBatsmanOutDetails();
@@ -704,9 +731,10 @@ namespace CricketClubMiddle
             var currentPartnershipIndex = partnershipsAndFallOfWickets.Partnerships.IndexOf(liveScorecard.CurrentPartnership);
 
             liveScorecard.PreviousPartnership = currentPartnershipIndex == 0 ? null : partnershipsAndFallOfWickets.Partnerships[currentPartnershipIndex - 1];
-            liveScorecard.LastManOut = partnershipsAndFallOfWickets.FallOfWickets.Last();
+            var fallOfWickets = partnershipsAndFallOfWickets.FallOfWickets;
+            liveScorecard.LastManOut = fallOfWickets.Any()? fallOfWickets.Last() : null;
 
-            liveScorecard.FallOfWickets = partnershipsAndFallOfWickets.FallOfWickets;
+            liveScorecard.FallOfWickets = fallOfWickets;
 
             liveScorecard.CompletedOvers = currentBallByBallState.GetOverSummaries();
 
@@ -716,13 +744,45 @@ namespace CricketClubMiddle
             var liveBattingCard = new LiveBattingCard();
             var liveBattingCardEntries = currentBallByBallState.GetMatchState().Players.Where(ps=>ps.State!=PlayerState.Waiting).ToDictionary(playerState => playerState.Position.ToString(), playerState => new LiveBattingCardEntry
             {
-                BatsmanInningsDetails = currentBallByBallState.GetBatsmanInningsDetails(playerState.PlayerId), Wicket = partnershipsAndFallOfWickets.FallOfWickets.FirstOrDefault(f => f.OutGoingPlayerId == playerState.PlayerId)?.Wicket
+                BatsmanInningsDetails = currentBallByBallState.GetBatsmanInningsDetails(playerState.PlayerId), Wicket = fallOfWickets.FirstOrDefault(f => f.OutGoingPlayerId == playerState.PlayerId)?.Wicket
             });
             liveBattingCard.Players = liveBattingCardEntries;
             liveBattingCard.Extras = currentBallByBallState.GetExtras();
             liveScorecard.LiveBattingCard = liveBattingCard;
 
             return liveScorecard;
+        }
+
+        public void UpdateOppositionScore(OppositionInningsDetails oppositionInningsDetails)
+        {
+            if (oppositionInningsDetails.Over > Overs)
+            {
+                throw new InvalidOperationException(oppositionInningsDetails.Over + " overs is more than the match conditions stipulate ("+Overs+")");
+            }
+            if (oppositionInningsDetails.Over == Overs && !oppositionInningsDetails.EndOfInnings)
+            {
+                throw new InvalidOperationException(oppositionInningsDetails.Over + " overs should be the end of the innings according to the match conditions.");
+            }
+            if (oppositionInningsDetails.Wickets > 10)
+            {
+                throw new InvalidOperationException("There can't be more than 10 wickets in an innings");
+            }
+            if (oppositionInningsDetails.Wickets == 10 && !oppositionInningsDetails.EndOfInnings)
+            {
+                throw new InvalidOperationException("10 wickets should signify the end of the innings don't you think?");
+            }
+            var currentBallByBallState = GetCurrentBallByBallState();
+            var oppositionOver = currentBallByBallState.OppositionOver;
+            var oppositionScore = currentBallByBallState.OppositionScore;
+            if (oppositionOver > oppositionInningsDetails.Over)
+            {
+                throw new InvalidOperationException("You are trying to input over " + oppositionInningsDetails.Over + " but over " + oppositionOver + " has already been entered");
+            }
+            if (oppositionScore > oppositionInningsDetails.Score)
+            {
+                throw new InvalidOperationException("They were " + oppositionScore + " after " + oppositionOver + " overs, they can't be " + oppositionInningsDetails.Score + " now.");
+            }
+            dao.CreateOrUpdateOppositionInningsDetails(oppositionInningsDetails, ID);
         }
     }
 }

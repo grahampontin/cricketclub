@@ -1573,5 +1573,34 @@ namespace CricketClubDAL
             });
             return entries;
         }
+
+        public OppositionInnings GetOppositionInnings(int matchId)
+        {
+            var inningsDetails = db.ExecuteSqlAndReturnAllRows("select * from ballbyball_opposition_data where match_id = " + matchId,
+                row => new OppositionInningsDetails(row.GetInt("over"), 
+                    row.GetInt("score"), 
+                    row.GetInt("wickets_down"), 
+                    row.GetString("commentary"), 
+                    row.GetBool("is_end_of_innings")));
+            return new OppositionInnings(inningsDetails);
+        }
+
+        public void CreateOrUpdateOppositionInningsDetails(OppositionInningsDetails newEntry, int matchId)
+        {
+            var oppositionInnings = GetOppositionInnings(matchId);
+            if (oppositionInnings.Details.Any(d => d.Over == newEntry.Over))
+            {
+                db.ExecuteInsertOrUpdate("update ballbyball_opposition_data set  score = " + newEntry.Score + " where match_id=" + matchId + " and [over] = " + newEntry.Over);
+                db.ExecuteInsertOrUpdate("update ballbyball_opposition_data set  wickets_down = " + newEntry.Wickets + " where match_id=" + matchId + " and [over] = " + newEntry.Over);
+                db.ExecuteInsertOrUpdate("update ballbyball_opposition_data set  commentary = '" + SafeForSql(newEntry.Commentary) + "' where match_id=" + matchId + " and [over] = " + newEntry.Over);
+                db.ExecuteInsertOrUpdate("update ballbyball_opposition_data set  is_end_of_innings = '" + newEntry.EndOfInnings + "' where match_id=" + matchId + " and [over] = " + newEntry.Over);
+            }
+            else
+            {
+                db.ExecuteInsertOrUpdate(
+                    "insert into ballbyball_opposition_data (match_id, [over], score, wickets_down, commentary, is_end_of_innings) " +
+                    "values (" + matchId + "," + newEntry.Over + "," + newEntry.Score + "," + newEntry.Wickets + ",'" + SafeForSql(newEntry.Commentary) + "','" + newEntry.EndOfInnings + "')");
+            }
+        }
     }
 }

@@ -28,6 +28,9 @@ namespace CricketClubMiddle
         public BowlerInningsDetails BowlerTwoDetails { get; set; }
 
         public LiveBattingCard LiveBattingCard { get; set; }
+        public int Overs { get; set; }
+        public bool TossWinnerBatted { get; set; }
+        public bool WonToss { get; set; }
     }
 
     public class LiveBattingCard

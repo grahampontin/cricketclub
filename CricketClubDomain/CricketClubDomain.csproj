@@ -100,6 +100,8 @@
     <Compile Include="MatchReportData.cs" />
     <Compile Include="MatchState.cs" />
     <Compile Include="NewsData.cs" />
+    <Compile Include="OppositionInnings.cs" />
+    <Compile Include="OppositionInningsDetails.cs" />
     <Compile Include="Over.cs" />
     <Compile Include="OverSummary.cs" />
     <Compile Include="PhotoCommentData.cs" />

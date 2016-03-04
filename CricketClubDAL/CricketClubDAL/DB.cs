@@ -194,5 +194,15 @@ namespace CricketClubDAL
             }
             return Convert.ToInt32(value);
         }
+
+        public bool GetBool(string columnName)
+        {
+            object value = dataRow[columnName];
+            if (value is DBNull)
+            {
+                return false;
+            }
+            return Convert.ToBoolean(value);
+        }
     }
 }

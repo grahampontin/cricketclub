@@ -48,7 +48,7 @@ namespace CricketClub.Tests
             };
             da.UpdateCurrentBallByBallState(matchState, matchId);
 
-            BallByBallMatch.Load(matchId);
+            BallByBallMatch.Load(matchId, foo);
 
             
         }

@@ -12,12 +12,14 @@ namespace CricketClubMiddle.Stats
         private readonly List<Over> overs;
         private readonly List<PlayerState> playerStates;
         private readonly int matchId;
+        private readonly OppositionInnings oppositionInnings;
 
-        private BallByBallMatch(List<Over> overs, List<PlayerState> playerStates, int matchId)
+        private BallByBallMatch(List<Over> overs, List<PlayerState> playerStates, int matchId, OppositionInnings oppositionInnings)
         {
             this.overs = overs;
             this.playerStates = playerStates;
             this.matchId = matchId;
+            this.oppositionInnings = oppositionInnings;
         }
 
         public int LastCompletedOver
@@ -25,15 +27,16 @@ namespace CricketClubMiddle.Stats
             get { return overs.Any() ? overs.Max(o => o.OverNumber) : 0; }
         }
 
-        public List<Over> Overs
-        {
-            get { return overs; }
-        }
+        public List<Over> Overs => overs;
+
+        public bool OppositionInningsComplete => oppositionInnings.IsComplete;
+        public int OppositionOver => oppositionInnings.Details.Any() ? oppositionInnings.Details.Max(d => d.Over) : 0;
+        public int OppositionScore => oppositionInnings.Details.Any() ? oppositionInnings.Details.OrderBy(d => d.Over).Last().Score : 0;
 
         public static BallByBallMatch Load(int matchId)
         {
             var dao = new Dao();
-            return new BallByBallMatch(dao.GetAllBallsForMatch(matchId), dao.GetPlayerStates(matchId), matchId);
+            return new BallByBallMatch(dao.GetAllBallsForMatch(matchId), dao.GetPlayerStates(matchId), matchId, dao.GetOppositionInnings(matchId));
         }
 
         public Dictionary<int, int> GetPlayerScores(HashSet<int> playerIds)
