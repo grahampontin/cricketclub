@@ -1562,26 +1562,13 @@ namespace CricketClubDAL
 
         }
 
-        public IEnumerable<HonorsBoardEntry> GetHonorsBoard()
-        {
-            var entries = db.ExecuteSqlAndReturnAllRows("select * from honors_board", r => new HonorsBoardEntry
-            {
-                Season = r.GetInt("season"),
-                CaptainId = r.GetInt("captain_id"),
-                ViceCaptainId = r.GetInt("vice_captain_id"),
-                PlayerOfTheYear = r.GetInt("player_of_the_year_id")
-            });
-            return entries;
-        }
-
         public OppositionInnings GetOppositionInnings(int matchId)
         {
             var inningsDetails = db.ExecuteSqlAndReturnAllRows("select * from ballbyball_opposition_data where match_id = " + matchId,
                 row => new OppositionInningsDetails(row.GetInt("over"), 
                     row.GetInt("score"), 
                     row.GetInt("wickets_down"), 
-                    row.GetString("commentary"), 
-                    row.GetBool("is_end_of_innings")));
+                    row.GetString("commentary")));
             return new OppositionInnings(inningsDetails);
         }
 
@@ -1593,14 +1580,80 @@ namespace CricketClubDAL
                 db.ExecuteInsertOrUpdate("update ballbyball_opposition_data set  score = " + newEntry.Score + " where match_id=" + matchId + " and [over] = " + newEntry.Over);
                 db.ExecuteInsertOrUpdate("update ballbyball_opposition_data set  wickets_down = " + newEntry.Wickets + " where match_id=" + matchId + " and [over] = " + newEntry.Over);
                 db.ExecuteInsertOrUpdate("update ballbyball_opposition_data set  commentary = '" + SafeForSql(newEntry.Commentary) + "' where match_id=" + matchId + " and [over] = " + newEntry.Over);
-                db.ExecuteInsertOrUpdate("update ballbyball_opposition_data set  is_end_of_innings = '" + newEntry.EndOfInnings + "' where match_id=" + matchId + " and [over] = " + newEntry.Over);
             }
             else
             {
                 db.ExecuteInsertOrUpdate(
-                    "insert into ballbyball_opposition_data (match_id, [over], score, wickets_down, commentary, is_end_of_innings) " +
-                    "values (" + matchId + "," + newEntry.Over + "," + newEntry.Score + "," + newEntry.Wickets + ",'" + SafeForSql(newEntry.Commentary) + "','" + newEntry.EndOfInnings + "')");
+                    "insert into ballbyball_opposition_data (match_id, [over], score, wickets_down, commentary) " +
+                    "values (" + matchId + "," + newEntry.Over + "," + newEntry.Score + "," + newEntry.Wickets + ",'" + SafeForSql(newEntry.Commentary) + "')");
             }
+        }
+
+        public BallByBallInningsStatus GetInningsStatus(int matchId)
+        {
+            return db.ExecuteSQLAndReturnFirstRow("select * from ballbyball_innings_status where match_id=" + matchId, r => 
+            new BallByBallInningsStatus
+            {
+                OurInningsStatus = r.GetEnum<InningsStatus>("our_innings_status"),
+                TheirInningsStatus = r.GetEnum<InningsStatus>("their_innings_status"),
+                MatchId = r.GetInt("match_id"),
+                OurInningsWasDeclared = r.GetBool("our_innings_declared"),
+                TheirInningsWasDeclared = r.GetBool("their_innings_declared"),
+                OurInningsCommentary = r.GetString("our_innings_commentary"),
+                TheirInningsCommentary = r.GetString("their_innings_commentary"),
+            }, BallByBallInningsStatus.NotStarted(matchId));
+        }
+
+        public void UpdateInningsStatus(BallByBallInningsStatus inningsStatus)
+        {
+            var exists = db.QueryMany("select * from ballbyball_innings_status where match_id = " +
+                                   inningsStatus.MatchId).Any();
+            if (exists)
+            {
+                db.ExecuteInsertOrUpdate("update ballbyball_innings_status set our_innings_status = '" + inningsStatus.OurInningsStatus + "' where match_id=" + inningsStatus.MatchId);
+                db.ExecuteInsertOrUpdate("update ballbyball_innings_status set our_innings_commentary = '" + SafeForSql(inningsStatus.OurInningsCommentary) + "' where match_id=" + inningsStatus.MatchId);
+                db.ExecuteInsertOrUpdate("update ballbyball_innings_status set our_innings_declared = '" + inningsStatus.OurInningsWasDeclared + "' where match_id=" + inningsStatus.MatchId);
+
+                db.ExecuteInsertOrUpdate("update ballbyball_innings_status set their_innings_status = '" + inningsStatus.TheirInningsStatus + "' where match_id=" + inningsStatus.MatchId);
+                db.ExecuteInsertOrUpdate("update ballbyball_innings_status set their_innings_commentary = '" + SafeForSql(inningsStatus.TheirInningsCommentary) + "' where match_id=" + inningsStatus.MatchId);
+                db.ExecuteInsertOrUpdate("update ballbyball_innings_status set their_innings_declared = '" + inningsStatus.TheirInningsWasDeclared + "' where match_id=" + inningsStatus.MatchId);
+            } else
+            {
+                db.ExecuteInsertOrUpdate(
+                    "insert into ballbyball_innings_status(our_innings_status, our_innings_commentary, our_innings_declared, their_innings_status, their_innings_commentary, their_innings_declared, match_id) values ('" 
+                    + inningsStatus.OurInningsStatus + "','" 
+                    + inningsStatus.OurInningsCommentary + "','" 
+                    + inningsStatus.OurInningsWasDeclared + "','" 
+                    + inningsStatus.TheirInningsStatus + "','" 
+                    + inningsStatus.TheirInningsCommentary + "','" 
+                    + inningsStatus.TheirInningsWasDeclared + "'," + inningsStatus.MatchId+")");
+            }
+            
+        }
+    }
+
+    public class BallByBallInningsStatus
+    {
+        public int MatchId;
+        public InningsStatus OurInningsStatus;
+        public InningsStatus TheirInningsStatus;
+        public bool OurInningsWasDeclared;
+        public bool TheirInningsWasDeclared;
+        public string OurInningsCommentary { get; set; }
+        public string TheirInningsCommentary { get; set; }
+
+        public static BallByBallInningsStatus NotStarted(int matchId)
+        {
+            return new BallByBallInningsStatus
+            {
+                OurInningsStatus = InningsStatus.NotStarted,
+                TheirInningsStatus = InningsStatus.NotStarted,
+                MatchId = matchId,
+                OurInningsWasDeclared = false,
+                TheirInningsWasDeclared = false,
+                OurInningsCommentary = "",
+                TheirInningsCommentary = ""
+            };
         }
     }
 }

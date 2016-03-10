@@ -13,13 +13,15 @@ namespace CricketClubMiddle.Stats
         private readonly List<PlayerState> playerStates;
         private readonly int matchId;
         private readonly OppositionInnings oppositionInnings;
+        private readonly BallByBallInningsStatus inningsStatus;
 
-        private BallByBallMatch(List<Over> overs, List<PlayerState> playerStates, int matchId, OppositionInnings oppositionInnings)
+        private BallByBallMatch(List<Over> overs, List<PlayerState> playerStates, int matchId, OppositionInnings oppositionInnings, BallByBallInningsStatus inningsStatus)
         {
             this.overs = overs;
             this.playerStates = playerStates;
             this.matchId = matchId;
             this.oppositionInnings = oppositionInnings;
+            this.inningsStatus = inningsStatus;
         }
 
         public int LastCompletedOver
@@ -29,14 +31,14 @@ namespace CricketClubMiddle.Stats
 
         public List<Over> Overs => overs;
 
-        public bool OppositionInningsComplete => oppositionInnings.IsComplete;
+        public bool OppositionInningsComplete => inningsStatus.TheirInningsStatus == InningsStatus.Completed;
         public int OppositionOver => oppositionInnings.Details.Any() ? oppositionInnings.Details.Max(d => d.Over) : 0;
         public int OppositionScore => oppositionInnings.Details.Any() ? oppositionInnings.Details.OrderBy(d => d.Over).Last().Score : 0;
 
         public static BallByBallMatch Load(int matchId)
         {
             var dao = new Dao();
-            return new BallByBallMatch(dao.GetAllBallsForMatch(matchId), dao.GetPlayerStates(matchId), matchId, dao.GetOppositionInnings(matchId));
+            return new BallByBallMatch(dao.GetAllBallsForMatch(matchId), dao.GetPlayerStates(matchId), matchId, dao.GetOppositionInnings(matchId), dao.GetInningsStatus(matchId));
         }
 
         public Dictionary<int, int> GetPlayerScores(HashSet<int> playerIds)
@@ -46,7 +48,7 @@ namespace CricketClubMiddle.Stats
 
         public MatchState GetMatchState()
         {
-            return new MatchState()
+            return new MatchState
             {
                 Bowlers = overs.SelectMany(o=>o.Balls).Select(b=>b.Bowler).Distinct().ToArray(),
                 LastCompletedOver = !overs.Any() ? 0 : overs.Max(o=>o.OverNumber),
@@ -344,6 +346,11 @@ namespace CricketClubMiddle.Stats
                 }
             }
             return liveExtras;
+        }
+
+        public BallByBallInningsStatus GetInningsStatus()
+        {
+            return inningsStatus;
         }
     }
 }

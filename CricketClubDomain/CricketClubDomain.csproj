@@ -96,10 +96,12 @@
     <Compile Include="ExtrasData.cs" />
     <Compile Include="FoWDataLine.cs" />
     <Compile Include="HonorsBoardEntry.cs" />
+    <Compile Include="InningsStatus.cs" />
     <Compile Include="MatchData.cs" />
     <Compile Include="MatchReportData.cs" />
     <Compile Include="MatchState.cs" />
     <Compile Include="NewsData.cs" />
+    <Compile Include="NextInnings.cs" />
     <Compile Include="OppositionInnings.cs" />
     <Compile Include="OppositionInningsDetails.cs" />
     <Compile Include="Over.cs" />

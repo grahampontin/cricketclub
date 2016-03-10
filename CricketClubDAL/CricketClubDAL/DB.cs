@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.OleDb;
 using System.Linq;
+using CricketClubDomain;
 
 namespace CricketClubDAL
 {
@@ -41,6 +42,13 @@ namespace CricketClubDAL
             }
             
             return connectionString;
+        }
+
+        public T ExecuteSQLAndReturnFirstRow<T>(string sql, Func<Row, T> rowExtractorFunc, T defaultIfNone) where T : class
+        {
+            var allRows = ExecuteSqlAndReturnAllRows(sql, rowExtractorFunc).ToList();
+            var first = allRows.FirstOrDefault();
+            return first ?? defaultIfNone;
         }
 
         public DataRow ExecuteSQLAndReturnFirstRow(string sql)
@@ -203,6 +211,11 @@ namespace CricketClubDAL
                 return false;
             }
             return Convert.ToBoolean(value);
+        }
+
+        public T GetEnum<T>(string columnName)
+        {
+            return (T) Enum.Parse(typeof (T), GetString(columnName));
         }
     }
 }

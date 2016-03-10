@@ -636,7 +636,17 @@ namespace CricketClubMiddle
                 data.WasDeclarationGame = ballByBallMatchConditions.Declaration;
                 data.Overs = ballByBallMatchConditions.Overs;
 
-                dao.StartBallByBallCoverage(ID, ballByBallMatchConditions.PlayerIds, this.data);    
+                dao.StartBallByBallCoverage(ID, ballByBallMatchConditions.PlayerIds, this.data);
+                var inningsStatus = BallByBallInningsStatus.NotStarted(ID);
+                if ((data.WonToss && data.Batted) || (!data.WonToss && !data.Batted))
+                {
+                    inningsStatus.OurInningsStatus = InningsStatus.InProgress;
+                }
+                else
+                {
+                    inningsStatus.TheirInningsStatus = InningsStatus.InProgress;
+                }
+                dao.UpdateInningsStatus(inningsStatus);    
             }
             else
             {
@@ -661,6 +671,18 @@ namespace CricketClubMiddle
             {
                 throw new InvalidOperationException("Cannot add a ball with a blank bowler");
             }
+            var currentBallByBallState = GetCurrentBallByBallState();
+            var inningsStatus = currentBallByBallState.GetInningsStatus();
+            if (Overs <= currentBallByBallState.LastCompletedOver && !WasDeclaration)
+            {
+                throw new InvalidOperationException("this match is only " + Overs + " overs long and we've have that many. Time to poke the end innings button.");
+            }         
+            
+            if (inningsStatus.OurInningsStatus != InningsStatus.InProgress)
+            {
+                inningsStatus.OurInningsStatus = InningsStatus.InProgress;
+                dao.UpdateInningsStatus(inningsStatus); 
+            }
             dao.UpdateCurrentBallByBallState(stateFromClient, ID);
         }
 
@@ -681,7 +703,7 @@ namespace CricketClubMiddle
         {
             get
             {
-                return GetCurrentBallByBallState().OppositionInningsComplete;
+                return GetCurrentBallByBallState().GetInningsStatus().TheirInningsStatus==InningsStatus.Completed;
             }
         }
 
@@ -690,12 +712,21 @@ namespace CricketClubMiddle
             get { return (TossWinner == Us && !TossWinnerBatted) || (TossWinner != Us && TossWinnerBatted); } 
         }
 
-        public bool OurInningsComplete
+        public bool OurInningsInProgress
         {
             get
             {
                 var currentBallByBallState = GetCurrentBallByBallState();
-                return currentBallByBallState.LastCompletedOver == Overs || currentBallByBallState.GetMatchState().Players.Count(p => p.State == PlayerState.Out) == 10;
+                return currentBallByBallState.GetInningsStatus().OurInningsStatus == InningsStatus.InProgress;
+            }
+        }
+
+        public bool TheirInningsInProgress
+        {
+            get
+            {
+                var currentBallByBallState = GetCurrentBallByBallState();
+                return currentBallByBallState.GetInningsStatus().TheirInningsStatus == InningsStatus.InProgress;
             }
         }
 
@@ -759,19 +790,12 @@ namespace CricketClubMiddle
             {
                 throw new InvalidOperationException(oppositionInningsDetails.Over + " overs is more than the match conditions stipulate ("+Overs+")");
             }
-            if (oppositionInningsDetails.Over == Overs && !oppositionInningsDetails.EndOfInnings)
-            {
-                throw new InvalidOperationException(oppositionInningsDetails.Over + " overs should be the end of the innings according to the match conditions.");
-            }
             if (oppositionInningsDetails.Wickets > 10)
             {
                 throw new InvalidOperationException("There can't be more than 10 wickets in an innings");
             }
-            if (oppositionInningsDetails.Wickets == 10 && !oppositionInningsDetails.EndOfInnings)
-            {
-                throw new InvalidOperationException("10 wickets should signify the end of the innings don't you think?");
-            }
             var currentBallByBallState = GetCurrentBallByBallState();
+            
             var oppositionOver = currentBallByBallState.OppositionOver;
             var oppositionScore = currentBallByBallState.OppositionScore;
             if (oppositionOver > oppositionInningsDetails.Over)
@@ -782,7 +806,85 @@ namespace CricketClubMiddle
             {
                 throw new InvalidOperationException("They were " + oppositionScore + " after " + oppositionOver + " overs, they can't be " + oppositionInningsDetails.Score + " now.");
             }
+            var inningsStatus = currentBallByBallState.GetInningsStatus();
+            if (inningsStatus.OurInningsStatus == InningsStatus.InProgress)
+            {
+                throw new InvalidOperationException("Our innings is in progress, you can't add their scores until it's done.");
+            }
+            if (inningsStatus.TheirInningsStatus != InningsStatus.InProgress)
+            {
+                inningsStatus.TheirInningsStatus = InningsStatus.InProgress;
+                dao.UpdateInningsStatus(inningsStatus);
+            }
             dao.CreateOrUpdateOppositionInningsDetails(oppositionInningsDetails, ID);
+        }
+
+
+        public NextInnings EndInnings(InningsEndDetails inningsEndDetails)
+        {
+            if (inningsEndDetails.InningsType == "Batting")
+            {
+                var currentBallByBallState = GetCurrentBallByBallState();
+                BallByBallInningsStatus inningsStatus = currentBallByBallState.GetInningsStatus();
+
+                if (inningsStatus.OurInningsStatus != InningsStatus.InProgress)
+                {
+                    throw new InvalidOperationException("Can't finish an innings before it has started");
+                }
+                if (inningsEndDetails.WasDeclared && !WasDeclaration)
+                {
+                    throw new InvalidOperationException("Can't declare in a game that's not a declaration game");
+                }
+                inningsStatus.OurInningsStatus = InningsStatus.Completed;
+                inningsStatus.OurInningsWasDeclared = inningsEndDetails.WasDeclared;
+                inningsStatus.OurInningsCommentary = inningsEndDetails.Commentary;
+                if (inningsStatus.TheirInningsStatus == InningsStatus.NotStarted)
+                {
+                    inningsStatus.TheirInningsStatus = InningsStatus.InProgress;
+                }
+                dao.UpdateInningsStatus(inningsStatus);
+            }
+            else
+            {
+                var currentBallByBallState = GetCurrentBallByBallState();
+                BallByBallInningsStatus inningsStatus = currentBallByBallState.GetInningsStatus();
+
+                if (inningsStatus.TheirInningsStatus == InningsStatus.Completed)
+                {
+                    throw new InvalidOperationException("This innings has already ended.");
+                }
+                if (inningsStatus.TheirInningsStatus != InningsStatus.InProgress)
+                {
+                    throw new InvalidOperationException("Can't finish an innings before it has started");
+                }
+                if (inningsEndDetails.WasDeclared && !WasDeclaration)
+                {
+                    throw new InvalidOperationException("Can't declare in a game that's not a declaration game");
+                }
+                inningsStatus.TheirInningsStatus = InningsStatus.Completed;
+                inningsStatus.TheirInningsWasDeclared = inningsEndDetails.WasDeclared;
+                inningsStatus.TheirInningsCommentary = inningsEndDetails.Commentary;
+                if (inningsStatus.OurInningsStatus == InningsStatus.NotStarted)
+                {
+                    inningsStatus.OurInningsStatus = InningsStatus.InProgress;
+                }
+                dao.UpdateInningsStatus(inningsStatus);
+            }
+            var status = dao.GetInningsStatus(ID);
+            if (status.OurInningsStatus == InningsStatus.Completed &&
+                status.TheirInningsStatus == InningsStatus.Completed)
+            {
+                return NextInnings.GameOver;
+            }
+            if (status.OurInningsStatus == InningsStatus.InProgress)
+            {
+                return NextInnings.Batting;
+            }
+            if (status.TheirInningsStatus == InningsStatus.InProgress)
+            {
+                return NextInnings.Bowling;
+            }
+            throw new ApplicationException("After the end of an innings one innings must be in progess or both complete.");
         }
     }
 }

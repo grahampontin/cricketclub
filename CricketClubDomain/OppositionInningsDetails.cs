@@ -7,13 +7,12 @@ namespace CricketClubDomain
         {
         }
 
-        public OppositionInningsDetails(int over, int score, int wickets, string commentary, bool endOfInnings)
+        public OppositionInningsDetails(int over, int score, int wickets, string commentary)
         {
             Over = over;
             Score = score;
             Wickets = wickets;
             Commentary = commentary;
-            EndOfInnings = endOfInnings;
         }
 
         // Setters for deserializer
@@ -26,7 +25,6 @@ namespace CricketClubDomain
 
         public string Commentary { get; set; }
 
-        public bool EndOfInnings { get; set; }
         // ReSharper restore MemberCanBePrivate.Global
 
     }

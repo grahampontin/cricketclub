@@ -92,6 +92,7 @@
     <Compile Include="BowlerInningsDetails.cs" />
     <Compile Include="Chat.cs" />
     <Compile Include="ChatItem.cs" />
+    <Compile Include="InningsEndDetails.cs" />
     <Compile Include="InternalCache.cs" />
     <Compile Include="Interactive\MatchPhoto.cs" />
     <Compile Include="LiveScorecard.cs" />

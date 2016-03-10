@@ -13,6 +13,5 @@ namespace CricketClubDomain
         }
 
         public List<OppositionInningsDetails> Details => details;
-        public bool IsComplete => details.Any(d => d.EndOfInnings);
     }
 }
