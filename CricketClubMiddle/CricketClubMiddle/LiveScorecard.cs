@@ -10,7 +10,7 @@ namespace CricketClubMiddle
         public BatsmanInningsDetails OtherBatsman { get; set; }
         public BatsmanInningsDetails LastBatsmanOut { get; set; }
         public string Opposition { get; set; }
-        public int LastCompletedOver { get; set; }
+        public int OurLastCompletedOver { get; set; }
         public int OversRemaining { get; set; }
         public bool DeclarationGame { get; set; }
         public int Score { get; set; }
@@ -31,6 +31,12 @@ namespace CricketClubMiddle
         public int Overs { get; set; }
         public bool TossWinnerBatted { get; set; }
         public bool WonToss { get; set; }
+        public string OurInningsStatus { get; set; }
+        public string TheirInningsStatus { get; set; }
+        public int TheirScore { get; set; }
+        public int TheirWickets { get; set; }
+        public int TheirOver { get; set; }
+        public decimal TheirRunRate { get; set; }
     }
 
     public class LiveBattingCard

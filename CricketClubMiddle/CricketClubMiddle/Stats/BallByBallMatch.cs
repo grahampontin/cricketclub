@@ -33,7 +33,14 @@ namespace CricketClubMiddle.Stats
 
         public bool OppositionInningsComplete => inningsStatus.TheirInningsStatus == InningsStatus.Completed;
         public int OppositionOver => oppositionInnings.Details.Any() ? oppositionInnings.Details.Max(d => d.Over) : 0;
-        public int OppositionScore => oppositionInnings.Details.Any() ? oppositionInnings.Details.OrderBy(d => d.Over).Last().Score : 0;
+        public int OppositionScore => oppositionInnings.Details.Any() ? LastOppositionOver.Score : 0;
+
+        private OppositionInningsDetails LastOppositionOver
+        {
+            get { return oppositionInnings.Details.OrderBy(d => d.Over).Last(); }
+        }
+
+        public int OppositionWickets => oppositionInnings.Details.Any() ? LastOppositionOver.Wickets : 0;
 
         public static BallByBallMatch Load(int matchId)
         {

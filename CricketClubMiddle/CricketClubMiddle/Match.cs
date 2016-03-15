@@ -735,51 +735,82 @@ namespace CricketClubMiddle
         public LiveScorecard GetLiveScorecard()
         {
             var currentBallByBallState = GetCurrentBallByBallState();
+            var matchState = currentBallByBallState.GetMatchState();
+
             var liveScorecard = new LiveScorecard();
+            liveScorecard.Opposition = Opposition.Name;
+            liveScorecard.OurInningsStatus = currentBallByBallState.GetInningsStatus().OurInningsStatus.ToString();
+            liveScorecard.TheirInningsStatus = currentBallByBallState.GetInningsStatus().TheirInningsStatus.ToString();
             liveScorecard.WonToss = WonToss;
             liveScorecard.TossWinnerBatted = TossWinnerBatted;
-            liveScorecard.Overs = Overs;
-            liveScorecard.OnStrikeBatsman = currentBallByBallState.GetOnStrikeBatsmanDetails();
-            liveScorecard.OtherBatsman = currentBallByBallState.GetOtherBatsmanDetails();
-            liveScorecard.LastBatsmanOut = currentBallByBallState.GetLastBatsmanOutDetails();
-            liveScorecard.Opposition = Opposition.Name;
-            liveScorecard.LastCompletedOver = currentBallByBallState.LastCompletedOver;
-            liveScorecard.OversRemaining = WasDeclaration ? 0 : Overs - currentBallByBallState.LastCompletedOver;
             liveScorecard.DeclarationGame = WasDeclaration;
-            var matchState = currentBallByBallState.GetMatchState();
-            liveScorecard.Score = matchState.Score;
-            liveScorecard.Wickets = matchState.Players.Count(p => p.State==PlayerState.Out);
-            liveScorecard.RunRate = matchState.LastCompletedOver == 0
-                ? 0
-                : Math.Round((decimal) matchState.Score/matchState.LastCompletedOver, 2);
+            liveScorecard.Overs = Overs;
+            liveScorecard.OversRemaining = OurInningsInProgress
+                ? Overs - currentBallByBallState.LastCompletedOver
+                : Overs - OppositionBallByBallOver;
 
-            var partnershipsAndFallOfWickets = currentBallByBallState.GetPartnershipsAndFallOfWickets();
 
-            liveScorecard.CurrentPartnership =
-                partnershipsAndFallOfWickets.GetPartnershipData(liveScorecard.OnStrikeBatsman.PlayerId,
-                    liveScorecard.OtherBatsman.PlayerId);
-
-            var currentPartnershipIndex = partnershipsAndFallOfWickets.Partnerships.IndexOf(liveScorecard.CurrentPartnership);
-
-            liveScorecard.PreviousPartnership = currentPartnershipIndex == 0 ? null : partnershipsAndFallOfWickets.Partnerships[currentPartnershipIndex - 1];
-            var fallOfWickets = partnershipsAndFallOfWickets.FallOfWickets;
-            liveScorecard.LastManOut = fallOfWickets.Any()? fallOfWickets.Last() : null;
-
-            liveScorecard.FallOfWickets = fallOfWickets;
-
-            liveScorecard.CompletedOvers = currentBallByBallState.GetOverSummaries();
-
-            liveScorecard.BowlerOneDetails = currentBallByBallState.GetBowlerOneDetails();
-            liveScorecard.BowlerTwoDetails = currentBallByBallState.GetBowlerTwoDetails();
-
-            var liveBattingCard = new LiveBattingCard();
-            var liveBattingCardEntries = currentBallByBallState.GetMatchState().Players.Where(ps=>ps.State!=PlayerState.Waiting).ToDictionary(playerState => playerState.Position.ToString(), playerState => new LiveBattingCardEntry
+            if (liveScorecard.OurInningsStatus != InningsStatus.NotStarted.ToString())
             {
-                BatsmanInningsDetails = currentBallByBallState.GetBatsmanInningsDetails(playerState.PlayerId), Wicket = fallOfWickets.FirstOrDefault(f => f.OutGoingPlayerId == playerState.PlayerId)?.Wicket
-            });
-            liveBattingCard.Players = liveBattingCardEntries;
-            liveBattingCard.Extras = currentBallByBallState.GetExtras();
-            liveScorecard.LiveBattingCard = liveBattingCard;
+                liveScorecard.OnStrikeBatsman = currentBallByBallState.GetOnStrikeBatsmanDetails();
+                liveScorecard.OtherBatsman = currentBallByBallState.GetOtherBatsmanDetails();
+                liveScorecard.LastBatsmanOut = currentBallByBallState.GetLastBatsmanOutDetails();
+                liveScorecard.OurLastCompletedOver = currentBallByBallState.LastCompletedOver;
+                liveScorecard.Score = matchState.Score;
+                liveScorecard.Wickets = matchState.Players.Count(p => p.State == PlayerState.Out);
+                liveScorecard.RunRate = matchState.LastCompletedOver == 0
+                    ? 0
+                    : Math.Round((decimal) matchState.Score/matchState.LastCompletedOver, 2);
+
+                var partnershipsAndFallOfWickets = currentBallByBallState.GetPartnershipsAndFallOfWickets();
+
+                liveScorecard.CurrentPartnership =
+                    partnershipsAndFallOfWickets.GetPartnershipData(liveScorecard.OnStrikeBatsman.PlayerId,
+                        liveScorecard.OtherBatsman.PlayerId);
+
+                var currentPartnershipIndex =
+                    partnershipsAndFallOfWickets.Partnerships.IndexOf(liveScorecard.CurrentPartnership);
+
+                liveScorecard.PreviousPartnership = currentPartnershipIndex == 0
+                    ? null
+                    : partnershipsAndFallOfWickets.Partnerships[currentPartnershipIndex - 1];
+                var fallOfWickets = partnershipsAndFallOfWickets.FallOfWickets;
+                liveScorecard.LastManOut = fallOfWickets.Any() ? fallOfWickets.Last() : null;
+
+                liveScorecard.FallOfWickets = fallOfWickets;
+
+                liveScorecard.CompletedOvers = currentBallByBallState.GetOverSummaries();
+
+                liveScorecard.BowlerOneDetails = currentBallByBallState.GetBowlerOneDetails();
+                liveScorecard.BowlerTwoDetails = currentBallByBallState.GetBowlerTwoDetails();
+
+                var liveBattingCard = new LiveBattingCard();
+                var liveBattingCardEntries =
+                    currentBallByBallState.GetMatchState()
+                        .Players.Where(ps => ps.State != PlayerState.Waiting)
+                        .ToDictionary(playerState => playerState.Position.ToString(),
+                            playerState => new LiveBattingCardEntry
+                            {
+                                BatsmanInningsDetails =
+                                    currentBallByBallState.GetBatsmanInningsDetails(playerState.PlayerId),
+                                Wicket =
+                                    fallOfWickets.FirstOrDefault(f => f.OutGoingPlayerId == playerState.PlayerId)?
+                                        .Wicket
+                            });
+                liveBattingCard.Players = liveBattingCardEntries;
+                liveBattingCard.Extras = currentBallByBallState.GetExtras();
+                liveScorecard.LiveBattingCard = liveBattingCard;
+            }
+
+            if (liveScorecard.TheirInningsStatus != InningsStatus.NotStarted.ToString())
+            {
+                liveScorecard.TheirScore = currentBallByBallState.OppositionScore;
+                liveScorecard.TheirWickets = currentBallByBallState.OppositionWickets;
+                liveScorecard.TheirOver = currentBallByBallState.OppositionOver;
+                liveScorecard.TheirRunRate = liveScorecard.TheirOver == 0
+                    ? 0
+                    : Math.Round(liveScorecard.TheirScore/(decimal) liveScorecard.TheirOver, 2);
+            }
 
             return liveScorecard;
         }
