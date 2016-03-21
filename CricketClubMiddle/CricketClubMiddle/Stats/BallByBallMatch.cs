@@ -35,6 +35,8 @@ namespace CricketClubMiddle.Stats
         public int OppositionOver => oppositionInnings.Details.Any() ? oppositionInnings.Details.Max(d => d.Over) : 0;
         public int OppositionScore => oppositionInnings.Details.Any() ? LastOppositionOver.Score : 0;
 
+        public List<OppositionInningsDetails> OppositionOvers => oppositionInnings.Details; 
+
         private OppositionInningsDetails LastOppositionOver
         {
             get { return oppositionInnings.Details.OrderBy(d => d.Over).Last(); }
@@ -91,7 +93,12 @@ namespace CricketClubMiddle.Stats
 
         private int GetOnStrikeBatsman()
         {
-            var lastBall = overs.Last().Balls.Last();
+            var battingPlayers = playerStates.Where(p => p.State == PlayerState.Batting).Select(p => p.PlayerId).ToList();
+            var lastBall = GetSortedBallsLastToFirst().Where(b => battingPlayers.Contains(b.Batsman)).FirstOrDefault();
+            if (lastBall == null)
+            {
+                return battingPlayers.First();
+            }
             var onStrikeBatsman = lastBall.Batsman;
             return onStrikeBatsman;
         }
@@ -250,12 +257,16 @@ namespace CricketClubMiddle.Stats
         public BowlerInningsDetails GetBowlerTwoDetails()
         {
             string bowlerTwo = GetBowlerTwo();
+            if (string.IsNullOrEmpty(bowlerTwo))
+            {
+                return new BowlerInningsDetails();
+            }
             return GetBowlerDetails(bowlerTwo);
         }
 
         private string GetBowlerTwo()
         {
-            return GetSortedBallsLastToFirst().Select(b => b.Bowler).First(b => b != GetBowlerOne());
+            return GetSortedBallsLastToFirst().Select(b => b.Bowler).FirstOrDefault(b => b != GetBowlerOne());
         }
 
         private BowlerInningsDetails GetBowlerDetails(string bowlerName)
@@ -358,6 +369,23 @@ namespace CricketClubMiddle.Stats
         public BallByBallInningsStatus GetInningsStatus()
         {
             return inningsStatus;
+        }
+
+        public string GetWonOrLost(Team teamBattingFirst)
+        {
+            var oppositionScore = OppositionScore;
+            var ourScore = GetScore();
+            if (ourScore == oppositionScore)
+            {
+                return " drew with ";
+            }
+
+            if (teamBattingFirst.IsUs)
+            {
+                return ourScore > oppositionScore ? " beat " : " lost to ";
+            }
+
+            return ourScore > oppositionScore ? " lost to " : " beat ";
         }
     }
 }

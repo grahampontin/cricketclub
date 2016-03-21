@@ -60,6 +60,8 @@ namespace CricketClubMiddle
             }
         }
 
+        public bool IsUs => ID == 0;
+
         public void Save()
         {
             myDAO.UpdateTeam(_teamData);

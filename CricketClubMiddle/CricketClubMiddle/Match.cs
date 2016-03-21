@@ -736,11 +736,12 @@ namespace CricketClubMiddle
         {
             var currentBallByBallState = GetCurrentBallByBallState();
             var matchState = currentBallByBallState.GetMatchState();
+            var inningsStatus = currentBallByBallState.GetInningsStatus();
 
             var liveScorecard = new LiveScorecard();
             liveScorecard.Opposition = Opposition.Name;
-            liveScorecard.OurInningsStatus = currentBallByBallState.GetInningsStatus().OurInningsStatus.ToString();
-            liveScorecard.TheirInningsStatus = currentBallByBallState.GetInningsStatus().TheirInningsStatus.ToString();
+            liveScorecard.OurInningsStatus = inningsStatus.OurInningsStatus.ToString();
+            liveScorecard.TheirInningsStatus = inningsStatus.TheirInningsStatus.ToString();
             liveScorecard.WonToss = WonToss;
             liveScorecard.TossWinnerBatted = TossWinnerBatted;
             liveScorecard.DeclarationGame = WasDeclaration;
@@ -748,9 +749,20 @@ namespace CricketClubMiddle
             liveScorecard.OversRemaining = OurInningsInProgress
                 ? Overs - currentBallByBallState.LastCompletedOver
                 : Overs - OppositionBallByBallOver;
+            liveScorecard.IsFirstInnings = inningsStatus.OurInningsStatus == InningsStatus.NotStarted ||
+                                           inningsStatus.TheirInningsStatus == InningsStatus.NotStarted;
+
+            liveScorecard.IsMatchComplete = inningsStatus.OurInningsStatus == InningsStatus.Completed &&
+                                           inningsStatus.TheirInningsStatus == InningsStatus.Completed;
+
+            if (liveScorecard.IsMatchComplete)
+            {
+                var teamBattingFirst = TeamBattingFirst();
+                liveScorecard.ResultText = teamBattingFirst.Name + currentBallByBallState.GetWonOrLost(teamBattingFirst) + TeamBattingSecond().Name + " by " + 
+            }
 
 
-            if (liveScorecard.OurInningsStatus != InningsStatus.NotStarted.ToString())
+            if (liveScorecard.OurInningsStatus != InningsStatus.NotStarted.ToString() && currentBallByBallState.Overs.Any())
             {
                 liveScorecard.OnStrikeBatsman = currentBallByBallState.GetOnStrikeBatsmanDetails();
                 liveScorecard.OtherBatsman = currentBallByBallState.GetOtherBatsmanDetails();
@@ -810,10 +822,13 @@ namespace CricketClubMiddle
                 liveScorecard.TheirRunRate = liveScorecard.TheirOver == 0
                     ? 0
                     : Math.Round(liveScorecard.TheirScore/(decimal) liveScorecard.TheirOver, 2);
+                liveScorecard.TheirCompletedOvers = currentBallByBallState.OppositionOvers;
+
             }
 
             return liveScorecard;
         }
+        
 
         public void UpdateOppositionScore(OppositionInningsDetails oppositionInningsDetails)
         {

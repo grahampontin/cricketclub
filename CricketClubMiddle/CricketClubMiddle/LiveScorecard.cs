@@ -37,6 +37,9 @@ namespace CricketClubMiddle
         public int TheirWickets { get; set; }
         public int TheirOver { get; set; }
         public decimal TheirRunRate { get; set; }
+        public bool IsFirstInnings { get; set; }
+        public List<OppositionInningsDetails> TheirCompletedOvers { get; set; }
+        public bool IsMatchComplete { get; set; }
     }
 
     public class LiveBattingCard

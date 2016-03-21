@@ -34,7 +34,19 @@ namespace CricketClubMiddle.Stats
         public int Score => balls.Sum(b => b.Amount);
     
 
-        public decimal RunRate => Math.Round((decimal)Score*6/BallByBallHelpers.GetBallCountExcludingExtras(balls),2);
+        public decimal RunRate
+        {
+            get
+            {
+                var ballCountExcludingExtras = BallByBallHelpers.GetBallCountExcludingExtras(balls);
+                if (ballCountExcludingExtras == 0)
+                {
+                    return 0;
+                }
+                 
+                return Math.Round((decimal) Score*6/ballCountExcludingExtras, 2);
+            }
+        }
 
         public string OversAsString
         {
