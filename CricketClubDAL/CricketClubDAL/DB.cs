@@ -33,6 +33,10 @@ namespace CricketClubDAL
                 {
                     key = "BigPC";
                 }
+                if (Environment.MachineName.Contains("LAPTOP"))
+                {
+                    key = "Laptop";
+                }
                 ConnectionStringSettings cnxStr = ConfigurationManager.ConnectionStrings[key];
                 Console.Out.WriteLine("Connecting to: " + key + " @" + cnxStr.ConnectionString);
                 if (cnxStr == null)

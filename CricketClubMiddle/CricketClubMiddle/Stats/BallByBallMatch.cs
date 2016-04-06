@@ -371,7 +371,7 @@ namespace CricketClubMiddle.Stats
             return inningsStatus;
         }
 
-        public string GetWonOrLost(Team teamBattingFirst)
+        public string GetResultText(Team teamBattingFirst, Team teamBattingSecond)
         {
             var oppositionScore = OppositionScore;
             var ourScore = GetScore();
@@ -380,12 +380,41 @@ namespace CricketClubMiddle.Stats
                 return " drew with ";
             }
 
+            int teamBattingFirstScore;
+            int teamBattingSecondScore;
             if (teamBattingFirst.IsUs)
             {
-                return ourScore > oppositionScore ? " beat " : " lost to ";
+                teamBattingFirstScore = ourScore;
+                teamBattingSecondScore = oppositionScore;
+            }
+            else
+            {
+                teamBattingFirstScore = oppositionScore;
+                teamBattingSecondScore = ourScore;
             }
 
-            return ourScore > oppositionScore ? " lost to " : " beat ";
+            if (teamBattingFirstScore > teamBattingSecondScore)
+            {
+                var margin = teamBattingFirstScore - teamBattingSecondScore;
+                return teamBattingFirst.Name + " beat " + teamBattingSecond.Name + " by " + margin + " runs";
+            }
+            else
+            {
+                return teamBattingSecond.Name + " beat " + teamBattingFirst.Name + " by " + GetWicketsDown(teamBattingSecond) + " wickets";
+            }
+
+        }
+
+        private int GetWicketsDown(Team teamBattingSecond)
+        {
+            if (teamBattingSecond.IsUs)
+            {
+                return GetMatchState().Players.Count(p => p.State == PlayerState.Out);
+            }
+            else
+            {
+                return OppositionWickets;
+            }
         }
     }
 }

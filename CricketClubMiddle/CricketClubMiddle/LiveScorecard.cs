@@ -40,6 +40,9 @@ namespace CricketClubMiddle
         public bool IsFirstInnings { get; set; }
         public List<OppositionInningsDetails> TheirCompletedOvers { get; set; }
         public bool IsMatchComplete { get; set; }
+        public string ResultText { get; set; }
+        public string OurInningsCommentary { get; set; }
+        public string TheirInningsCommentary { get; set; }
     }
 
     public class LiveBattingCard

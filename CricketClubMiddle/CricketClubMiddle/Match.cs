@@ -741,7 +741,9 @@ namespace CricketClubMiddle
             var liveScorecard = new LiveScorecard();
             liveScorecard.Opposition = Opposition.Name;
             liveScorecard.OurInningsStatus = inningsStatus.OurInningsStatus.ToString();
+            liveScorecard.OurInningsCommentary = inningsStatus.OurInningsCommentary;
             liveScorecard.TheirInningsStatus = inningsStatus.TheirInningsStatus.ToString();
+            liveScorecard.TheirInningsCommentary = inningsStatus.TheirInningsCommentary;
             liveScorecard.WonToss = WonToss;
             liveScorecard.TossWinnerBatted = TossWinnerBatted;
             liveScorecard.DeclarationGame = WasDeclaration;
@@ -757,8 +759,7 @@ namespace CricketClubMiddle
 
             if (liveScorecard.IsMatchComplete)
             {
-                var teamBattingFirst = TeamBattingFirst();
-                liveScorecard.ResultText = teamBattingFirst.Name + currentBallByBallState.GetWonOrLost(teamBattingFirst) + TeamBattingSecond().Name + " by " + 
+                liveScorecard.ResultText = currentBallByBallState.GetResultText(TeamBattingFirst(), TeamBattingSecond());
             }
 
 
