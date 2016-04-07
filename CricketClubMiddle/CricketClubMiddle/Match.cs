@@ -62,6 +62,10 @@ namespace CricketClubMiddle
             get { return MatchDate.DayOfWeek.ToString().Substring(0, 3) + " " + MatchDate.ToLongDateString(); }
         }
 
+        public string MatchDateStartString => MatchDate.ToString("yyyy-MM-dd") + " 10:00";
+
+        public string MatchDateEndString => MatchDate.ToString("yyyy-MM-dd") + " 19:00";
+
         public MatchType Type
         {
             get { return (MatchType) data.MatchType; }
