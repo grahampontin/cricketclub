@@ -800,23 +800,8 @@ namespace CricketClubMiddle
 
                 liveScorecard.BowlerOneDetails = currentBallByBallState.GetBowlerOneDetails();
                 liveScorecard.BowlerTwoDetails = currentBallByBallState.GetBowlerTwoDetails();
-
-                var liveBattingCard = new LiveBattingCard();
-                var liveBattingCardEntries =
-                    currentBallByBallState.GetMatchState()
-                        .Players.Where(ps => ps.State != PlayerState.Waiting)
-                        .ToDictionary(playerState => playerState.Position.ToString(),
-                            playerState => new LiveBattingCardEntry
-                            {
-                                BatsmanInningsDetails =
-                                    currentBallByBallState.GetBatsmanInningsDetails(playerState.PlayerId),
-                                Wicket =
-                                    fallOfWickets.FirstOrDefault(f => f.OutGoingPlayerId == playerState.PlayerId)?
-                                        .Wicket
-                            });
-                liveBattingCard.Players = liveBattingCardEntries;
-                liveBattingCard.Extras = currentBallByBallState.GetExtras();
-                liveScorecard.LiveBattingCard = liveBattingCard;
+                liveScorecard.LiveBattingCard = GetLiveBattingCard(currentBallByBallState, fallOfWickets);
+                liveScorecard.LiveBowlingCard = GetLiveBowlingCard(currentBallByBallState);
             }
 
             if (liveScorecard.TheirInningsStatus != InningsStatus.NotStarted.ToString())
@@ -833,7 +818,37 @@ namespace CricketClubMiddle
 
             return liveScorecard;
         }
-        
+
+        private List<BowlerInningsDetails> GetLiveBowlingCard(BallByBallMatch currentBallByBallState)
+        {
+            var bowlerInningsDetailses = currentBallByBallState.Overs.SelectMany(o => o.Balls)
+                .Select(b => b.Bowler)
+                .Distinct()
+                .Select(currentBallByBallState.GetBowlerDetails)
+                .ToList();
+            return bowlerInningsDetailses;
+        }
+
+        private static LiveBattingCard GetLiveBattingCard(BallByBallMatch currentBallByBallState, List<FallOfWicket> fallOfWickets)
+        {
+            var liveBattingCard = new LiveBattingCard();
+            var liveBattingCardEntries =
+                currentBallByBallState.GetMatchState()
+                    .Players.Where(ps => ps.State != PlayerState.Waiting)
+                    .ToDictionary(playerState => playerState.Position.ToString(),
+                        playerState => new LiveBattingCardEntry
+                        {
+                            BatsmanInningsDetails =
+                                currentBallByBallState.GetBatsmanInningsDetails(playerState.PlayerId),
+                            Wicket =
+                                fallOfWickets.FirstOrDefault(f => f.OutGoingPlayerId == playerState.PlayerId)?
+                                    .Wicket
+                        });
+            liveBattingCard.Players = liveBattingCardEntries;
+            liveBattingCard.Extras = currentBallByBallState.GetExtras();
+            return liveBattingCard;
+        }
+
 
         public void UpdateOppositionScore(OppositionInningsDetails oppositionInningsDetails)
         {

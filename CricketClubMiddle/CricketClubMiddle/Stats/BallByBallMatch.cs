@@ -269,7 +269,7 @@ namespace CricketClubMiddle.Stats
             return GetSortedBallsLastToFirst().Select(b => b.Bowler).FirstOrDefault(b => b != GetBowlerOne());
         }
 
-        private BowlerInningsDetails GetBowlerDetails(string bowlerName)
+        public BowlerInningsDetails GetBowlerDetails(string bowlerName)
         {
             var bowlerInningsDetails = new BowlerInningsDetails();
             bowlerInningsDetails.Name = bowlerName;

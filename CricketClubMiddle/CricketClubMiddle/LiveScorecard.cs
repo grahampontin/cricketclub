@@ -43,6 +43,7 @@ namespace CricketClubMiddle
         public string ResultText { get; set; }
         public string OurInningsCommentary { get; set; }
         public string TheirInningsCommentary { get; set; }
+        public List<BowlerInningsDetails> LiveBowlingCard { get; set; }
     }
 
     public class LiveBattingCard
@@ -64,5 +65,7 @@ namespace CricketClubMiddle
         public int Wides;
         public int NoBalls;
         public int Penalty;
+        public int Total => Byes + LegByes + Wides + NoBalls + Penalty;
+        public string DetailString => Byes + "b " + LegByes + "lb " + Wides + "wd " + NoBalls + "nb " + Penalty + "p";
     }
 }

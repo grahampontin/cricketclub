@@ -16,6 +16,15 @@ namespace CricketClubDomain
         public string Bowler;
 
         public bool IsRunOut => ModeOfDismissal == "run out";
+        public bool IsCaught => ModeOfDismissal == "caught";
+        public bool IsCaughtAndBowled => ModeOfDismissal == "c&b";
+        public bool IsBowled => ModeOfDismissal == "bowled";
+        public bool IsLbw => ModeOfDismissal == "lbw";
+        public bool IsStumped => ModeOfDismissal == "stumped";
+        public bool IsHitWicket => ModeOfDismissal == "hit wicket";
+        public bool IsRetired => ModeOfDismissal == "retired";
+        public bool IsRetiredHurt => ModeOfDismissal == "retired hurt";
+
 
         public override string ToString()
         {
