@@ -795,6 +795,7 @@ namespace CricketClubMiddle
                 liveScorecard.LastManOut = fallOfWickets.Any() ? fallOfWickets.Last() : null;
 
                 liveScorecard.FallOfWickets = fallOfWickets;
+                liveScorecard.Partnerships = partnershipsAndFallOfWickets.Partnerships;
 
                 liveScorecard.CompletedOvers = currentBallByBallState.GetOverSummaries();
 

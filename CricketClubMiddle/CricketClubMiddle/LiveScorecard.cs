@@ -44,6 +44,7 @@ namespace CricketClubMiddle
         public string OurInningsCommentary { get; set; }
         public string TheirInningsCommentary { get; set; }
         public List<BowlerInningsDetails> LiveBowlingCard { get; set; }
+        public List<Partnership> Partnerships { get; set; }
     }
 
     public class LiveBattingCard
