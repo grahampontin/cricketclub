@@ -462,7 +462,7 @@ namespace CricketClubMiddle
 
         public static IList<Match> GetFixtures()
         {
-            return (GetAll().Where(a => a.MatchDate > DateTime.Today)).OrderBy(a => a.MatchDate).ToList();
+            return (GetAll().Where(a => a.MatchDate >= DateTime.Today)).OrderBy(a => a.MatchDate).ToList();
         }
 
         public static IList<Match> GetResults()
