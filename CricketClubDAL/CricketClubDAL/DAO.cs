@@ -1406,7 +1406,7 @@ namespace CricketClubDAL
             {
                 foreach (int playerId in playerIds)
                 {
-                    db.ExecuteInsertOrUpdate($"insert into ballbyball_team(match_id,player_id) values ({id},{playerId})");
+                    db.ExecuteInsertOrUpdate($"insert into ballbyball_team(match_id,player_id, as_of_over) values ({id},{playerId}, 0)");
                 } 
                 UpdateMatch(matchConditions);   
             } catch(Exception ex)
@@ -1428,10 +1428,12 @@ namespace CricketClubDAL
         public List<PlayerState> GetPlayerStates(int matchId)
         {
             var result =
-                db.QueryMany("select * from ballbyball_team t, players p where match_id=" + matchId +
-                             " and t.player_id = p.player_id");
-            var playerStates = result.Select(PlayerStateFromRow).ToList();
-            return playerStates;
+                db.QueryMany(
+                    $"select * from ballbyball_team t, players p where match_id={matchId} " +
+                    $"and t.player_id = p.player_id");
+            var groupsById = result.Select(PlayerStateFromRow).GroupBy(p => p.PlayerId);
+
+            return groupsById.Select(group => group.OrderByDescending(p => p.AsOfOver).First()).ToList();
         }
 
 
@@ -1500,17 +1502,21 @@ namespace CricketClubDAL
         {
             return new PlayerState
             {
-                PlayerId = row.GetInt("player_id"), State = row.GetString("state"), PlayerName = row.GetString("player_name"), Position = row.GetInt("position")
+                PlayerId = row.GetInt("player_id"),
+                State = row.GetString("state"),
+                PlayerName = row.GetString("player_name"),
+                Position = row.GetInt("position"),
+                AsOfOver = row.GetInt("as_of_over")
             };
         }
 
         public void UpdateCurrentBallByBallState(MatchState matchState, int matchId)
         {
+            int thisOver = matchState.LastCompletedOver + 1;
             foreach (var playerState in matchState.Players)
             {
-                UpdatePlayerState(playerState, matchId);
+                UpdatePlayerState(playerState, matchId, thisOver);
             }
-            int thisOver = matchState.LastCompletedOver + 1;
             AddOverCommentary(matchState.Over, matchId, thisOver);
             int ballNumber = 0;
             foreach (var ball in matchState.Over.Balls)
@@ -1553,13 +1559,9 @@ namespace CricketClubDAL
                                                          ballByBallCode + "'");
         }
 
-        private void UpdatePlayerState(PlayerState playerState, int matchId)
+        private void UpdatePlayerState(PlayerState playerState, int matchId, int thisOver)
         {
-            db.ExecuteInsertOrUpdate("update ballbyball_team set state='" + playerState.State + "' where match_id = " +
-                                     matchId + " and player_id = " + playerState.PlayerId);
-            db.ExecuteInsertOrUpdate("update ballbyball_team set position='" + playerState.Position + "' where match_id = " +
-                                     matchId + " and player_id = " + playerState.PlayerId);
-
+            db.ExecuteInsertOrUpdate($"insert into ballbyball_team (match_id,player_id, state, position, as_of_over) values ({matchId},{playerState.PlayerId},'{playerState.State}', {playerState.Position}, {thisOver})");
         }
 
         public OppositionInnings GetOppositionInnings(int matchId)
@@ -1629,6 +1631,16 @@ namespace CricketClubDAL
                     + inningsStatus.TheirInningsWasDeclared + "'," + inningsStatus.MatchId+")");
             }
             
+        }
+
+        public void DeleteBallByBallOver(int matchId, int lastCompletedOver)
+        {
+            db.ExecuteInsertOrUpdate("delete from ballbyball_data where match_id = " + matchId + " and over_number = " +
+                                     lastCompletedOver);
+            db.ExecuteInsertOrUpdate("delete from ballbyball_team where match_id = " + matchId + " and as_of_over = " +
+                                     lastCompletedOver);
+            db.ExecuteInsertOrUpdate("delete from ballbyball_commentary where match_id = " + matchId + " and over_number = " +
+                                     lastCompletedOver);
         }
     }
 

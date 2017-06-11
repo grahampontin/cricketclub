@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace CricketClubDomain
 {
@@ -14,7 +15,7 @@ namespace CricketClubDomain
 
         protected bool Equals(MatchState other)
         {
-            return LastCompletedOver == other.LastCompletedOver && Equals(Over, other.Over) && Equals(Players, other.Players) && RunRate == other.RunRate && Score == other.Score && Equals(Bowlers, other.Bowlers);
+            return LastCompletedOver == other.LastCompletedOver && Equals(Over, other.Over) && Players.SequenceEqual(other.Players) && RunRate == other.RunRate && Score == other.Score && Bowlers.SequenceEqual(other.Bowlers);
         }
 
         public override bool Equals(object obj)

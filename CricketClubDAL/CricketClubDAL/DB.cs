@@ -38,10 +38,11 @@ namespace CricketClubDAL
                     key = "Laptop";
                 }
                 ConnectionStringSettings cnxStr = ConfigurationManager.ConnectionStrings[key];
-                Console.Out.WriteLine("Connecting to: " + key + " @" + cnxStr.ConnectionString);
                 if (cnxStr == null)
                     throw new ConfigurationErrorsException("ConnectionString '" + key +
                                                            "' was not found in the configuration file.");
+                Console.Out.WriteLine("Connecting to: " + key + " @" + cnxStr.ConnectionString);
+                
                 connectionString = cnxStr.ConnectionString;
             }
             

@@ -11,6 +11,8 @@ namespace CricketClubDomain
         public const string Waiting = "Waiting";
         public const string Out = "Out";
 
+        public int AsOfOver;
+
         protected bool Equals(PlayerState other)
         {
             return PlayerId == other.PlayerId && string.Equals(PlayerName, other.PlayerName) && Position == other.Position && string.Equals(State, other.State) && CurrentScore == other.CurrentScore;

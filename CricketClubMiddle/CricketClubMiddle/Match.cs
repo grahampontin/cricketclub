@@ -953,5 +953,10 @@ namespace CricketClubMiddle
             }
             throw new ApplicationException("After the end of an innings one innings must be in progess or both complete.");
         }
+
+        public void DeleteLastBallByBallOver()
+        {
+            dao.DeleteBallByBallOver(ID, GetCurrentBallByBallState().LastCompletedOver);
+        }
     }
 }
