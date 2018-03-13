@@ -25,3 +25,4 @@ C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\obj\Debug\CricketClubMiddle.pdb
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\bin\Debug\jqPlot.dll
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\bin\Debug\jqPlot.pdb
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\obj\Debug\CricketClubMiddle.csproj.CoreCompileInputs.cache

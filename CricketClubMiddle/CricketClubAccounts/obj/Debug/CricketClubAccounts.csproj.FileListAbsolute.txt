@@ -3,3 +3,4 @@ C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubAccoun
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubAccounts\obj\Debug\CricketClubAccounts.csprojResolveAssemblyReference.cache
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubAccounts\obj\Debug\CricketClubAccounts.dll
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubAccounts\obj\Debug\CricketClubAccounts.pdb
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubAccounts\obj\Debug\CricketClubAccounts.csproj.CoreCompileInputs.cache

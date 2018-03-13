@@ -57,6 +57,7 @@ namespace CricketClubMiddle.Stats
 
         public MatchState GetMatchState()
         {
+            var sortedOversLastToFirst = overs.OrderBy(o=>o.OverNumber).Reverse().ToList();
             return new MatchState
             {
                 Bowlers = overs.SelectMany(o=>o.Balls).Select(b=>b.Bowler).Distinct().ToArray(),
@@ -64,7 +65,9 @@ namespace CricketClubMiddle.Stats
                 MatchId = matchId,
                 Score = GetScore(),
                 RunRate = !overs.Any() ? 0 :GetScore()/(decimal)overs.Count(),
-                Players = GetPlayerStates()
+                Players = GetPlayerStates(),
+                PreviousBowler = !overs.Any() ? null : sortedOversLastToFirst.Take(1).Single().Balls[0].Bowler,
+                PreviousBowlerButOne = !overs.Any() || overs.Count < 2 ? null : sortedOversLastToFirst.Skip(1).Take(1).Single().Balls[0].Bowler
                 
             };
         }

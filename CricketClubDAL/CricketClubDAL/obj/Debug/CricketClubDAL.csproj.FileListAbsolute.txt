@@ -17,3 +17,4 @@ C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\bin\D
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.csprojResolveAssemblyReference.cache
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.dll
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.pdb
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.csproj.CoreCompileInputs.cache

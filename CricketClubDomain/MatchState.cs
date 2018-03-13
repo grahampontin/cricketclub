@@ -12,6 +12,8 @@ namespace CricketClubDomain
         public int Score;
         public string[] Bowlers;
         public int MatchId;
+        public string PreviousBowler;
+        public string PreviousBowlerButOne;
 
         protected bool Equals(MatchState other)
         {
