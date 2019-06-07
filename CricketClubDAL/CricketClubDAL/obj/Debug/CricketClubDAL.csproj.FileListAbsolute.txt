@@ -18,3 +18,12 @@ C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\D
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.dll
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.pdb
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.csproj.CoreCompileInputs.cache
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\bin\Debug\CricketClubDAL.dll
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\bin\Debug\CricketClubDAL.pdb
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\bin\Debug\CricketClubDomain.dll
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\bin\Debug\CricketClubDomain.pdb
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.csprojAssemblyReference.cache
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.csproj.CoreCompileInputs.cache
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.csproj.CopyComplete
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.dll
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.pdb

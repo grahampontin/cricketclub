@@ -134,10 +134,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\jqplotforcsharp\jqPlot\jqPlot.csproj">
-      <Project>{60cbd334-7816-432d-adbd-eb00933f12e5}</Project>
-      <Name>jqPlot</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\CricketClubDAL\CricketClubDAL\CricketClubDAL.csproj">
       <Project>{1CC6DF73-AC0E-43C9-8B78-7F8023E3AD40}</Project>
       <Name>CricketClubDAL</Name>

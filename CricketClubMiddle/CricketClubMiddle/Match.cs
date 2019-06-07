@@ -26,41 +26,26 @@ namespace CricketClubMiddle
             this.data = data;
         }
 
-        public int ID
-        {
-            get { return data.ID; }
-        }
+        public int ID => data.ID;
 
         public int VenueID
         {
-            get { return data.VenueID; }
-            set { data.VenueID = value; }
+            get => data.VenueID;
+            set => data.VenueID = value;
         }
 
-        public Venue Venue
-        {
-            get
-            {
-                var v = new Venue(VenueID);
-                return v;
-            }
-        }
+        public Venue Venue => new Venue(VenueID);
 
-        public string VenueName
-        {
-            get { return Venue.Name; }
-        }
+        public string VenueName => Venue.Name;
 
         public DateTime MatchDate
         {
-            get { return data.Date; }
-            set { data.Date = value; }
+            get => data.Date;
+            set => data.Date = value;
         }
 
-        public string MatchDateString
-        {
-            get { return MatchDate.DayOfWeek.ToString().Substring(0, 3) + " " + MatchDate.ToLongDateString(); }
-        }
+        public string MatchDateString =>
+            MatchDate.DayOfWeek.ToString().Substring(0, 3) + " " + MatchDate.ToLongDateString();
 
         public string MatchDateStartString => MatchDate.ToString("yyyy-MM-dd") + " 10:00";
 
@@ -68,31 +53,25 @@ namespace CricketClubMiddle
 
         public MatchType Type
         {
-            get { return (MatchType) data.MatchType; }
-            set { data.MatchType = (int) value; }
+            get => (MatchType) data.MatchType;
+            set => data.MatchType = (int) value;
         }
 
         public int OppositionID
         {
-            get { return data.OppositionID; }
-            set { data.OppositionID = value; }
+            get => data.OppositionID;
+            set => data.OppositionID = value;
         }
 
-        public Team Opposition
-        {
-            get { return new Team(OppositionID); }
-        }
+        public Team Opposition => new Team(OppositionID);
 
-        public Team Us
-        {
-            get { return new Team(0); }
-        }
+        public Team Us => new Team(0);
 
         public bool Abandoned
         {
-            get { return data.Abandoned; }
+            get => data.Abandoned;
 
-            set { data.Abandoned = value; }
+            set => data.Abandoned = value;
         }
 
         public Team TossWinner
@@ -106,34 +85,32 @@ namespace CricketClubMiddle
         }
 
         /// <summary>
-        /// Did the special case team (The Village) win the toss - try not to use - prefer TossWinner
+        ///     Did the special case team (The Village) win the toss - try not to use - prefer TossWinner
         /// </summary>
         public bool WonToss
         {
-            get { return data.WonToss; }
-            set { data.WonToss = value; }
+            get => data.WonToss;
+            set => data.WonToss = value;
         }
 
         /// <summary>
-        /// Did the side that won the toss choose to Bat?
+        ///     Did the side that won the toss choose to Bat?
         /// </summary>
         public bool TossWinnerBatted
         {
-            get { return data.Batted; }
-            set { data.Batted = value; }
+            get => data.Batted;
+            set => data.Batted = value;
         }
 
         /// <summary>
-        /// What did the toss winner do? returns "bat" or "field"
+        ///     What did the toss winner do? returns "bat" or "field"
         /// </summary>
         public string TossWinnerElectedTo
         {
             get
             {
-                if (TossWinnerBatted)
-                {
-                    return "bat";
-                }
+                if (TossWinnerBatted) return "bat";
+
                 return "field";
             }
         }
@@ -142,24 +119,20 @@ namespace CricketClubMiddle
         {
             get
             {
-                if (data.HomeOrAway.ToUpper() == "H")
-                {
-                    return HomeOrAway.Home;
-                }
+                if (data.HomeOrAway.ToUpper() == "H") return HomeOrAway.Home;
+
                 return HomeOrAway.Away;
             }
 
-            set { data.HomeOrAway = value.ToString().Substring(0, 1); }
+            set => data.HomeOrAway = value.ToString().Substring(0, 1);
         }
 
         public Team HomeTeam
         {
             get
             {
-                if (HomeOrAway == HomeOrAway.Home)
-                {
-                    return Us;
-                }
+                if (HomeOrAway == HomeOrAway.Home) return Us;
+
                 return Opposition;
             }
         }
@@ -168,38 +141,25 @@ namespace CricketClubMiddle
         {
             get
             {
-                if (HomeOrAway == HomeOrAway.Away)
-                {
-                    return Us;
-                }
+                if (HomeOrAway == HomeOrAway.Away) return Us;
+
                 return Opposition;
             }
         }
 
-        public string HomeTeamName
-        {
-            get { return HomeTeam.Name; }
-        }
+        public string HomeTeamName => HomeTeam.Name;
 
-        public string AwayTeamName
-        {
-            get { return AwayTeam.Name; }
-        }
+        public string AwayTeamName => AwayTeam.Name;
 
         public string HomeTeamScore
         {
             get
             {
-                string result = GetTeamScore(HomeTeam) + " for " + GetTeamWicketsDown(HomeTeam);
+                var result = GetTeamScore(HomeTeam) + " for " + GetTeamWicketsDown(HomeTeam);
                 result = result.Replace("for 10", "all out");
-                if (HomeOrAway == HomeOrAway.Home && WeDeclared)
-                {
-                    result = result + " dec";
-                }
-                if (HomeOrAway == HomeOrAway.Away && TheyDeclared)
-                {
-                    result = result + " dec";
-                }
+                if (HomeOrAway == HomeOrAway.Home && WeDeclared) result = result + " dec";
+
+                if (HomeOrAway == HomeOrAway.Away && TheyDeclared) result = result + " dec";
 
                 return result;
             }
@@ -209,17 +169,13 @@ namespace CricketClubMiddle
         {
             get
             {
-                string result = GetTeamScore(AwayTeam) + " for " + GetTeamWicketsDown(AwayTeam);
+                var result = GetTeamScore(AwayTeam) + " for " + GetTeamWicketsDown(AwayTeam);
                 result = result.Replace("for 10", "all out");
 
-                if (HomeOrAway == HomeOrAway.Away && WeDeclared)
-                {
-                    result = result + " dec";
-                }
-                if (HomeOrAway == HomeOrAway.Home && TheyDeclared)
-                {
-                    result = result + " dec";
-                }
+                if (HomeOrAway == HomeOrAway.Away && WeDeclared) result = result + " dec";
+
+                if (HomeOrAway == HomeOrAway.Home && TheyDeclared) result = result + " dec";
+
                 return result;
             }
         }
@@ -229,13 +185,10 @@ namespace CricketClubMiddle
             get
             {
                 if (Type == MatchType.Declaration)
-                {
-                    if ((GetTeamScore(TeamBattingSecond()) < GetTeamScore(TeamBattingFirst())) &&
+                    if (GetTeamScore(TeamBattingSecond()) < GetTeamScore(TeamBattingFirst()) &&
                         GetTeamWicketsDown(TeamBattingSecond()) < 10)
-                    {
                         return true;
-                    }
-                }
+
                 return false;
             }
         }
@@ -244,10 +197,10 @@ namespace CricketClubMiddle
         {
             get
             {
-                if (GetTeamScore(Us) == GetTeamScore(Opposition) && GetTeamScore(Us) > 0 && GetTeamScore(Opposition) > 0)
-                {
+                if (GetTeamScore(Us) == GetTeamScore(Opposition) && GetTeamScore(Us) > 0 &&
+                    GetTeamScore(Opposition) > 0)
                     return true;
-                }
+
                 return false;
             }
         }
@@ -256,14 +209,10 @@ namespace CricketClubMiddle
         {
             get
             {
-                if (GetTeamScore(Us) > GetTeamScore(Opposition) && !ResultDrawn)
-                {
-                    return Us;
-                }
-                if (GetTeamScore(Us) < GetTeamScore(Opposition) && !ResultDrawn)
-                {
-                    return Opposition;
-                }
+                if (GetTeamScore(Us) > GetTeamScore(Opposition) && !ResultDrawn) return Us;
+
+                if (GetTeamScore(Us) < GetTeamScore(Opposition) && !ResultDrawn) return Opposition;
+
                 return null;
             }
         }
@@ -272,14 +221,10 @@ namespace CricketClubMiddle
         {
             get
             {
-                if (GetTeamScore(Us) < GetTeamScore(Opposition) && !ResultDrawn)
-                {
-                    return Us;
-                }
-                if (GetTeamScore(Us) > GetTeamScore(Opposition) && !ResultDrawn)
-                {
-                    return Opposition;
-                }
+                if (GetTeamScore(Us) < GetTeamScore(Opposition) && !ResultDrawn) return Us;
+
+                if (GetTeamScore(Us) > GetTeamScore(Opposition) && !ResultDrawn) return Opposition;
+
                 return null;
             }
         }
@@ -288,20 +233,16 @@ namespace CricketClubMiddle
         {
             get
             {
-                if (Abandoned)
-                {
-                    return "abandoned";
-                }
+                if (Abandoned) return "abandoned";
+
                 if (Winner != null && Winner.ID == Us.ID)
                 {
-                    if (HomeOrAway == HomeOrAway.Home)
-                    {
-                        return "beat";
-                    }
+                    if (HomeOrAway == HomeOrAway.Home) return "beat";
+
                     return "lost to";
                 }
+
                 if (Winner != null && Winner.ID == Opposition.ID)
-                {
                     switch (HomeOrAway)
                     {
                         case HomeOrAway.Away:
@@ -309,15 +250,11 @@ namespace CricketClubMiddle
                         default:
                             return "lost to";
                     }
-                }
-                if (ResultDrawn)
-                {
-                    return "drew with";
-                }
-                if (ResultTied)
-                {
-                    return "tied with";
-                }
+
+                if (ResultDrawn) return "drew with";
+
+                if (ResultTied) return "tied with";
+
                 return "vs";
             }
         }
@@ -330,155 +267,174 @@ namespace CricketClubMiddle
                 {
                     if (TeamBattingFirst().ID == Winner.ID)
                     {
-                        int margin = GetTeamScore(Winner) - GetTeamScore(Loser);
-                        string resultText = "by " + margin + " runs";
-                        if (margin == 1)
-                        {
-                            resultText = resultText.Substring(0, resultText.Length - 1);
-                        }
+                        var margin = GetTeamScore(Winner) - GetTeamScore(Loser);
+                        var resultText = "by " + margin + " runs";
+                        if (margin == 1) resultText = resultText.Substring(0, resultText.Length - 1);
+
                         return resultText;
                     }
                     else
                     {
-                        int margin = 10 - GetTeamWicketsDown(Winner);
-                        string resultText = "by " + margin + " wickets";
-                        if (margin == 1)
-                        {
-                            resultText = resultText.Substring(0, resultText.Length - 1);
-                        }
+                        var margin = 10 - GetTeamWicketsDown(Winner);
+                        var resultText = "by " + margin + " wickets";
+                        if (margin == 1) resultText = resultText.Substring(0, resultText.Length - 1);
+
                         return resultText;
                     }
                 }
-                else
-                {
-                    if (!Abandoned && !ResultDrawn)
-                    {
-                        return "result not yet in";
-                    }
-                    if (ResultDrawn)
-                    {
-                        return "";
-                    }
-                    return "no result";
-                }
+
+                if (!Abandoned && !ResultDrawn) return "result not yet in";
+
+                if (ResultDrawn) return "";
+
+                return "no result";
             }
         }
 
         public Player Captain
         {
-            get { return new Player(data.CaptainID); }
-            set { data.CaptainID = value.ID; }
+            get => new Player(data.CaptainID);
+            set => data.CaptainID = value.ID;
         }
 
         public Player WicketKeeper
         {
-            get { return new Player(data.WicketKeeperID); }
-            set { data.WicketKeeperID = value.ID; }
+            get => new Player(data.WicketKeeperID);
+            set => data.WicketKeeperID = value.ID;
         }
 
         public int Overs
         {
-            get { return data.Overs; }
-            set { data.Overs = value; }
+            get => data.Overs;
+            set => data.Overs = value;
         }
 
         public bool WasDeclaration
         {
-            get { return data.WasDeclarationGame; }
-            set { data.WasDeclarationGame = value; }
+            get => data.WasDeclarationGame;
+            set => data.WasDeclarationGame = value;
         }
 
         public bool WeDeclared
         {
-            get { return data.WeDeclared; }
-            set { data.WeDeclared = value; }
+            get => data.WeDeclared;
+            set => data.WeDeclared = value;
         }
 
         public bool TheyDeclared
         {
-            get { return data.TheyDeclared; }
-            set { data.TheyDeclared = value; }
+            get => data.TheyDeclared;
+            set => data.TheyDeclared = value;
         }
 
         public double OurInningsLength
         {
-            get { return data.OurInningsLength; }
-            set { data.OurInningsLength = value; }
+            get => data.OurInningsLength;
+            set => data.OurInningsLength = value;
         }
 
         public double TheirInningsLength
         {
-            get { return data.TheirInningsLength; }
-            set { data.TheirInningsLength = value; }
+            get => data.TheirInningsLength;
+            set => data.TheirInningsLength = value;
         }
 
+        public string Description => HomeTeam + " vs " + AwayTeam + " (" + MatchDateString + ")";
+
+        // ReSharper disable once UnusedMember.Global
+        public int BallByBallOver => GetCurrentBallByBallState().LastCompletedOver;
+
+        public bool OppositionInningsComplete => GetCurrentBallByBallState().GetInningsStatus().TheirInningsStatus ==
+                                                 InningsStatus.Completed;
+
+        public bool OppositionBattedFirst =>
+            TossWinner == Us && !TossWinnerBatted || TossWinner != Us && TossWinnerBatted;
+
+        public bool OurInningsInProgress
+        {
+            get
+            {
+                var currentBallByBallState = GetCurrentBallByBallState();
+                return currentBallByBallState.GetInningsStatus().OurInningsStatus == InningsStatus.InProgress;
+            }
+        }
+
+        public bool TheirInningsInProgress
+        {
+            get
+            {
+                var currentBallByBallState = GetCurrentBallByBallState();
+                return currentBallByBallState.GetInningsStatus().TheirInningsStatus == InningsStatus.InProgress;
+            }
+        }
+
+        public int OppositionBallByBallOver => GetCurrentBallByBallState().OppositionOver;
+
         public static Match CreateNewMatch(Team opposition, DateTime matchDay, Venue venue, MatchType type,
-                                           HomeOrAway homeAway)
+            HomeOrAway homeAway)
         {
             var myDao = new Dao();
-            int id = myDao.CreateNewMatch(opposition.ID, matchDay, venue.ID, (int) type,
-                                          homeAway);
+            var id = myDao.CreateNewMatch(opposition.ID, matchDay, venue.ID, (int) type,
+                homeAway);
             return new Match(id);
         }
 
         public static Match GetNextMatch()
         {
             var myDao = new Dao();
-            int matchID = myDao.GetNextMatch(DateTime.Today);
+            var matchID = myDao.GetNextMatch(DateTime.Today);
             if (matchID >= 0)
-            {
                 return new Match(matchID);
-            }
-            else
-            {
-                return null;
-            }
+            return null;
         }
 
         public static Match GetLastMatch()
         {
             var myDao = new Dao();
-            int matchID = myDao.GetPreviousMatch(DateTime.Today);
-            if (matchID >= 0)
-            {
-                return new Match(matchID);
-            }
+            var matchID = myDao.GetPreviousMatch(DateTime.Today);
+            if (matchID >= 0) return new Match(matchID);
+
             return null;
         }
 
         public Match GetPreviousMatch()
         {
             var myDao = new Dao();
-            int matchID = myDao.GetPreviousMatch(MatchDate);
+            var matchID = myDao.GetPreviousMatch(MatchDate);
             if (matchID >= 0)
-            {
                 return new Match(matchID);
-            }
-            else
-            {
-                return null;
-            }
+            return null;
         }
 
         public static IList<Match> GetFixtures()
         {
-            return (GetAll().Where(a => a.MatchDate >= DateTime.Today)).OrderBy(a => a.MatchDate).ToList();
+            return GetAll().Where(a => a.MatchDate >= DateTime.Today).OrderBy(a => a.MatchDate).ToList();
         }
 
         public static IList<Match> GetResults()
         {
-            return (GetAll().Where(a => a.MatchDate < DateTime.Today)).OrderBy(a => a.MatchDate).ToList();
+            return GetAll().Where(a => a.MatchDate < DateTime.Today).OrderBy(a => a.MatchDate).ToList();
         }
 
         public static IList<Match> GetResults(DateTime startDate, DateTime endDate)
         {
-            return (GetResults().Where(a => a.MatchDate > startDate && a.MatchDate < endDate)).ToList();
+            return GetResults().Where(a => a.MatchDate > startDate && a.MatchDate < endDate).ToList();
+        }
+
+        public static IList<Match> GetAll(DateTime fromDate, DateTime toDate, List<MatchType> matchTypes, Venue venue)
+        {
+            return GetAll()
+                .Where(m => fromDate == DateTime.MinValue || m.MatchDate > fromDate)
+                .Where(m => toDate == DateTime.MinValue || m.MatchDate < toDate)
+                .Where(m => matchTypes.IsNullOrEmpty() || matchTypes.Contains(m.Type))
+                .Where(m => venue == null || m.Venue == venue)
+                .ToList();
         }
 
         private static IList<Match> GetAll()
         {
             var dao = new Dao();
-            List<MatchData> data = dao.GetAllMatches();
+            var data = dao.GetAllMatches();
             return (from a in data select new Match(a)).ToList();
         }
 
@@ -506,84 +462,72 @@ namespace CricketClubMiddle
             else
             {
                 if (0 == TossWinner.ID)
-                {
                     teamBattingFirst = Opposition;
-                }
                 else
-                {
                     teamBattingFirst = new Team(0);
-                }
             }
+
             return teamBattingFirst;
         }
 
         public Team TeamBattingSecond()
         {
-            if (TeamBattingFirst().ID == 0)
-            {
-                return Opposition;
-            }
+            if (TeamBattingFirst().ID == 0) return Opposition;
+
             return new Team(0);
         }
 
         public BattingCard GetOurBattingScoreCard()
         {
-            if (ourBatting == null)
-            {
-                ourBatting = new BattingCard(ID, ThemOrUs.Us);
-            }
+            if (ourBatting == null) ourBatting = new BattingCard(ID, ThemOrUs.Us);
+
             return ourBatting;
         }
 
         public BattingCard GetTheirBattingScoreCard()
         {
-            if (theirBatting == null)
-            {
-                theirBatting = new BattingCard(ID, ThemOrUs.Them);
-            }
+            if (theirBatting == null) theirBatting = new BattingCard(ID, ThemOrUs.Them);
+
             return theirBatting;
         }
 
         public BowlingStats GetOurBowlingStats()
         {
-            if (ourBowling == null)
-            {
-                ourBowling = new BowlingStats(ID, ThemOrUs.Us);
-            }
+            if (ourBowling == null) ourBowling = new BowlingStats(ID, ThemOrUs.Us);
+
             return ourBowling;
         }
 
         public BowlingStats GetThierBowlingStats()
         {
-            if (theirBowling == null)
-            {
-                theirBowling = new BowlingStats(ID, ThemOrUs.Them);
-            }
+            if (theirBowling == null) theirBowling = new BowlingStats(ID, ThemOrUs.Them);
+
             return theirBowling;
         }
 
 
         /// <summary>
-        /// Get the score for the home or away team
+        ///     Get the score for the home or away team
         /// </summary>
         /// <param name="team"></param>
         /// <returns></returns>
         public int GetTeamScore(Team team)
         {
-            BattingCard sc = GetScoreCardForTeam(team);
+            var sc = GetScoreCardForTeam(team);
 
-            int score = sc.ScorecardData.Select(a => a.Score).Sum();
+            var score = sc.ScorecardData.Select(a => a.Score).Sum();
             score = score + sc.Extras;
             return score;
         }
 
         public int GetTeamWicketsDown(Team team)
         {
-            BattingCard sc = GetScoreCardForTeam(team);
+            var sc = GetScoreCardForTeam(team);
 
-            int wickets = (sc.ScorecardData.Where(a => a.Dismissal != ModesOfDismissal.NotOut).Where(
-                a => a.Dismissal != ModesOfDismissal.DidNotBat).Where(a => a.Dismissal != ModesOfDismissal.RetiredHurt).
-                Where(a => a.BattingAt != 12)).Count();
+            var wickets = sc.ScorecardData.Where(a => a.Dismissal != ModesOfDismissal.NotOut).Where(
+                    a => a.Dismissal != ModesOfDismissal.DidNotBat)
+                .Where(a => a.Dismissal != ModesOfDismissal.RetiredHurt)
+                .Where(a => a.BattingAt != 12).Count();
 
             return wickets;
         }
@@ -592,17 +536,12 @@ namespace CricketClubMiddle
         {
             BattingCard sc;
             if (team.ID == Us.ID)
-            {
                 sc = GetOurBattingScoreCard();
-            }
             else if (team.ID == Opposition.ID)
-            {
                 sc = GetTheirBattingScoreCard();
-            }
             else
-            {
                 throw new Exception("The team you specified didn't play in this game");
-            }
+
             return sc;
         }
 
@@ -640,28 +579,20 @@ namespace CricketClubMiddle
                 data.WasDeclarationGame = ballByBallMatchConditions.Declaration;
                 data.Overs = ballByBallMatchConditions.Overs;
 
-                dao.StartBallByBallCoverage(ID, ballByBallMatchConditions.PlayerIds, this.data);
+                dao.StartBallByBallCoverage(ID, ballByBallMatchConditions.PlayerIds, data);
                 var inningsStatus = BallByBallInningsStatus.NotStarted(ID);
-                if ((data.WonToss && data.Batted) || (!data.WonToss && !data.Batted))
-                {
+                if (data.WonToss && data.Batted || !data.WonToss && !data.Batted)
                     inningsStatus.OurInningsStatus = InningsStatus.InProgress;
-                }
                 else
-                {
                     inningsStatus.TheirInningsStatus = InningsStatus.InProgress;
-                }
-                dao.UpdateInningsStatus(inningsStatus);    
+
+                dao.UpdateInningsStatus(inningsStatus);
             }
             else
             {
-                throw new InvalidOperationException("Cannot start coverage for match " + Description + " game is already in progress.");
+                throw new InvalidOperationException("Cannot start coverage for match " + Description +
+                                                    " game is already in progress.");
             }
-            
-        }
-
-        public string Description
-        {
-            get { return HomeTeam + " vs " + AwayTeam + " (" + MatchDateString + ")"; }
         }
 
         public BallByBallMatch GetCurrentBallByBallState()
@@ -672,21 +603,20 @@ namespace CricketClubMiddle
         public void UpdateCurrentBallByBallState(MatchState stateFromClient)
         {
             if (stateFromClient.Over.Balls.Any(b => string.IsNullOrEmpty(b.Bowler)))
-            {
                 throw new InvalidOperationException("Cannot add a ball with a blank bowler");
-            }
+
             var currentBallByBallState = GetCurrentBallByBallState();
             var inningsStatus = currentBallByBallState.GetInningsStatus();
             if (Overs <= currentBallByBallState.LastCompletedOver && !WasDeclaration)
-            {
-                throw new InvalidOperationException("this match is only " + Overs + " overs long and we've have that many. Time to poke the end innings button.");
-            }         
-            
+                throw new InvalidOperationException("this match is only " + Overs +
+                                                    " overs long and we've have that many. Time to poke the end innings button.");
+
             if (inningsStatus.OurInningsStatus != InningsStatus.InProgress)
             {
                 inningsStatus.OurInningsStatus = InningsStatus.InProgress;
-                dao.UpdateInningsStatus(inningsStatus); 
+                dao.UpdateInningsStatus(inningsStatus);
             }
+
             dao.UpdateCurrentBallByBallState(stateFromClient, ID);
         }
 
@@ -699,42 +629,6 @@ namespace CricketClubMiddle
         {
             return dao.IsBallByBallCoverageInProgress(ID);
         }
-
-        // ReSharper disable once UnusedMember.Global
-        public int BallByBallOver => GetCurrentBallByBallState().LastCompletedOver;
-
-        public bool OppositionInningsComplete
-        {
-            get
-            {
-                return GetCurrentBallByBallState().GetInningsStatus().TheirInningsStatus==InningsStatus.Completed;
-            }
-        }
-
-        public bool OppositionBattedFirst
-        {
-            get { return (TossWinner == Us && !TossWinnerBatted) || (TossWinner != Us && TossWinnerBatted); } 
-        }
-
-        public bool OurInningsInProgress
-        {
-            get
-            {
-                var currentBallByBallState = GetCurrentBallByBallState();
-                return currentBallByBallState.GetInningsStatus().OurInningsStatus == InningsStatus.InProgress;
-            }
-        }
-
-        public bool TheirInningsInProgress
-        {
-            get
-            {
-                var currentBallByBallState = GetCurrentBallByBallState();
-                return currentBallByBallState.GetInningsStatus().TheirInningsStatus == InningsStatus.InProgress;
-            }
-        }
-
-        public int OppositionBallByBallOver => GetCurrentBallByBallState().OppositionOver;
 
         public LiveScorecard GetLiveScorecard()
         {
@@ -759,15 +653,15 @@ namespace CricketClubMiddle
                                            inningsStatus.TheirInningsStatus == InningsStatus.NotStarted;
 
             liveScorecard.IsMatchComplete = inningsStatus.OurInningsStatus == InningsStatus.Completed &&
-                                           inningsStatus.TheirInningsStatus == InningsStatus.Completed;
+                                            inningsStatus.TheirInningsStatus == InningsStatus.Completed;
 
             if (liveScorecard.IsMatchComplete)
-            {
-                liveScorecard.ResultText = currentBallByBallState.GetResultText(TeamBattingFirst(), TeamBattingSecond());
-            }
+                liveScorecard.ResultText =
+                    currentBallByBallState.GetResultText(TeamBattingFirst(), TeamBattingSecond());
 
 
-            if (liveScorecard.OurInningsStatus != InningsStatus.NotStarted.ToString() && currentBallByBallState.Overs.Any())
+            if (liveScorecard.OurInningsStatus != InningsStatus.NotStarted.ToString() &&
+                currentBallByBallState.Overs.Any())
             {
                 liveScorecard.OnStrikeBatsman = currentBallByBallState.GetOnStrikeBatsmanDetails();
                 liveScorecard.OtherBatsman = currentBallByBallState.GetOtherBatsmanDetails();
@@ -777,7 +671,7 @@ namespace CricketClubMiddle
                 liveScorecard.Wickets = matchState.Players.Count(p => p.State == PlayerState.Out);
                 liveScorecard.RunRate = matchState.LastCompletedOver == 0
                     ? 0
-                    : Math.Round((decimal) matchState.Score/matchState.LastCompletedOver, 2);
+                    : Math.Round((decimal) matchState.Score / matchState.LastCompletedOver, 2);
 
                 var partnershipsAndFallOfWickets = currentBallByBallState.GetPartnershipsAndFallOfWickets();
 
@@ -812,9 +706,8 @@ namespace CricketClubMiddle
                 liveScorecard.TheirOver = currentBallByBallState.OppositionOver;
                 liveScorecard.TheirRunRate = liveScorecard.TheirOver == 0
                     ? 0
-                    : Math.Round(liveScorecard.TheirScore/(decimal) liveScorecard.TheirOver, 2);
+                    : Math.Round(liveScorecard.TheirScore / (decimal) liveScorecard.TheirOver, 2);
                 liveScorecard.TheirCompletedOvers = currentBallByBallState.OppositionOvers;
-
             }
 
             return liveScorecard;
@@ -830,7 +723,8 @@ namespace CricketClubMiddle
             return bowlerInningsDetailses;
         }
 
-        private static LiveBattingCard GetLiveBattingCard(BallByBallMatch currentBallByBallState, List<FallOfWicket> fallOfWickets)
+        private static LiveBattingCard GetLiveBattingCard(BallByBallMatch currentBallByBallState,
+            List<FallOfWicket> fallOfWickets)
         {
             var liveBattingCard = new LiveBattingCard();
             var liveBattingCardEntries =
@@ -854,35 +748,37 @@ namespace CricketClubMiddle
         public void UpdateOppositionScore(OppositionInningsDetails oppositionInningsDetails)
         {
             if (oppositionInningsDetails.Over > Overs)
-            {
-                throw new InvalidOperationException(oppositionInningsDetails.Over + " overs is more than the match conditions stipulate ("+Overs+")");
-            }
+                throw new InvalidOperationException(oppositionInningsDetails.Over +
+                                                    " overs is more than the match conditions stipulate (" + Overs +
+                                                    ")");
+
             if (oppositionInningsDetails.Wickets > 10)
-            {
                 throw new InvalidOperationException("There can't be more than 10 wickets in an innings");
-            }
+
             var currentBallByBallState = GetCurrentBallByBallState();
-            
+
             var oppositionOver = currentBallByBallState.OppositionOver;
             var oppositionScore = currentBallByBallState.OppositionScore;
             if (oppositionOver > oppositionInningsDetails.Over)
-            {
-                throw new InvalidOperationException("You are trying to input over " + oppositionInningsDetails.Over + " but over " + oppositionOver + " has already been entered");
-            }
+                throw new InvalidOperationException("You are trying to input over " + oppositionInningsDetails.Over +
+                                                    " but over " + oppositionOver + " has already been entered");
+
             if (oppositionScore > oppositionInningsDetails.Score)
-            {
-                throw new InvalidOperationException("They were " + oppositionScore + " after " + oppositionOver + " overs, they can't be " + oppositionInningsDetails.Score + " now.");
-            }
+                throw new InvalidOperationException("They were " + oppositionScore + " after " + oppositionOver +
+                                                    " overs, they can't be " + oppositionInningsDetails.Score +
+                                                    " now.");
+
             var inningsStatus = currentBallByBallState.GetInningsStatus();
             if (inningsStatus.OurInningsStatus == InningsStatus.InProgress)
-            {
-                throw new InvalidOperationException("Our innings is in progress, you can't add their scores until it's done.");
-            }
+                throw new InvalidOperationException(
+                    "Our innings is in progress, you can't add their scores until it's done.");
+
             if (inningsStatus.TheirInningsStatus != InningsStatus.InProgress)
             {
                 inningsStatus.TheirInningsStatus = InningsStatus.InProgress;
                 dao.UpdateInningsStatus(inningsStatus);
             }
+
             dao.CreateOrUpdateOppositionInningsDetails(oppositionInningsDetails, ID);
         }
 
@@ -892,66 +788,56 @@ namespace CricketClubMiddle
             if (inningsEndDetails.InningsType == "Batting")
             {
                 var currentBallByBallState = GetCurrentBallByBallState();
-                BallByBallInningsStatus inningsStatus = currentBallByBallState.GetInningsStatus();
+                var inningsStatus = currentBallByBallState.GetInningsStatus();
 
                 if (inningsStatus.OurInningsStatus != InningsStatus.InProgress)
-                {
                     throw new InvalidOperationException("Can't finish an innings before it has started");
-                }
+
                 if (inningsEndDetails.WasDeclared && !WasDeclaration)
-                {
                     throw new InvalidOperationException("Can't declare in a game that's not a declaration game");
-                }
+
                 inningsStatus.OurInningsStatus = InningsStatus.Completed;
                 inningsStatus.OurInningsWasDeclared = inningsEndDetails.WasDeclared;
                 inningsStatus.OurInningsCommentary = inningsEndDetails.Commentary;
                 if (inningsStatus.TheirInningsStatus == InningsStatus.NotStarted)
-                {
                     inningsStatus.TheirInningsStatus = InningsStatus.InProgress;
-                }
+
                 dao.UpdateInningsStatus(inningsStatus);
             }
             else
             {
                 var currentBallByBallState = GetCurrentBallByBallState();
-                BallByBallInningsStatus inningsStatus = currentBallByBallState.GetInningsStatus();
+                var inningsStatus = currentBallByBallState.GetInningsStatus();
 
                 if (inningsStatus.TheirInningsStatus == InningsStatus.Completed)
-                {
                     throw new InvalidOperationException("This innings has already ended.");
-                }
+
                 if (inningsStatus.TheirInningsStatus != InningsStatus.InProgress)
-                {
                     throw new InvalidOperationException("Can't finish an innings before it has started");
-                }
+
                 if (inningsEndDetails.WasDeclared && !WasDeclaration)
-                {
                     throw new InvalidOperationException("Can't declare in a game that's not a declaration game");
-                }
+
                 inningsStatus.TheirInningsStatus = InningsStatus.Completed;
                 inningsStatus.TheirInningsWasDeclared = inningsEndDetails.WasDeclared;
                 inningsStatus.TheirInningsCommentary = inningsEndDetails.Commentary;
                 if (inningsStatus.OurInningsStatus == InningsStatus.NotStarted)
-                {
                     inningsStatus.OurInningsStatus = InningsStatus.InProgress;
-                }
+
                 dao.UpdateInningsStatus(inningsStatus);
             }
+
             var status = dao.GetInningsStatus(ID);
             if (status.OurInningsStatus == InningsStatus.Completed &&
                 status.TheirInningsStatus == InningsStatus.Completed)
-            {
                 return NextInnings.GameOver;
-            }
-            if (status.OurInningsStatus == InningsStatus.InProgress)
-            {
-                return NextInnings.Batting;
-            }
-            if (status.TheirInningsStatus == InningsStatus.InProgress)
-            {
-                return NextInnings.Bowling;
-            }
-            throw new ApplicationException("After the end of an innings one innings must be in progess or both complete.");
+
+            if (status.OurInningsStatus == InningsStatus.InProgress) return NextInnings.Batting;
+
+            if (status.TheirInningsStatus == InningsStatus.InProgress) return NextInnings.Bowling;
+
+            throw new ApplicationException(
+                "After the end of an innings one innings must be in progess or both complete.");
         }
 
         public void DeleteLastBallByBallOver()

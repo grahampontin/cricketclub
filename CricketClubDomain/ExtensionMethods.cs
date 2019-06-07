@@ -29,5 +29,10 @@ namespace CricketClubDomain
             list.Add(value);
             return list.ToArray();
         }
+
+        public static bool IsNullOrEmpty<T>(this IEnumerable<T> value)
+        {
+            return value == null || value.Any();
+        }
     }
 }
