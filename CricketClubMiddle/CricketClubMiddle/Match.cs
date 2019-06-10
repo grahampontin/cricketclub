@@ -682,20 +682,30 @@ namespace CricketClubMiddle
                 var currentPartnershipIndex =
                     partnershipsAndFallOfWickets.Partnerships.IndexOf(liveScorecard.CurrentPartnership);
 
-                liveScorecard.PreviousPartnership = currentPartnershipIndex == 0
-                    ? null
-                    : partnershipsAndFallOfWickets.Partnerships[currentPartnershipIndex - 1];
+                try
+                {
+                    liveScorecard.PreviousPartnership = currentPartnershipIndex == 0
+                        ? null
+                        : partnershipsAndFallOfWickets.Partnerships[currentPartnershipIndex - 1];
+                }
+                catch (Exception)
+                {
+                    //
+                }
                 var fallOfWickets = partnershipsAndFallOfWickets.FallOfWickets;
-                liveScorecard.LastManOut = fallOfWickets.Any() ? fallOfWickets.Last() : null;
+                    liveScorecard.LastManOut = fallOfWickets.Any() ? fallOfWickets.Last() : null;
 
-                liveScorecard.FallOfWickets = fallOfWickets;
-                liveScorecard.Partnerships = partnershipsAndFallOfWickets.Partnerships;
+                    liveScorecard.FallOfWickets = fallOfWickets;
+                    liveScorecard.Partnerships = partnershipsAndFallOfWickets.Partnerships;
+
+                    liveScorecard.LiveBattingCard = GetLiveBattingCard(currentBallByBallState, fallOfWickets);
+                
+
 
                 liveScorecard.CompletedOvers = currentBallByBallState.GetOverSummaries();
 
                 liveScorecard.BowlerOneDetails = currentBallByBallState.GetBowlerOneDetails();
                 liveScorecard.BowlerTwoDetails = currentBallByBallState.GetBowlerTwoDetails();
-                liveScorecard.LiveBattingCard = GetLiveBattingCard(currentBallByBallState, fallOfWickets);
                 liveScorecard.LiveBowlingCard = GetLiveBowlingCard(currentBallByBallState);
             }
 

@@ -1,5 +1,5 @@
 ﻿using System;
-using CricketClubMiddle.Logging;
+using CricketClubDAL;
 
 
 namespace TestHarness
@@ -40,10 +40,10 @@ namespace TestHarness
 
             //var x = p.GetComments();
 
-            Logger.Log("test message", new ApplicationException(), Severity.Error);
-            Logger.Log("test debug message", new ApplicationException(), Severity.Debug);
-            Logger.LoggingLevel = Severity.Debug;
-            Logger.Log("test info message", new ApplicationException(), Severity.Info);
+            DbLogger.Log("test message", new ApplicationException(), Severity.Error);
+            DbLogger.Log("test debug message", new ApplicationException(), Severity.Debug);
+            DbLogger.LoggingLevel = Severity.Debug;
+            DbLogger.Log("test info message", new ApplicationException(), Severity.Info);
 
 
 

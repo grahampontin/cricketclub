@@ -96,6 +96,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\CricketClubDAL\CricketClubDAL\CricketClubDAL.csproj">
+      <Project>{1CC6DF73-AC0E-43C9-8B78-7F8023E3AD40}</Project>
+      <Name>CricketClubDAL</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\CricketClubDomain\CricketClubDomain.csproj">
       <Project>{44A25B27-75C4-4F75-B6C1-DF3203229E59}</Project>
       <Name>CricketClubDomain</Name>
