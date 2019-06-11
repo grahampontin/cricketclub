@@ -69,7 +69,7 @@ namespace CricketClubDomain
             set;
         }
 
-        public ThemOrUs who
+        public ThemOrUs Who
         {
             get;
             set;

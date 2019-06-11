@@ -15,8 +15,9 @@ namespace CricketClubMiddle.Stats
         private readonly Partnership partnership;
         private readonly Wicket wicket;
         private readonly string bowler;
-        private Player outGoingPlayer;
-        private Player notOutPlayer;
+        private readonly Player outGoingPlayer;
+
+        public Player OutGoingPlayer => outGoingPlayer;
 
         public FallOfWicket(int wicketNumber, 
                             int teamScore, 
@@ -42,46 +43,30 @@ namespace CricketClubMiddle.Stats
             this.wicket = wicket;
             this.bowler = bowler;
             this.outGoingPlayer = new Player(outGoingPlayerId);
-            this.notOutPlayer = new Player(notOutPlayerId);
         }
 
         public string Bowler => bowler;
 
-        public int WicketNumber
-        {
-            get { return wicketNumber; }
-        }
+        public int WicketNumber => wicketNumber;
 
-        public int TeamScore
-        {
-            get { return teamScore; }
-        }
+        public int TeamScore => teamScore;
 
-        public BatsmanInningsDetails OutgoingBatsmanInningsDetails
-        {
-            get { return outgoingBatsmanInningsDetails; }
-        }
+        public BatsmanInningsDetails OutgoingBatsmanInningsDetails => outgoingBatsmanInningsDetails;
 
-        public string OverAsString
-        {
-            get { return overAsString; }
-        }
+        public string OverAsString => overAsString;
 
-        public Partnership Partnership
-        {
-            get { return partnership; }
-        }
+        public Partnership Partnership => partnership;
 
-        public Wicket Wicket
-        {
-            get { return wicket; }
-        }
+        public Wicket Wicket => wicket;
 
-        public string OutgoingPlayerName => outGoingPlayer.Name;
+        public string OutgoingPlayerName => OutGoingPlayer.Name;
 
-        public int OutGoingPlayerId
-        {
-            get { return outGoingPlayerId; }
-        }
+        public int OutGoingPlayerId => outGoingPlayerId;
+
+        public int OutGoingPlayerScore => outGoingPlayerScore;
+
+        public int NotOutPlayerId => notOutPlayerId;
+
+        public int NotOutPlayerScore => notOutPlayerScore;
     }
 }

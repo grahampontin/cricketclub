@@ -75,5 +75,20 @@ namespace CricketClubMiddle.Stats
             }
         }
 
+        public static BowlingStatsLine From(BowlerInningsDetails bowlerInningsDetails, Match match)
+        {
+            return new BowlingStatsLine(new BowlingStatsEntryData
+            {
+                Maidens = bowlerInningsDetails.Details.Maidens,
+                MatchDate = match.MatchDate,
+                MatchID = match.ID,
+                MatchTypeID = (int)match.Type,
+                Overs = bowlerInningsDetails.Details.Overs,
+                PlayerName = bowlerInningsDetails.Name,
+                Runs = bowlerInningsDetails.Details.Runs,
+                VenueID = match.VenueID,
+                Wickets = bowlerInningsDetails.Details.Wickets
+            });
+        }
     }
 }

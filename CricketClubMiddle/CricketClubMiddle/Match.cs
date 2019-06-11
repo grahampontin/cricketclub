@@ -941,6 +941,7 @@ namespace CricketClubMiddle
             if (status.OurInningsStatus == InningsStatus.Completed &&
                 status.TheirInningsStatus == InningsStatus.Completed)
             {
+                PopulateScorecardFromBallByBallData();
                 return NextInnings.GameOver;
             }
             if (status.OurInningsStatus == InningsStatus.InProgress)
@@ -952,6 +953,43 @@ namespace CricketClubMiddle
                 return NextInnings.Bowling;
             }
             throw new ApplicationException("After the end of an innings one innings must be in progess or both complete.");
+        }
+
+        public void PopulateScorecardFromBallByBallData()
+        {
+            var liveScorecard = GetLiveScorecard();
+            var ourBattingCard = new BattingCard(this.ID, ThemOrUs.Us);
+            ourBattingCard.ScorecardData.AddRange(liveScorecard.LiveBattingCard.Players.Select(p=>BattingCardLine.From(p, this)));
+            var liveExtras = liveScorecard.LiveBattingCard.Extras;
+            ourBattingCard.ScorecardData.Clear();
+            ourBattingCard.ScorecardData.Add(new BattingCardLine(new BattingCardLineData
+            {
+                BattingAt = -1,
+                MatchID = ID,
+                MatchDate = MatchDate,
+                Score = liveExtras.Total
+            }));
+            ourBattingCard.Save(BattingOrBowling.Batting);
+
+            var extras = new Extras(ID, ThemOrUs.Us)
+            {
+                Byes = liveExtras.Byes,
+                LegByes = liveExtras.LegByes,
+                NoBalls = liveExtras.NoBalls,
+                Penalty = liveExtras.Penalty,
+                Wides = liveExtras.Wides
+            };
+            extras.Save();
+            
+            FoWStats fallOfWicketStats = new FoWStats(ID, ThemOrUs.Us);
+            fallOfWicketStats.Data.Clear();
+            fallOfWicketStats.Data.AddRange(liveScorecard.FallOfWickets.Select(f=>FoWStatsLine.From(f, this, ThemOrUs.Us)));
+
+            var theirBowlingStats = new BowlingStats(ID, ThemOrUs.Them);
+            theirBowlingStats.BowlingStatsData.Clear();
+            theirBowlingStats.BowlingStatsData.AddRange(liveScorecard.LiveBowlingCard.Select(b=>BowlingStatsLine.From(b, this))); 
+            theirBowlingStats.Save();
+
         }
 
         public void DeleteLastBallByBallOver()

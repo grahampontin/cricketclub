@@ -793,7 +793,7 @@ namespace CricketClubDAL
                 Partnership = (int) row["partnership"],
                 Score = (int) row["score"],
                 Wicket = (int) row["wicket"],
-                who = who
+                Who = who
             })).ToList();
         }
 

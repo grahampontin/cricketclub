@@ -25,6 +25,22 @@ namespace CricketClubDomain
         public bool IsRetired => ModeOfDismissal == "retired";
         public bool IsRetiredHurt => ModeOfDismissal == "retired hurt";
 
+        public ModesOfDismissal ModeOfDismissalAsEnum
+        {
+            get
+            {
+                if (IsStumped) return ModesOfDismissal.Stumped;
+                if (IsRunOut) return ModesOfDismissal.RunOut;
+                if (IsCaught) return ModesOfDismissal.Caught;
+                if (IsCaughtAndBowled) return ModesOfDismissal.CaughtAndBowled;
+                if (IsLbw) return ModesOfDismissal.LBW;
+                if (IsHitWicket) return ModesOfDismissal.HitWicket;
+                if (IsRetired) return ModesOfDismissal.Retired;
+                if (IsRetiredHurt) return ModesOfDismissal.RetiredHurt;
+                return ModesOfDismissal.NotOut;
+            }
+        }
+
 
         public override string ToString()
         {

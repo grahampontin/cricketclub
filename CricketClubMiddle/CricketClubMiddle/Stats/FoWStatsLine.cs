@@ -18,7 +18,7 @@ namespace CricketClubMiddle.Stats
         {
             _data = data;
             match = new Match(_data.MatchID);
-            if (_data.who == ThemOrUs.Us)
+            if (_data.Who == ThemOrUs.Us)
             {
                 bCard = match.GetOurBattingScoreCard();
             }
@@ -163,6 +163,23 @@ namespace CricketClubMiddle.Stats
             {
                 return _data.MatchID;
             }
+        }
+
+        public static FoWStatsLine From(FallOfWicket fallOfWicket, Match match, ThemOrUs themOrUs)
+        {
+          return new FoWStatsLine(new FoWDataLine
+          {
+              Score = fallOfWicket.TeamScore,
+              Wicket = fallOfWicket.WicketNumber,
+              MatchID = match.ID,
+              OverNumber = (int) decimal.Parse(fallOfWicket.OverAsString),
+              NotOutBatsman = fallOfWicket.NotOutPlayerId,
+              NotOutBatsmanScore = fallOfWicket.NotOutPlayerScore,
+              OutgoingBatsman = fallOfWicket.OutGoingPlayerId,
+              OutgoingBatsmanScore = fallOfWicket.OutGoingPlayerScore,
+              Partnership = fallOfWicket.Partnership.Score,
+              Who = themOrUs
+          });
         }
     }
 }
