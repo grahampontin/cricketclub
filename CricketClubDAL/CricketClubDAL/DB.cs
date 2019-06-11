@@ -58,6 +58,7 @@ namespace CricketClubDAL
 
         public DataRow ExecuteSQLAndReturnFirstRow(string sql)
         {
+            DbLogger.Log(sql, null, Severity.Debug);
             try
             {
                 using (OleDbConnection connection = OpenConnection())
@@ -80,6 +81,7 @@ namespace CricketClubDAL
 
         public object ExecuteSQLAndReturnSingleResult(string sql)
         {
+            DbLogger.Log(sql, null, Severity.Debug);
             try
             {
                 using (OleDbConnection conn = OpenConnection())
@@ -96,8 +98,12 @@ namespace CricketClubDAL
             }
         }
 
-        public int ExecuteInsertOrUpdate(string sql)
+        public int ExecuteInsertOrUpdate(string sql, bool donNotLog = false)
         {
+            if (!donNotLog)
+            {
+                DbLogger.Log(sql, null, Severity.Debug);
+            }
             try
             {
                 using (OleDbConnection conn = OpenConnection())
@@ -116,6 +122,7 @@ namespace CricketClubDAL
 
         public IEnumerable<T> ExecuteSqlAndReturnAllRows<T>(string sql, Func<Row, T> rowConverter)
         {
+            DbLogger.Log(sql, null, Severity.Debug);
             var dataSet = ExecuteSqlAndReturnAllRows(sql);
             return dataSet.Tables[0].Rows.Cast<DataRow>().Select(r=>new Row(r)).Select(rowConverter);
         }
@@ -123,6 +130,7 @@ namespace CricketClubDAL
 
         public DataSet ExecuteSqlAndReturnAllRows(string sql)
         {
+            DbLogger.Log(sql, null, Severity.Debug);
             try
             {
                 using (OleDbConnection conn = OpenConnection())
@@ -141,6 +149,7 @@ namespace CricketClubDAL
 
         public Row QueryOne(string sql)
         {
+            DbLogger.Log(sql, null, Severity.Debug);
             return new Row(ExecuteSQLAndReturnFirstRow(sql));
         }
 

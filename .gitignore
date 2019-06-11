@@ -8,3 +8,9 @@ CricketClubDAL/CricketClubDAL/obj/Debug/CricketClubDAL.csprojResolveAssemblyRefe
 *.dll
 *.pdb
 *.cache
+*.dll
+*.pdb
+CricketClubMiddle/.vs/CricketClub/v16/Server/sqlite3/storage.ide-wal
+CricketClubMiddle/.vs/CricketClub/v16/Server/sqlite3/storage.ide-shm
+CricketClubMiddle/.vs/CricketClub/v16/Server/sqlite3/storage.ide
+CricketClubMiddle/.vs/CricketClub/v16/Server/sqlite3/db.lock

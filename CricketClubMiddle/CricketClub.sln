@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2009
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CricketClubMiddle", "CricketClubMiddle\CricketClubMiddle.csproj", "{CD12D113-CEEC-4D3B-B258-7B647D8F83E9}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -54,11 +54,11 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "thevillagecc", "http://loca
 		SlnRelativePath = "..\..\thevillagecc\"
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jqPlot", "..\..\jqplotforcsharp\jqPlot\jqPlot.csproj", "{60CBD334-7816-432D-ADBD-EB00933F12E5}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{9721E4B0-26D2-4950-A369-71D68D63562D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CricketClub.Tests", "..\Tests\CricketClub.Tests\CricketClub.Tests.csproj", "{B3ECCD1D-3EF7-4928-86B4-29817E6BADFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jqPlot", "..\..\jqplotforcsharp\jqPlot\jqPlot.csproj", "{60CBD334-7816-432D-ADBD-EB00933F12E5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -512,6 +512,54 @@ Global
 		{B3ECCD1D-3EF7-4928-86B4-29817E6BADFD}.Release|x64.ActiveCfg = Release|Any CPU
 		{B3ECCD1D-3EF7-4928-86B4-29817E6BADFD}.Release|x64.Build.0 = Release|Any CPU
 		{B3ECCD1D-3EF7-4928-86B4-29817E6BADFD}.Release|x86.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Ad-Hoc|Any CPU.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Ad-Hoc|Any CPU.Build.0 = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Ad-Hoc|ARM.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Ad-Hoc|ARM.Build.0 = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Ad-Hoc|iPhone.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Ad-Hoc|iPhone.Build.0 = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Ad-Hoc|iPhoneSimulator.Build.0 = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Ad-Hoc|x64.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Ad-Hoc|x64.Build.0 = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Ad-Hoc|x86.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Ad-Hoc|x86.Build.0 = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.AppStore|Any CPU.Build.0 = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.AppStore|ARM.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.AppStore|ARM.Build.0 = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.AppStore|iPhone.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.AppStore|iPhone.Build.0 = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.AppStore|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.AppStore|iPhoneSimulator.Build.0 = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.AppStore|x64.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.AppStore|x64.Build.0 = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.AppStore|x86.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.AppStore|x86.Build.0 = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Debug|ARM.Build.0 = Debug|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Debug|x64.Build.0 = Debug|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Debug|x86.Build.0 = Debug|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Release|ARM.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Release|ARM.Build.0 = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Release|iPhone.Build.0 = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Release|x64.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Release|x64.Build.0 = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Release|x86.ActiveCfg = Release|Any CPU
+		{60CBD334-7816-432D-ADBD-EB00933F12E5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

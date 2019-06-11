@@ -12,3 +12,9 @@ C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDomain\bin\Debug\Cricket
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDomain\obj\Debug\CricketClubDomain.dll
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDomain\obj\Debug\CricketClubDomain.pdb
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDomain\obj\Debug\CricketClubDomain.csproj.CoreCompileInputs.cache
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDomain\bin\Debug\CricketClubDomain.dll
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDomain\bin\Debug\CricketClubDomain.pdb
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDomain\obj\Debug\CricketClubDomain.csprojAssemblyReference.cache
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDomain\obj\Debug\CricketClubDomain.csproj.CoreCompileInputs.cache
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDomain\obj\Debug\CricketClubDomain.dll
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDomain\obj\Debug\CricketClubDomain.pdb

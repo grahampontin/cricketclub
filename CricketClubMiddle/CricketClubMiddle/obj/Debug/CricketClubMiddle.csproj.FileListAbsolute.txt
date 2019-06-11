@@ -26,3 +26,14 @@ C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\bin\Debug\jqPlot.dll
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\bin\Debug\jqPlot.pdb
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\obj\Debug\CricketClubMiddle.csproj.CoreCompileInputs.cache
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\bin\Debug\CricketClubMiddle.dll
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\bin\Debug\CricketClubMiddle.pdb
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\bin\Debug\CricketClubDAL.dll
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\bin\Debug\CricketClubDomain.dll
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\bin\Debug\CricketClubDAL.pdb
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\bin\Debug\CricketClubDomain.pdb
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\obj\Debug\CricketClubMiddle.csprojAssemblyReference.cache
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\obj\Debug\CricketClubMiddle.csproj.CoreCompileInputs.cache
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\obj\Debug\CricketClubMiddle.csproj.CopyComplete
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\obj\Debug\CricketClubMiddle.dll
+C:\Users\graha\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubMiddle\obj\Debug\CricketClubMiddle.pdb

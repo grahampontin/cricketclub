@@ -196,42 +196,49 @@ namespace CricketClubMiddle.Stats
             }
             var balls = GetSortedBallsFirstToLast();
             Partnership partnership = new Partnership(openingPair[0].PlayerId, openingPair[1].PlayerId);
-            foreach (var ball in balls)
+            try
             {
-                partnership.Balls.Add(ball);
-                if (ball.Wicket != null)
+                foreach (var ball in balls)
                 {
-                    partnerships.Add(partnership);
-
-                    var ballsToThisPointInTime = partnerships.SelectMany(p => p.Balls).ToList();
-                    var playerScores = BallByBallHelpers.GetPlayerScoresFromBalls(new HashSet<int>(partnership.PlayerIds), ballsToThisPointInTime);
-                    var outGoingPlayer = ball.Wicket.Player;
-                    var notOutPlayer = partnership.PlayerIds.Single(p=>p!=outGoingPlayer);
-                    var fallOfWicket = new FallOfWicket(partnerships.Count, 
-                        GetScoreForBalls(ballsToThisPointInTime), 
-                        outGoingPlayer, 
-                        playerScores[outGoingPlayer], 
-                        notOutPlayer, 
-                        playerScores[notOutPlayer], 
-                        GetBatsmanInningsDetails(outGoingPlayer), 
-                        BallByBallHelpers.GetOversAsString(ballsToThisPointInTime), 
-                        partnership, ball.Wicket, ball.Bowler);
-
-                    fallOfWickets.Add(
-                        fallOfWicket);
-
-                    var lastBatsman = playerStates.Where(
-                        ps => ps.PlayerId == partnership.PlayerId1 || ps.PlayerId == partnership.PlayerId2)
-                        .Max(ps => ps.Position);
-                    if (lastBatsman == 11)
+                    partnership.Balls.Add(ball);
+                    if (ball.Wicket != null)
                     {
-                        break;
-                    }
-                    int nextManInBattingAt = lastBatsman + 1;
-                    var nextBatsman = playerStates.Single(ps => ps.Position==nextManInBattingAt).PlayerId;
+                        partnerships.Add(partnership);
 
-                    partnership = new Partnership(notOutPlayer, nextBatsman);
+                        var ballsToThisPointInTime = partnerships.SelectMany(p => p.Balls).ToList();
+                        var playerScores = BallByBallHelpers.GetPlayerScoresFromBalls(new HashSet<int>(partnership.PlayerIds), ballsToThisPointInTime);
+                        var outGoingPlayer = ball.Wicket.Player;
+                        var notOutPlayer = partnership.PlayerIds.Single(p => p != outGoingPlayer);
+                        var fallOfWicket = new FallOfWicket(partnerships.Count,
+                            GetScoreForBalls(ballsToThisPointInTime),
+                            outGoingPlayer,
+                            playerScores[outGoingPlayer],
+                            notOutPlayer,
+                            playerScores[notOutPlayer],
+                            GetBatsmanInningsDetails(outGoingPlayer),
+                            BallByBallHelpers.GetOversAsString(ballsToThisPointInTime),
+                            partnership, ball.Wicket, ball.Bowler);
+
+                        fallOfWickets.Add(
+                            fallOfWicket);
+
+                        var lastBatsman = playerStates.Where(
+                            ps => ps.PlayerId == partnership.PlayerId1 || ps.PlayerId == partnership.PlayerId2)
+                            .Max(ps => ps.Position);
+                        if (lastBatsman == 11)
+                        {
+                            break;
+                        }
+                        int nextManInBattingAt = lastBatsman + 1;
+                        var nextBatsman = playerStates.Single(ps => ps.Position == nextManInBattingAt).PlayerId;
+
+                        partnership = new Partnership(notOutPlayer, nextBatsman);
+                    }
                 }
+            }
+            catch (Exception)
+            {
+                //
             }
             partnerships.Add(partnership);
             return new PartnershipsAndFallOfWickets(partnerships, fallOfWickets);

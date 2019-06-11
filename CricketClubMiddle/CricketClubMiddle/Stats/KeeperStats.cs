@@ -129,8 +129,8 @@ namespace CricketClubMiddle.Stats
                 decimal totalruns = _player.GetRunsScored(_fromDate, _toDate, _matchTypes, _venue);
                 decimal totalInning = Player.GetInnings(_fromDate, _toDate, _matchTypes, _venue) - Player.GetNotOuts(_fromDate, _toDate, _matchTypes, _venue);
 
-                decimal runs = FilteredMatchData.Select(a => a.GetOurBattingScoreCard().ScorecardData.Where(b => b.Batsman.ID == this.ID).FirstOrDefault().Score).Sum();
-                decimal innings = FilteredMatchData.Select(a => a.GetOurBattingScoreCard().ScorecardData.Where(b => b.Batsman.ID == this.ID).FirstOrDefault()).Where(a => a.Dismissal != ModesOfDismissal.NotOut && a.Dismissal != ModesOfDismissal.RetiredHurt).Count();
+                decimal runs = FilteredMatchData.Where(a => a.GetOurBattingScoreCard().ScorecardData.Count > 0).Select(a => a.GetOurBattingScoreCard().ScorecardData.Where(b => b.Batsman.ID == this.ID).Select(s=>s.Score).DefaultIfEmpty(0).FirstOrDefault()).Sum();
+                decimal innings = FilteredMatchData.Where(a => a.GetOurBattingScoreCard().ScorecardData.Count > 0).Select(a => a.GetOurBattingScoreCard().ScorecardData.Where(b => b.Batsman.ID == this.ID).Where(b => b.Dismissal != ModesOfDismissal.NotOut && b.Dismissal != ModesOfDismissal.RetiredHurt).FirstOrDefault()).Count();
 
                 return Math.Round((totalruns - runs) / (totalInning - innings), 2);
             }
