@@ -12,7 +12,6 @@ C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\bin\Debug\C
 C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\bin\Debug\CricketClubFantasyFives.pdb
 C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\bin\Debug\CricketClubMiddle.pdb
 C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\bin\Debug\nunit.framework.xml
-C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\obj\Debug\CricketClub.Tests.csprojResolveAssemblyReference.cache
 C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\obj\Debug\CricketClub.Tests.dll
 C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\obj\Debug\CricketClub.Tests.pdb
 C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\bin\Debug\CricketClub.Tests.dll.config
@@ -40,3 +39,6 @@ C:\Users\graha\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\obj\Debug\Cr
 C:\Users\graha\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\obj\Debug\CricketClub.Tests.csproj.CopyComplete
 C:\Users\graha\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\obj\Debug\CricketClub.Tests.dll
 C:\Users\graha\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\obj\Debug\CricketClub.Tests.pdb
+C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\obj\Debug\CricketClub.Tests.csprojAssemblyReference.cache
+C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\bin\Debug\nunit.framework.pdb
+C:\Users\Graham\Documents\GitHub\cricketclub\Tests\CricketClub.Tests\obj\Debug\CricketClub.Tests.csproj.CopyComplete

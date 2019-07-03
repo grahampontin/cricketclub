@@ -14,7 +14,6 @@ C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\bin\D
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\bin\Debug\CricketClubDAL.pdb
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\bin\Debug\CricketClubDomain.dll
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\bin\Debug\CricketClubDomain.pdb
-C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.csprojResolveAssemblyReference.cache
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.dll
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.pdb
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.csproj.CoreCompileInputs.cache
@@ -27,3 +26,5 @@ C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\De
 C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.csproj.CopyComplete
 C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.dll
 C:\Users\graha\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.pdb
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.csprojAssemblyReference.cache
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubDAL\CricketClubDAL\obj\Debug\CricketClubDAL.csproj.CopyComplete

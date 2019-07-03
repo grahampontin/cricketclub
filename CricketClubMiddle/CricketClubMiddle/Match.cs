@@ -840,19 +840,18 @@ namespace CricketClubMiddle
             var status = dao.GetInningsStatus(ID);
             if (status.OurInningsStatus == InningsStatus.Completed &&
                 status.TheirInningsStatus == InningsStatus.Completed)
-<<<<<<< HEAD
             {
                 PopulateScorecardFromBallByBallData();
-=======
->>>>>>> origin/master
+
                 return NextInnings.GameOver;
+            }
 
             if (status.OurInningsStatus == InningsStatus.InProgress) return NextInnings.Batting;
 
-            if (status.TheirInningsStatus == InningsStatus.InProgress) return NextInnings.Bowling;
+                if (status.TheirInningsStatus == InningsStatus.InProgress) return NextInnings.Bowling;
 
-            throw new ApplicationException(
-                "After the end of an innings one innings must be in progess or both complete.");
+                throw new ApplicationException(
+                    "After the end of an innings one innings must be in progess or both complete.");
         }
 
         public void PopulateScorecardFromBallByBallData()

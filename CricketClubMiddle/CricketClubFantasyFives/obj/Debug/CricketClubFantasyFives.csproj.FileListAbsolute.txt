@@ -6,7 +6,6 @@ C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantas
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\bin\Debug\CricketClubMiddle.pdb
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\bin\Debug\CricketClubDomain.pdb
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\bin\Debug\CricketClubDAL.pdb
-C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\obj\Debug\CricketClubFantasyFives.csprojResolveAssemblyReference.cache
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\obj\Debug\CricketClubFantasyFives.dll
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\obj\Debug\CricketClubFantasyFives.pdb
 C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\obj\Debug\CricketClubFantasyFives.csproj.CoreCompileInputs.cache
@@ -23,3 +22,5 @@ C:\Users\graha\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasy
 C:\Users\graha\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\obj\Debug\CricketClubFantasyFives.csproj.CopyComplete
 C:\Users\graha\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\obj\Debug\CricketClubFantasyFives.dll
 C:\Users\graha\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\obj\Debug\CricketClubFantasyFives.pdb
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\obj\Debug\CricketClubFantasyFives.csprojAssemblyReference.cache
+C:\Users\Graham\Documents\GitHub\cricketclub\CricketClubMiddle\CricketClubFantasyFives\obj\Debug\CricketClubFantasyFives.csproj.CopyComplete

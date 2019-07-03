@@ -111,7 +111,7 @@ namespace CricketClubDomain
             set;
         }
 
-
-
+        public int BallsFaced { get; set; }
+        public int DotBalls { get; set; }
     }
 }
