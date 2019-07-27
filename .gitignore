@@ -14,3 +14,6 @@ CricketClubMiddle/.vs/CricketClub/v16/Server/sqlite3/storage.ide-wal
 CricketClubMiddle/.vs/CricketClub/v16/Server/sqlite3/storage.ide-shm
 CricketClubMiddle/.vs/CricketClub/v16/Server/sqlite3/storage.ide
 CricketClubMiddle/.vs/CricketClub/v16/Server/sqlite3/db.lock
+CricketClubMiddle/.vs/CricketClub/v16/.suo
+*.dll
+*.pdb
