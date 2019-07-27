@@ -1,5 +1,0 @@
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CricketClubDAL\CricketClubDAL\bin\Release\CricketClubDAL.dll
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CricketClubDAL\CricketClubDAL\bin\Release\CricketClubDAL.pdb
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CricketClubDAL\CricketClubDAL\obj\Release\ResolveAssemblyReference.cache
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CricketClubDAL\CricketClubDAL\obj\Release\CricketClubDAL.dll
-C:\Users\Graham\Documents\Visual Studio 2008\Projects\CricketClubDAL\CricketClubDAL\obj\Release\CricketClubDAL.pdb
