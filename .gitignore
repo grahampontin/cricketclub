@@ -19,3 +19,4 @@ CricketClubDomain/bin/
 Tests/CricketClub.Tests/bin
 Tests/CricketClub.Tests/obj
 *.csproj.FileListAbsolute.txt
+CricketClubMiddle/.vs/CricketClub/v16/.suo
