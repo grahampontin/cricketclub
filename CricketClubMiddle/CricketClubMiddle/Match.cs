@@ -622,7 +622,12 @@ namespace CricketClubMiddle
 
         public static IEnumerable<Match> GetInProgressGames()
         {
-            return GetAll().Where(m => m.GetIsBallByBallInProgress());
+            return GetAll().Where(m => m.GetIsBallByBallInProgress() && !m.BallByBallComplete());
+        }
+
+        private bool BallByBallComplete()
+        {
+            return GetCurrentBallByBallState().IsMatchComplete();
         }
 
         public bool GetIsBallByBallInProgress()

@@ -426,5 +426,12 @@ namespace CricketClubMiddle.Stats
                 return OppositionWickets;
             }
         }
+
+        public bool IsMatchComplete()
+        {
+            var status = GetInningsStatus();
+            return status.TheirInningsStatus == InningsStatus.Completed &&
+                   status.OurInningsStatus == InningsStatus.Completed;
+        }
     }
 }
