@@ -135,12 +135,14 @@ namespace CricketClubMiddle.Stats
             }
         }
 
+        // Bound in Eval statement.
+        // ReSharper disable once UnusedMember.Global
         public string BowlingDismissalText
         {
             get
             {
                 string name = Bowler.Name;
-                if (PlayerName == null || PlayerName.Length == 0)
+                if (string.IsNullOrEmpty(PlayerName))
                 {
                     name = "unknown";
                 }
@@ -151,7 +153,7 @@ namespace CricketClubMiddle.Stats
                     return "c&b " + name;
                 }
                 
-                if (howout == ModesOfDismissal.Bowled || howout == ModesOfDismissal.Caught)
+                if (howout == ModesOfDismissal.Bowled || howout == ModesOfDismissal.Caught || howout == ModesOfDismissal.Stumped)
                 {
                     return "b " + name;
                 }
