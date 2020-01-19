@@ -6,6 +6,7 @@ namespace CricketClubDomain
     public class MatchState
     {
         public int LastCompletedOver;
+        public int OnStrikeBatsmanId;
         public Over Over;
         public PlayerState[] Players;
         public decimal RunRate;
@@ -14,6 +15,7 @@ namespace CricketClubDomain
         public int MatchId;
         public string PreviousBowler;
         public string PreviousBowlerButOne;
+        public PartnershipStub Partnership;
 
         protected bool Equals(MatchState other)
         {
@@ -48,5 +50,11 @@ namespace CricketClubDomain
         }
     }
 
-    
+    public class PartnershipStub
+    {
+        public int Runs;
+        public int Balls;
+        public int Fours;
+        public int Sixes;
+    }
 }

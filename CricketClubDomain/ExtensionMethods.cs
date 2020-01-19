@@ -34,5 +34,11 @@ namespace CricketClubDomain
         {
             return value == null || value.Any();
         }
+        
+        public static IEnumerable<T> AsEnumerable<T>(this Tuple<T, T> value)
+        {
+            yield return value.Item1;
+            yield return value.Item2;
+        }
     }
 }

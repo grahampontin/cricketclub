@@ -82,5 +82,17 @@ namespace CricketClubDomain
         {
             return Wicket != null && !Wicket.IsRunOut;
         }
+
+        public bool IsSix()
+        {
+            return (Thing == Runs && Amount == 6) || (Thing == NoBall && Amount == 7);
+
+        }
+        
+        public bool IsBoundary()
+        {
+            return (Thing == Runs && Amount == 4) || (Thing == NoBall && Amount == 5);
+
+        }
     }
 }

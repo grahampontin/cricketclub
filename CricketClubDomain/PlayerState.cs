@@ -7,6 +7,10 @@ namespace CricketClubDomain
         public int Position;
         public string State;
         public int CurrentScore;
+        public int Fours;
+        public int BallsFaced;
+        public int Sixes;
+        public decimal StrikeRate;
         public const string Batting = "Batting";
         public const string Waiting = "Waiting";
         public const string Out = "Out";

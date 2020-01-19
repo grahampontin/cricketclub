@@ -58,6 +58,11 @@ namespace CricketClubMiddle.Stats
         public MatchState GetMatchState()
         {
             var sortedOversLastToFirst = overs.OrderBy(o=>o.OverNumber).Reverse().ToList();
+            Partnership partnership = null;
+            if (sortedOversLastToFirst.Any())
+            {
+                partnership = GetPartnershipsAndFallOfWickets().GetPartnershipData(GetOnStrikeBatsmanDetails().PlayerId, GetOtherBatsmanDetails().PlayerId);
+            }
             return new MatchState
             {
                 Bowlers = overs.SelectMany(o=>o.Balls).Select(b=>b.Bowler).Distinct().ToArray(),
@@ -67,15 +72,68 @@ namespace CricketClubMiddle.Stats
                 RunRate = !overs.Any() ? 0 :GetScore()/(decimal)overs.Count(),
                 Players = GetPlayerStates(),
                 PreviousBowler = !overs.Any() ? null : sortedOversLastToFirst.Take(1).Single().Balls[0].Bowler,
-                PreviousBowlerButOne = !overs.Any() || overs.Count < 2 ? null : sortedOversLastToFirst.Skip(1).Take(1).Single().Balls[0].Bowler
+                PreviousBowlerButOne = !overs.Any() || overs.Count < 2 ? null : sortedOversLastToFirst.Skip(1).Take(1).Single().Balls[0].Bowler,
+                Partnership = new PartnershipStub()
+                {
+                    Runs = partnership?.Score ?? 0,
+                    Balls = partnership?.BallCount ?? 0,
+                    Sixes = partnership?.Balls.Count(b => b.IsSix()) ?? 0,
+                    Fours = partnership?.Balls.Count(b => b.IsBoundary()) ?? 0
+                },
+                OnStrikeBatsmanId = !overs.Any() ? -1 : GatBastmanOnStrikeAfter(GetSortedBallsLastToFirst().First())
                 
             };
         }
 
+        private int GatBastmanOnStrikeAfter(Ball ball)
+        {
+            var batsmanWhoFaced = ball.Batsman;
+            if (ball.Wicket != null)
+            {
+                if (ball.Wicket.Player == batsmanWhoFaced)
+                {
+                    batsmanWhoFaced = GetBattingPlayers().AsEnumerable().OrderBy(s => s.Position).Last().PlayerId;
+                }
+            }
+            if (BatsmenChangeEndsAfter(ball))
+            {
+                return batsmanWhoFaced;
+            }
+
+            return GetBattingPlayers().Item1.PlayerId == batsmanWhoFaced ? GetBattingPlayers().Item2.PlayerId : GetBattingPlayers().Item1.PlayerId;
+
+        }
+
+        private bool BatsmenChangeEndsAfter(Ball ball)
+        {
+            var shouldSwitch = ball.Amount % 2 != 0;
+            switch (ball.Thing) {
+                case Ball.Wides:
+                case Ball.NoBall:
+                    shouldSwitch = !shouldSwitch;
+                    break;
+            }
+            return shouldSwitch;
+        }
+
+        private Tuple<PlayerState, PlayerState> GetBattingPlayers()
+        {
+            var battingPlayers = playerStates.Where(p => p.AsOfOver == LastCompletedOver && p.State == PlayerState.Batting).ToArray();
+            return new Tuple<PlayerState, PlayerState>(battingPlayers[0], battingPlayers[1]);
+        }
+
         private PlayerState[] GetPlayerStates()
         {
-            var playerScores = GetPlayerScores(new HashSet<int>(playerStates.Select(p => p.PlayerId)));
-            playerStates.ForEach(p=>p.CurrentScore=playerScores.GetValueOrInitializeDefault(p.PlayerId, 0));
+            var batsmenDetails = playerStates.Select(p => GetBatsmanInningsDetails(p.PlayerId)).ToDictionary(d=>d.PlayerId, d=>d);
+            playerStates.ForEach(p=>
+            {
+                var detail = batsmenDetails.GetValueOrInitializeDefault(p.PlayerId, new BatsmanInningsDetails());
+                p.CurrentScore = detail.Score;
+                p.BallsFaced = detail.Balls;
+                p.Fours = detail.Fours;
+                p.Sixes = detail.Sixes;
+                p.StrikeRate = detail.StrikeRate;
+            });
             return playerStates.ToArray();
         }
 
@@ -108,6 +166,13 @@ namespace CricketClubMiddle.Stats
 
         public BatsmanInningsDetails GetBatsmanInningsDetails(int playerId)
         {
+            if (!overs.Any())
+            {
+                return new BatsmanInningsDetails()
+                {
+                    PlayerId = playerId
+                };
+            }
             var lastBall = overs.Last().Balls.Last();
             var bowler = lastBall.Bowler;
             var allBalls = overs.SelectMany(o => o.Balls);
@@ -120,12 +185,12 @@ namespace CricketClubMiddle.Stats
             batsmanInningsDetails.Name = player.Name;
             var playerScore = GetPlayerScores(new HashSet<int> {playerId})[playerId];
             batsmanInningsDetails.Score = playerScore;
-            var ballsFaced = allBallsFacedByThisBatsman.Count;
-            batsmanInningsDetails.Balls = ballsFaced;
+            var legitimateBallsFaced = allBallsFacedByThisBatsman.Count(b => !b.IsNoBall && !b.IsWide);
+            batsmanInningsDetails.Balls = legitimateBallsFaced;
             batsmanInningsDetails.Fours = allBallsFacedByThisBatsman.Count(b => b.Amount == 4);
             batsmanInningsDetails.Sixes = allBallsFacedByThisBatsman.Count(b => b.Amount == 6);
             batsmanInningsDetails.Dots = allBallsFacedByThisBatsman.Count(b => b.Amount == 0);
-            batsmanInningsDetails.StrikeRate = ballsFaced == 0 ? 0 : Math.Round((decimal) playerScore*100/ballsFaced, 2);
+            batsmanInningsDetails.StrikeRate = legitimateBallsFaced == 0 ? 0 : Math.Round((decimal) playerScore*100/legitimateBallsFaced, 2);
 
             var ballsForThisBowler = allBallsFacedByThisBatsman.Where(b => b.Bowler == bowler).ToList();
             batsmanInningsDetails.ScoreForThisBowler = BallByBallHelpers.ScoreFromBalls(ballsForThisBowler);
