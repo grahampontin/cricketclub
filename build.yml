@@ -36,8 +36,7 @@ steps:
   inputs:
     command: 'pack'
     packagesToPack: '**/*.csproj'
-    versioningScheme: 'off'
-    includeReferencedProjects: true
+    versioningScheme: 'byBuildNumber'
 
 - task: NuGetCommand@2
   inputs:
