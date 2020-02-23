@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using CricketClubDAL;
 using CricketClubDomain;
@@ -14,14 +15,17 @@ namespace CricketClubMiddle.Stats
         private readonly int matchId;
         private readonly OppositionInnings oppositionInnings;
         private readonly BallByBallInningsStatus inningsStatus;
+        private readonly Match match;
 
-        private BallByBallMatch(List<Over> overs, List<PlayerState> playerStates, int matchId, OppositionInnings oppositionInnings, BallByBallInningsStatus inningsStatus)
+        private BallByBallMatch(List<Over> overs, List<PlayerState> playerStates, int matchId,
+            OppositionInnings oppositionInnings, BallByBallInningsStatus inningsStatus, Match match)
         {
             this.overs = overs;
             this.playerStates = playerStates;
             this.matchId = matchId;
             this.oppositionInnings = oppositionInnings;
             this.inningsStatus = inningsStatus;
+            this.match = match;
         }
 
         public int LastCompletedOver
@@ -39,15 +43,15 @@ namespace CricketClubMiddle.Stats
 
         private OppositionInningsDetails LastOppositionOver
         {
-            get { return oppositionInnings.Details.OrderBy(d => d.Over).Last(); }
+            get { return oppositionInnings.Details.OrderBy(d => d.Over).LastOrDefault(); }
         }
 
         public int OppositionWickets => oppositionInnings.Details.Any() ? LastOppositionOver.Wickets : 0;
 
-        public static BallByBallMatch Load(int matchId)
+        public static BallByBallMatch Load(int matchId, Match match)
         {
             var dao = new Dao();
-            return new BallByBallMatch(dao.GetAllBallsForMatch(matchId), dao.GetPlayerStates(matchId), matchId, dao.GetOppositionInnings(matchId), dao.GetInningsStatus(matchId));
+            return new BallByBallMatch(dao.GetAllBallsForMatch(matchId), dao.GetPlayerStates(matchId), matchId, dao.GetOppositionInnings(matchId), dao.GetInningsStatus(matchId), match);
         }
 
         public Dictionary<int, int> GetPlayerScores(HashSet<int> playerIds)
@@ -63,6 +67,8 @@ namespace CricketClubMiddle.Stats
             {
                 partnership = GetPartnershipsAndFallOfWickets().GetPartnershipData(GetOnStrikeBatsmanDetails().PlayerId, GetOtherBatsmanDetails().PlayerId);
             }
+
+
             return new MatchState
             {
                 Bowlers = overs.SelectMany(o=>o.Balls).Select(b=>b.Bowler).Distinct().ToArray(),
@@ -80,9 +86,47 @@ namespace CricketClubMiddle.Stats
                     Sixes = partnership?.Balls.Count(b => b.IsSix()) ?? 0,
                     Fours = partnership?.Balls.Count(b => b.IsBoundary()) ?? 0
                 },
-                OnStrikeBatsmanId = !overs.Any() ? -1 : GatBastmanOnStrikeAfter(GetSortedBallsLastToFirst().First())
+                OnStrikeBatsmanId = !overs.Any() ? -1 : GatBastmanOnStrikeAfter(GetSortedBallsLastToFirst().First()),
+                NextState = GetWhatsNext().ToString()
                 
             };
+        }
+
+        private NextState GetWhatsNext()
+        {
+            if (GetInningsStatus().OurInningsStatus == InningsStatus.InProgress)
+            {
+                if (overs.Count == match.Overs)
+                {
+                    return NextState.EndOfBattingInnings;
+                }
+
+                return NextState.BattingOver;
+            }
+
+            if (GetInningsStatus().TheirInningsStatus == InningsStatus.InProgress)
+            {
+                if (LastOppositionOver!=null && LastOppositionOver.Over == match.Overs)
+                {
+                    return NextState.EndOfBowlingInnings;
+                }
+
+                return NextState.BowlingOver;
+            }
+
+            if (GetInningsStatus().TheirInningsStatus == InningsStatus.NotStarted &&
+                GetInningsStatus().OurInningsStatus == InningsStatus.NotStarted)
+            {
+                if (match.OppositionBattedFirst)
+                {
+                    return NextState.BowlingOver;
+                }
+
+                return NextState.BattingOver;
+            }
+             
+            return NextState.EndOfMatch;
+
         }
 
         private int GatBastmanOnStrikeAfter(Ball ball)
@@ -499,4 +543,6 @@ namespace CricketClubMiddle.Stats
                    status.OurInningsStatus == InningsStatus.Completed;
         }
     }
+
+   
 }

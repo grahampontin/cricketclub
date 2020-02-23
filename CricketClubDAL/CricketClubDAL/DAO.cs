@@ -653,7 +653,7 @@ namespace CricketClubDAL
         public void UpdateScoreCard(List<BattingCardLineData> battingData, int totalExtras,
                                     BattingOrBowling battingOrBowling)
         {
-            if (battingData.Count > 0 && totalExtras != 0)
+            if (battingData.Count > 0)
             {
                 string table = "batting_scorecards";
                 if (battingOrBowling == BattingOrBowling.Bowling)

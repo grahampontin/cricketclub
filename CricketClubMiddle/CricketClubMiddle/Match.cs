@@ -597,7 +597,7 @@ namespace CricketClubMiddle
 
         public BallByBallMatch GetCurrentBallByBallState()
         {
-            return BallByBallMatch.Load(ID);
+            return BallByBallMatch.Load(ID, this);
         }
 
         public void UpdateCurrentBallByBallState(MatchState stateFromClient)
@@ -610,7 +610,10 @@ namespace CricketClubMiddle
             if (Overs <= currentBallByBallState.LastCompletedOver && !WasDeclaration)
                 throw new InvalidOperationException("this match is only " + Overs +
                                                     " overs long and we've have that many. Time to poke the end innings button.");
-
+            if (stateFromClient.Over.Balls.IsNullOrEmpty())
+            {
+                throw new InvalidOperationException("Can't add a new over with no balls in it, noone counts that badly");
+            }
             if (inningsStatus.OurInningsStatus != InningsStatus.InProgress)
             {
                 inningsStatus.OurInningsStatus = InningsStatus.InProgress;
@@ -800,7 +803,7 @@ namespace CricketClubMiddle
 
         public NextInnings EndInnings(InningsEndDetails inningsEndDetails)
         {
-            if (inningsEndDetails.InningsType == "Batting")
+            if (inningsEndDetails.InningsType.Equals("Batting", StringComparison.InvariantCultureIgnoreCase))
             {
                 var currentBallByBallState = GetCurrentBallByBallState();
                 var inningsStatus = currentBallByBallState.GetInningsStatus();
@@ -863,16 +866,9 @@ namespace CricketClubMiddle
         {
             var liveScorecard = GetLiveScorecard();
             var ourBattingCard = new BattingCard(this.ID, ThemOrUs.Us);
+            ourBattingCard.ScorecardData.Clear();
             ourBattingCard.ScorecardData.AddRange(liveScorecard.LiveBattingCard.Players.Select(p=>BattingCardLine.From(p, this)));
             var liveExtras = liveScorecard.LiveBattingCard.Extras;
-            ourBattingCard.ScorecardData.Clear();
-            ourBattingCard.ScorecardData.Add(new BattingCardLine(new BattingCardLineData
-            {
-                BattingAt = -1,
-                MatchID = ID,
-                MatchDate = MatchDate,
-                Score = liveExtras.Total
-            }));
             ourBattingCard.Save(BattingOrBowling.Batting);
 
             var extras = new Extras(ID, ThemOrUs.Us)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using CricketClubDAL;
 using CricketClubDomain;
+using CricketClubMiddle;
 using CricketClubMiddle.Stats;
 using NUnit.Framework;
 
@@ -47,7 +48,7 @@ namespace CricketClub.Tests
             var matchState = MakeMatchState(0);
             da.UpdateCurrentBallByBallState(matchState, matchId);
 
-            BallByBallMatch.Load(matchId);
+            BallByBallMatch.Load(matchId, null);
         }
 
         [Test]
@@ -60,7 +61,7 @@ namespace CricketClub.Tests
             da.UpdateCurrentBallByBallState(matchState, matchId);
 
 
-            var ballByBallMatch = BallByBallMatch.Load(matchId);
+            var ballByBallMatch = BallByBallMatch.Load(matchId, null);
 
             var stateAfterSave = ballByBallMatch.GetMatchState();
             var stateToMutate = ballByBallMatch.GetMatchState();
@@ -92,13 +93,13 @@ namespace CricketClub.Tests
 
             da.UpdateCurrentBallByBallState(stateToMutate, matchId);
 
-            var stateAfterUpdate = BallByBallMatch.Load(matchId).GetMatchState();
+            var stateAfterUpdate = BallByBallMatch.Load(matchId, null).GetMatchState();
 
             Assert.That(stateAfterUpdate.Players.Length, Is.EqualTo(11));
 
             da.DeleteBallByBallOver(matchId, 2);
 
-            var stateAfterRollback = BallByBallMatch.Load(matchId).GetMatchState();
+            var stateAfterRollback = BallByBallMatch.Load(matchId, null).GetMatchState();
 
 
 

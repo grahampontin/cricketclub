@@ -16,6 +16,7 @@ namespace CricketClubDomain
         public string PreviousBowler;
         public string PreviousBowlerButOne;
         public PartnershipStub Partnership;
+        public string NextState;
 
         protected bool Equals(MatchState other)
         {
@@ -56,5 +57,14 @@ namespace CricketClubDomain
         public int Balls;
         public int Fours;
         public int Sixes;
+    }
+
+    public enum NextState
+    {
+        BattingOver,
+        EndOfBattingInnings,
+        EndOfBowlingInnings,
+        BowlingOver,
+        EndOfMatch
     }
 }

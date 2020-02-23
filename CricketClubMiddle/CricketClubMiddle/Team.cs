@@ -96,5 +96,13 @@ namespace CricketClubMiddle
         {
             return Name;
         }
+
+        public static Team OurTeam
+        {
+            get
+            {
+                return new Team(0);
+            }
+        }
     }
 }

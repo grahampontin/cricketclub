@@ -32,7 +32,7 @@ namespace CricketClubDomain
 
         public static bool IsNullOrEmpty<T>(this IEnumerable<T> value)
         {
-            return value == null || value.Any();
+            return value == null || !value.Any();
         }
         
         public static IEnumerable<T> AsEnumerable<T>(this Tuple<T, T> value)

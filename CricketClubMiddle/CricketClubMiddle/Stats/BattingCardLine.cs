@@ -211,7 +211,7 @@ namespace CricketClubMiddle.Stats
         public static BattingCardLine From(KeyValuePair<string, LiveBattingCardEntry> liveData, Match match)
         {
             var wicket = liveData.Value?.Wicket;
-            var data = liveData.Value.BatsmanInningsDetails;
+            var data = liveData.Value?.BatsmanInningsDetails;
             return new BattingCardLine(new BattingCardLineData
                 {
                     BattingAt = int.Parse(liveData.Key),
@@ -223,7 +223,7 @@ namespace CricketClubMiddle.Stats
                     MatchDate = match.MatchDate,
                     MatchID = match.ID,
                     MatchTypeID = (int) match.Type,
-                    ModeOfDismissal = (int) wicket?.ModeOfDismissalAsEnum,
+                    ModeOfDismissal = (int) (wicket?.ModeOfDismissalAsEnum ?? ModesOfDismissal.NotOut),
                     PlayerID = data.PlayerId,
                     Runs = data.Score - (data.Fours*4 + data.Sixes*6),
                     Score = data.Score,
