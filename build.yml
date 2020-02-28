@@ -32,7 +32,7 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-- task: DotNetCoreCLI@2
+- task: NuGetCommand@2
   inputs:
     command: 'pack'
     packagesToPack: '**/*.csproj'
@@ -41,9 +41,10 @@ steps:
     minorVersion: '0'
     patchVersion: '0'
 
-- task: DotNetCoreCLI@2
+- task: NuGetCommand@2
   inputs:
     command: 'push'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
     nuGetFeedType: 'internal'
     publishVstsFeed: '109e362b-62db-4727-9d2a-e2d0e8f55904/f8b97027-340d-42d9-8b79-52d89a6d5dcf'
+    allowPackageConflicts: true
