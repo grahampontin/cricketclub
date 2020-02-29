@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("CricketClubAccounts")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Dresdner Kleinwort")]
+[assembly: AssemblyCompany("Graham Pontin")]
 [assembly: AssemblyProduct("CricketClubAccounts")]
-[assembly: AssemblyCopyright("Copyright © Dresdner Kleinwort 2009")]
+[assembly: AssemblyCopyright("Copyright © Graham Pontin 2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
