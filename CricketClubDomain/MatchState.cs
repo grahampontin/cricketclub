@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Security.Policy;
 
 namespace CricketClubDomain
 {
@@ -17,6 +18,8 @@ namespace CricketClubDomain
         public string PreviousBowlerButOne;
         public PartnershipStub Partnership;
         public string NextState;
+        public int OppositionScore; 
+        public int OppositionWickets; 
 
         protected bool Equals(MatchState other)
         {

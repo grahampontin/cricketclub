@@ -87,7 +87,9 @@ namespace CricketClubMiddle.Stats
                     Fours = partnership?.Balls.Count(b => b.IsBoundary()) ?? 0
                 },
                 OnStrikeBatsmanId = !overs.Any() ? -1 : GatBastmanOnStrikeAfter(GetSortedBallsLastToFirst().First()),
-                NextState = GetWhatsNext().ToString()
+                NextState = GetWhatsNext().ToString(),
+                OppositionScore = OppositionScore,
+                OppositionWickets = OppositionWickets
                 
             };
         }
