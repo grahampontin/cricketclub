@@ -65,6 +65,8 @@ namespace CricketClubDomain
         EndOfBattingInnings,
         EndOfBowlingInnings,
         BowlingOver,
-        EndOfMatch
+        EndOfMatch,
+        SelectTeam,
+        MatchConditions
     }
 }

@@ -94,7 +94,9 @@ namespace CricketClubMiddle.Stats
 
         private NextState GetWhatsNext()
         {
-            if (GetInningsStatus().OurInningsStatus == InningsStatus.InProgress)
+            var ourInningsStatus = GetInningsStatus().OurInningsStatus;
+            var theirInningsStatus = GetInningsStatus().TheirInningsStatus;
+            if (ourInningsStatus == InningsStatus.InProgress)
             {
                 if (overs.Count == match.Overs)
                 {
@@ -104,7 +106,7 @@ namespace CricketClubMiddle.Stats
                 return NextState.BattingOver;
             }
 
-            if (GetInningsStatus().TheirInningsStatus == InningsStatus.InProgress)
+            if (theirInningsStatus == InningsStatus.InProgress)
             {
                 if (LastOppositionOver!=null && LastOppositionOver.Over == match.Overs)
                 {
@@ -114,9 +116,19 @@ namespace CricketClubMiddle.Stats
                 return NextState.BowlingOver;
             }
 
-            if (GetInningsStatus().TheirInningsStatus == InningsStatus.NotStarted &&
-                GetInningsStatus().OurInningsStatus == InningsStatus.NotStarted)
+            if (theirInningsStatus == InningsStatus.NotStarted &&
+                ourInningsStatus == InningsStatus.NotStarted)
             {
+                if (this.playerStates.IsNullOrEmpty())
+                {
+                    return NextState.SelectTeam;
+                }
+
+                if (match.Overs == 0)
+                {
+                    return NextState.MatchConditions;
+                }
+
                 if (match.OppositionBattedFirst)
                 {
                     return NextState.BowlingOver;

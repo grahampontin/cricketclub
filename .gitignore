@@ -3,3 +3,6 @@
 **/obj/
 **/bin/
 *.csproj.FileListAbsolute.txt
+.vs/CricketClub/v16/Server/sqlite3/storage.ide-wal
+.vs/CricketClub/v16/Server/sqlite3/storage.ide-shm
+.vs/CricketClub/v16/Server/sqlite3/storage.ide
