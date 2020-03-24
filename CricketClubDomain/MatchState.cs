@@ -19,7 +19,8 @@ namespace CricketClubDomain
         public PartnershipStub Partnership;
         public string NextState;
         public int OppositionScore; 
-        public int OppositionWickets; 
+        public int OppositionWickets;
+        public BowlerInningsDetails[] BowlerDetails;
 
         protected bool Equals(MatchState other)
         {

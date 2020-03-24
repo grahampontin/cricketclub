@@ -94,7 +94,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BallByBallMatchConditions.cs" />
-    <Compile Include="BowlerInningsDetails.cs" />
     <Compile Include="Chat.cs" />
     <Compile Include="ChatItem.cs" />
     <Compile Include="InningsEndDetails.cs" />

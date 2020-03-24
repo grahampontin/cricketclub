@@ -94,6 +94,8 @@
   <ItemGroup>
     <Compile Include="AccountEntryData.cs" />
     <Compile Include="Ball.cs" />
+    <Compile Include="BowlerInningsDetails.cs" />
+    <Compile Include="BowlingDetails.cs" />
     <Compile Include="BowlingStatsEntryData.cs" />
     <Compile Include="ChatData.cs" />
     <Compile Include="Enums.cs" />

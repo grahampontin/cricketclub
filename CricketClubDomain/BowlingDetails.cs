@@ -1,15 +1,5 @@
-using CricketClubMiddle.Stats;
-
-namespace CricketClubMiddle
+namespace CricketClubDomain
 {
-    public class BowlerInningsDetails
-    {
-        public string Name { get; set; }
-        public BowlingDetails JustThisSpell { get; set; }
-        public BowlingDetails Details { get; set; }
-
-    }
-
     public class BowlingDetails
     {
         public int Overs { get; set; }

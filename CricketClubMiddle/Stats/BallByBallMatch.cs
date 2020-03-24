@@ -69,9 +69,11 @@ namespace CricketClubMiddle.Stats
             }
 
 
+            var bowlers = overs.SelectMany(o=>o.Balls).Select(b=>b.Bowler).Distinct().ToArray();
             return new MatchState
             {
-                Bowlers = overs.SelectMany(o=>o.Balls).Select(b=>b.Bowler).Distinct().ToArray(),
+                Bowlers = bowlers.ToArray(),
+                BowlerDetails = bowlers.Select(GetBowlerDetails).ToArray(),
                 LastCompletedOver = !overs.Any() ? 0 : overs.Max(o=>o.OverNumber),
                 MatchId = matchId,
                 Score = GetScore(),
