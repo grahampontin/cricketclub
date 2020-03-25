@@ -20,6 +20,8 @@ namespace CricketClubDomain
         public string NextState;
         public int OppositionScore; 
         public int OppositionWickets;
+        public string OppositionName;
+        public string OppositionShortName;
         public BowlerInningsDetails[] BowlerDetails;
 
         protected bool Equals(MatchState other)

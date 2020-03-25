@@ -70,6 +70,7 @@ namespace CricketClubMiddle.Stats
 
 
             var bowlers = overs.SelectMany(o=>o.Balls).Select(b=>b.Bowler).Distinct().ToArray();
+            var opposition = match.Opposition;
             return new MatchState
             {
                 Bowlers = bowlers.ToArray(),
@@ -91,9 +92,16 @@ namespace CricketClubMiddle.Stats
                 OnStrikeBatsmanId = !overs.Any() ? -1 : GatBastmanOnStrikeAfter(GetSortedBallsLastToFirst().First()),
                 NextState = GetWhatsNext().ToString(),
                 OppositionScore = OppositionScore,
-                OppositionWickets = OppositionWickets
-                
+                OppositionWickets = OppositionWickets,
+                OppositionName = opposition.Name,
+                OppositionShortName = CreateShortName(opposition.Name)
             };
+        }
+
+        private string CreateShortName(string oppositionName)
+        {
+            var strings = oppositionName.Split(' ');
+            return strings.Select(s => s =="CC" ? "CC" : s.Substring(0, 1).ToUpper()).Take(3).Aggregate((s1, s2) => s1 + s2);
         }
 
         private NextState GetWhatsNext()
