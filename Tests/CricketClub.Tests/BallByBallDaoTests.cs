@@ -115,5 +115,17 @@ namespace CricketClub.Tests
             var matchId = da.CreateNewMatch(1, DateTime.Now, 1, 1, HomeOrAway.Home);
             da.StartBallByBallCoverage(matchId, new List<int> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, new MatchData());
         }
+        
+        [Test]
+        public void CanResetMatch()
+        {
+            var da = new Dao();
+            var matchId = da.CreateNewMatch(1, DateTime.Now, 1, 1, HomeOrAway.Home);
+            da.StartBallByBallCoverage(matchId, new List<int> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, new MatchData());
+            var matchState = MakeMatchState(0);
+            da.UpdateCurrentBallByBallState(matchState, matchId);
+
+            da.ResetBallByBallCoverage(matchId);
+        }
     }
 }

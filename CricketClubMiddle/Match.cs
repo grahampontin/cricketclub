@@ -896,5 +896,10 @@ namespace CricketClubMiddle
         {
             dao.DeleteBallByBallOver(ID, GetCurrentBallByBallState().LastCompletedOver);
         }
+
+        public void ResetBallByBallData()
+        {
+            dao.ResetBallByBallCoverage(ID);
+        }
     }
 }

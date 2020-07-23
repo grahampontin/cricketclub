@@ -1419,6 +1419,15 @@ namespace CricketClubDAL
             
             
         }
+        
+        public void ResetBallByBallCoverage(int match_id)
+        {
+            db.ExecuteInsertOrUpdate($"delete from ballbyball_team where match_id = {match_id}");
+            db.ExecuteInsertOrUpdate($"delete from ballbyball_data where match_id = {match_id}");
+            db.ExecuteInsertOrUpdate($"delete from ballbyball_commentary where match_id = {match_id}");
+            db.ExecuteInsertOrUpdate($"delete from ballbyball_opposition_data where match_id = {match_id}");
+            db.ExecuteInsertOrUpdate($"delete from ballbyball_innings_status where match_id = {match_id}");
+        }
 
         private void LogException(string message, Exception exception)
         {
