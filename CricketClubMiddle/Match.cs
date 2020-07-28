@@ -901,5 +901,15 @@ namespace CricketClubMiddle
         {
             dao.ResetBallByBallCoverage(ID);
         }
+
+        public FoWStats GetOurFoWData()
+        {
+            return new FoWStats(ID, ThemOrUs.Us);
+        }
+
+        public FoWStats GetTheirFoWData()
+        {
+            return new FoWStats(ID, ThemOrUs.Them);
+        }
     }
 }

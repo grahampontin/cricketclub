@@ -105,8 +105,29 @@ namespace CricketClubMiddle.Stats
                 return _data.Sixes;
 
             }
-        }
+        }   
+        
+        public int BallsFaced
+        {
+            get
+            {
 
+                return _data.BallsFaced;
+
+            }
+        }
+        
+        public int DotBalls
+        {
+            get
+            {
+
+                return _data.DotBalls;
+
+            }
+        }
+        
+        
         public ModesOfDismissal Dismissal
         {
             get
