@@ -187,7 +187,16 @@ namespace CricketClubMiddle.Stats
         private Tuple<PlayerState, PlayerState> GetBattingPlayers()
         {
             var battingPlayers = playerStates.Where(p => p.AsOfOver == LastCompletedOver && p.State == PlayerState.Batting).ToArray();
-            return new Tuple<PlayerState, PlayerState>(battingPlayers[0], battingPlayers[1]);
+            PlayerState secondPlayer = new PlayerState()
+            {
+                PlayerId = -1
+            };
+            if (battingPlayers.Length > 1)
+            {
+                secondPlayer = battingPlayers[1];
+            }
+
+            return new Tuple<PlayerState, PlayerState>(battingPlayers[0], secondPlayer);
         }
 
         private PlayerState[] GetPlayerStates()
