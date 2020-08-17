@@ -110,7 +110,7 @@ namespace CricketClubMiddle.Stats
             var theirInningsStatus = GetInningsStatus().TheirInningsStatus;
             if (ourInningsStatus == InningsStatus.InProgress)
             {
-                if (overs.Count == match.Overs)
+                if (overs.Count == match.Overs || GetPlayersInState(PlayerState.Out).Length == 10)
                 {
                     return NextState.EndOfBattingInnings;
                 }
@@ -186,7 +186,7 @@ namespace CricketClubMiddle.Stats
 
         private Tuple<PlayerState, PlayerState> GetBattingPlayers()
         {
-            var battingPlayers = playerStates.Where(p => p.AsOfOver == LastCompletedOver && p.State == PlayerState.Batting).ToArray();
+            var battingPlayers = GetPlayersInState(PlayerState.Batting);
             PlayerState secondPlayer = new PlayerState()
             {
                 PlayerId = -1
@@ -197,6 +197,11 @@ namespace CricketClubMiddle.Stats
             }
 
             return new Tuple<PlayerState, PlayerState>(battingPlayers[0], secondPlayer);
+        }
+
+        private PlayerState[] GetPlayersInState(string state)
+        {
+            return playerStates.Where(p => p.AsOfOver == LastCompletedOver && p.State == state).ToArray();
         }
 
         private PlayerState[] GetPlayerStates()
