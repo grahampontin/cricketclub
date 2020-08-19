@@ -15,7 +15,7 @@ namespace CricketClubMiddle.Stats
         /// </summary>
         /// <param name="MatchID">The id of the match</param>
         /// <param name="Us">is this for us (true), or for the opposition (false)</param>
-        internal BowlingStats(int MatchID, ThemOrUs who)
+        public BowlingStats(int MatchID, ThemOrUs who)
         {
             Dao myDAO = new Dao();
             BowlingStatsData = (from a in myDAO.GetBowlingStats(MatchID, who)
