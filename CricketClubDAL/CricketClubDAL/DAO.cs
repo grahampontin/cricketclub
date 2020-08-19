@@ -683,18 +683,24 @@ namespace CricketClubDAL
                     db.ExecuteInsertOrUpdate(sql);
                 }
 
+                int franksPosition = battingData.Select(d => d.BattingAt - 1).Max() + 1;
+                if (franksPosition < 11)
+                {
+                    franksPosition = 11;
+                }
+
                 //Extras
                 if (battingOrBowling == BattingOrBowling.Batting)
                 {
                     sql =
                         "insert into batting_scorecards(player_id, dismissal_id, score, [batting at], match_id, bowler_name, [4s], [6s]) select -1, -1, " +
-                        totalExtras + ", 11, " + battingData[0].MatchID + " , '', 0, 0";
+                        totalExtras + ", "+franksPosition+", " + battingData[0].MatchID + " , '', 0, 0";
                 }
                 else
                 {
                     sql =
                         "insert into bowling_scorecards(player_name, dismissal_id, score, [batting at], match_id, bowler_id) select '(Frank) Extras', -1, " +
-                        totalExtras + ", 11, " + battingData[0].MatchID + " , 0";
+                        totalExtras + ", "+franksPosition+", " + battingData[0].MatchID + " , 0";
                 }
                 db.ExecuteInsertOrUpdate(sql);
             }
