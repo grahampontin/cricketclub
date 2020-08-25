@@ -1475,7 +1475,8 @@ namespace CricketClubDAL
                     Bowler = r.GetString("bowler"),
                     Thing = r.GetString("type"),
                     Angle = r.GetDecimal("angle"),
-                    BatsmanName = r.GetString("batsman_name")
+                    BatsmanName = r.GetString("batsman_name"),
+                    BallNumber = r.GetInt("ball")
 
                 };
                 if (r.GetInt("out_player_id", -1) != -1)

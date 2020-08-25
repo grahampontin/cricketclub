@@ -20,6 +20,7 @@ namespace CricketClubDomain
         public string Thing;
         public Wicket Wicket;
         public decimal? Angle;
+        public int BallNumber;
 
         public Ball(int amount, string thing, int batsman, string batsmanName, string bowler, Wicket wicket, decimal? angle)
         {
