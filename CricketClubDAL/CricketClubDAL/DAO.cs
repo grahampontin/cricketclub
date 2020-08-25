@@ -169,7 +169,8 @@ namespace CricketClubDAL
                 Score = (int) row["score"],
                 MatchTypeID = (int) row["comp_id"],
                 MatchDate = DateTimeFromRow(row["match_date"]),
-                VenueID = (int) row["venue_id"]
+                VenueID = (int) row["venue_id"],
+                BallsFaced = (int) row["batting_at"]
             })).ToList();
         }
 
@@ -674,10 +675,10 @@ namespace CricketClubDAL
                     else
                     {
                         sql =
-                            "insert into batting_scorecards(player_id, dismissal_id, score, [batting at], match_id, bowler_name, fielder_name, [4s], [6s]) select " +
+                            "insert into batting_scorecards(player_id, dismissal_id, score, [batting at], match_id, bowler_name, fielder_name, [4s], [6s], balls_faced) select " +
                             row.PlayerID + ", " + row.ModeOfDismissal + ", " + row.Score + ", " +
                             (row.BattingAt - 1) + ", " + row.MatchID + " , '" + row.BowlerName + "', '" +
-                            row.FielderName + "'," + row.Fours + ", " + row.Sixes;
+                            row.FielderName + "'," + row.Fours + ", " + row.Sixes + ", " + row.BallsFaced;
                     }
 
                     db.ExecuteInsertOrUpdate(sql);
