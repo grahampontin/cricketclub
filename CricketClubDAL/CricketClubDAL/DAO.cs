@@ -170,7 +170,7 @@ namespace CricketClubDAL
                 MatchTypeID = (int) row["comp_id"],
                 MatchDate = DateTimeFromRow(row["match_date"]),
                 VenueID = (int) row["venue_id"],
-                BallsFaced = (int) row["batting_at"]
+                BallsFaced = (int) row["balls_faced"]
             })).ToList();
         }
 
