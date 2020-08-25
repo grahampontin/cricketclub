@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace CricketClubDomain
+﻿namespace CricketClubDomain
 {
     public class Wicket
     {
@@ -29,6 +24,7 @@ namespace CricketClubDomain
         {
             get
             {
+                if (IsBowled) return ModesOfDismissal.Bowled;
                 if (IsStumped) return ModesOfDismissal.Stumped;
                 if (IsRunOut) return ModesOfDismissal.RunOut;
                 if (IsCaught) return ModesOfDismissal.Caught;

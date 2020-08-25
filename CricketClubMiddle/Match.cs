@@ -884,6 +884,7 @@ namespace CricketClubMiddle
             FoWStats fallOfWicketStats = new FoWStats(ID, ThemOrUs.Us);
             fallOfWicketStats.Data.Clear();
             fallOfWicketStats.Data.AddRange(liveScorecard.FallOfWickets.Select(f=>FoWStatsLine.From(f, this, ThemOrUs.Us)));
+            fallOfWicketStats.Save();
 
             var theirBowlingStats = new BowlingStats(ID, ThemOrUs.Them);
             theirBowlingStats.BowlingStatsData.Clear();
