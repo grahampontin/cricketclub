@@ -120,7 +120,7 @@ namespace CricketClubMiddle.Stats
 
             if (theirInningsStatus == InningsStatus.InProgress)
             {
-                if (LastOppositionOver!=null && LastOppositionOver.Over == match.Overs)
+                if (LastOppositionOver!=null && (LastOppositionOver.Over == match.Overs || oppositionInnings.Details.Last()?.Wickets>=10))
                 {
                     return NextState.EndOfBowlingInnings;
                 }
