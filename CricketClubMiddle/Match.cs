@@ -871,7 +871,7 @@ namespace CricketClubMiddle
             var liveExtras = liveScorecard.LiveBattingCard.Extras;
             ourBattingCard.Save(BattingOrBowling.Batting);
 
-            var extras = new Extras(ID, ThemOrUs.Us)
+            var extras = new Extras(ID, ThemOrUs.Them)
             {
                 Byes = liveExtras.Byes,
                 LegByes = liveExtras.LegByes,
