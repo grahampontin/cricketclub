@@ -880,10 +880,12 @@ namespace CricketClubMiddle
                 Wides = liveExtras.Wides
             };
             extras.Save();
-            
+
+            var playerIdToPosition = ourBattingCard.ScorecardData.ToDictionary(b => b.Batsman.ID, b => b.BattingAt);
+
             FoWStats fallOfWicketStats = new FoWStats(ID, ThemOrUs.Us);
             fallOfWicketStats.Data.Clear();
-            fallOfWicketStats.Data.AddRange(liveScorecard.FallOfWickets.Select(f=>FoWStatsLine.From(f, this, ThemOrUs.Us)));
+            fallOfWicketStats.Data.AddRange(liveScorecard.FallOfWickets.Select(f=>FoWStatsLine.From(f, this, ThemOrUs.Us, playerIdToPosition)));
             fallOfWicketStats.Save();
 
             var theirBowlingStats = new BowlingStats(ID, ThemOrUs.Them);

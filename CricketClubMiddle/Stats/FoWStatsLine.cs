@@ -165,7 +165,8 @@ namespace CricketClubMiddle.Stats
             }
         }
 
-        public static FoWStatsLine From(FallOfWicket fallOfWicket, Match match, ThemOrUs themOrUs)
+        public static FoWStatsLine From(FallOfWicket fallOfWicket, Match match, ThemOrUs themOrUs,
+            Dictionary<int, int> playerIdToPosition)
         {
           return new FoWStatsLine(new FoWDataLine
           {
@@ -173,9 +174,9 @@ namespace CricketClubMiddle.Stats
               Wicket = fallOfWicket.WicketNumber,
               MatchID = match.ID,
               OverNumber = (int) decimal.Parse(fallOfWicket.OverAsString),
-              NotOutBatsman = fallOfWicket.NotOutPlayerId,
+              NotOutBatsman = playerIdToPosition[fallOfWicket.NotOutPlayerId],
               NotOutBatsmanScore = fallOfWicket.NotOutPlayerScore,
-              OutgoingBatsman = fallOfWicket.OutGoingPlayerId,
+              OutgoingBatsman = playerIdToPosition[fallOfWicket.OutGoingPlayerId],
               OutgoingBatsmanScore = fallOfWicket.OutGoingPlayerScore,
               Partnership = fallOfWicket.Partnership.Score,
               Who = themOrUs
