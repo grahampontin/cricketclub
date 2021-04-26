@@ -1680,6 +1680,44 @@ namespace CricketClubDAL
             db.ExecuteInsertOrUpdate("delete from ballbyball_commentary where match_id = " + matchId + " and over_number = " +
                                      lastCompletedOver);
         }
+
+        public void CreateOrUpdateMatchReport(int matchId, string conditions, string report)
+        {
+            var safeReport = SafeForSql(report);
+            var safeConditions = SafeForSql(conditions);
+            if (db.QueryMany($"select * from match_reports where match_id = {matchId}").Any())
+            {
+                db.ExecuteInsertOrUpdate($"update match_reports set report='{safeReport}' where match_id={matchId}");
+                db.ExecuteInsertOrUpdate($"update match_reports set conditions='{safeConditions}' where match_id={matchId}");
+            }
+            else
+            {
+                db.ExecuteInsertOrUpdate($"insert into match_reports(match_id, report, conditions) values({matchId}, '{safeReport}', '{safeConditions}'");
+            }
+        }
+
+        public MatchReportAndConditions GetMatchReport(int matchId)
+        {
+            return db.ExecuteSQLAndReturnFirstRow($"select * from match_reports where match_id={matchId}",
+                r => new MatchReportAndConditions(r.GetString("conditions"), r.GetString("report")), MatchReportAndConditions.none());
+        }
+    }
+
+    public class MatchReportAndConditions
+    {
+        public string Conditions { get; }
+        public string Report { get; }
+
+        public MatchReportAndConditions(string conditions, string report)
+        {
+            Conditions = conditions;
+            Report = report;
+        }
+
+        public static MatchReportAndConditions none()
+        {
+            return new MatchReportAndConditions("Not recorded", "No report");
+        }
     }
 
     public class BallByBallInningsStatus
