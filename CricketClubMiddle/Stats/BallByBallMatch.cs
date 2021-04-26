@@ -108,9 +108,11 @@ namespace CricketClubMiddle.Stats
         {
             var ourInningsStatus = GetInningsStatus().OurInningsStatus;
             var theirInningsStatus = GetInningsStatus().TheirInningsStatus;
+
+            var matchState = GetMatchState(); 
             if (ourInningsStatus == InningsStatus.InProgress)
             {
-                if (overs.Count == match.Overs || GetPlayersInState(PlayerState.Out).Length == 10)
+                if (overs.Count == match.Overs || GetPlayersInState(PlayerState.Out).Length == 10 || (theirInningsStatus==InningsStatus.Completed && matchState.Score > matchState.OppositionScore))
                 {
                     return NextState.EndOfBattingInnings;
                 }
@@ -120,7 +122,7 @@ namespace CricketClubMiddle.Stats
 
             if (theirInningsStatus == InningsStatus.InProgress)
             {
-                if (LastOppositionOver!=null && (LastOppositionOver.Over == match.Overs || oppositionInnings.Details.Last()?.Wickets>=10))
+                if (LastOppositionOver!=null && (LastOppositionOver.Over == match.Overs || oppositionInnings.Details.Last()?.Wickets>=10 || (ourInningsStatus==InningsStatus.Completed && matchState.OppositionScore > matchState.Score)))
                 {
                     return NextState.EndOfBowlingInnings;
                 }
