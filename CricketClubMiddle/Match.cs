@@ -573,6 +573,11 @@ namespace CricketClubMiddle
             dao.CreateOrUpdateMatchReport(ID, conditions, report);
         }
 
+        public MatchReportAndConditions GetMatchReport()
+        {
+            return dao.GetMatchReport(ID);
+        }
+
         public void StartBallByBallCoverage(BallByBallMatchConditions ballByBallMatchConditions)
         {
             if (!dao.IsBallByBallCoverageInProgress(ID))
