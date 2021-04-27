@@ -1692,7 +1692,7 @@ namespace CricketClubDAL
             }
             else
             {
-                db.ExecuteInsertOrUpdate($"insert into match_reports(match_id, report, conditions) values({matchId}, '{safeReport}', '{safeConditions}'");
+                db.ExecuteInsertOrUpdate($"insert into match_reports(match_id, report, conditions) values({matchId}, '{safeReport}', '{safeConditions}')");
             }
         }
 
