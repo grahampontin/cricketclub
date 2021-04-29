@@ -1681,7 +1681,7 @@ namespace CricketClubDAL
                                      lastCompletedOver);
         }
 
-        public void CreateOrUpdateMatchReport(int matchId, string conditions, string report)
+        public void CreateOrUpdateMatchReport(int matchId, string conditions, string report, string base64EncodedImage)
         {
             var safeReport = SafeForSql(report);
             var safeConditions = SafeForSql(conditions);
@@ -1689,17 +1689,18 @@ namespace CricketClubDAL
             {
                 db.ExecuteInsertOrUpdate($"update match_reports set report='{safeReport}' where match_id={matchId}");
                 db.ExecuteInsertOrUpdate($"update match_reports set conditions='{safeConditions}' where match_id={matchId}");
+                db.ExecuteInsertOrUpdate($"update match_reports set report_image='{base64EncodedImage}' where match_id={matchId}");
             }
             else
             {
-                db.ExecuteInsertOrUpdate($"insert into match_reports(match_id, report, conditions) values({matchId}, '{safeReport}', '{safeConditions}')");
+                db.ExecuteInsertOrUpdate($"insert into match_reports(match_id, report, conditions, report_image) values({matchId}, '{safeReport}', '{safeConditions}', '{base64EncodedImage}')");
             }
         }
 
         public MatchReportAndConditions GetMatchReport(int matchId)
         {
             return db.ExecuteSQLAndReturnFirstRow($"select * from match_reports where match_id={matchId}",
-                r => new MatchReportAndConditions(r.GetString("conditions"), r.GetString("report")), MatchReportAndConditions.none());
+                r => new MatchReportAndConditions(r.GetString("conditions"), r.GetString("report"), r.GetString("report_image")), MatchReportAndConditions.none());
         }
     }
 
@@ -1707,16 +1708,18 @@ namespace CricketClubDAL
     {
         public string Conditions { get; }
         public string Report { get; }
+        public string ReportImage { get; }
 
-        public MatchReportAndConditions(string conditions, string report)
+        public MatchReportAndConditions(string conditions, string report, string reportImage)
         {
             Conditions = conditions;
             Report = report;
+            ReportImage = reportImage;
         }
 
         public static MatchReportAndConditions none()
         {
-            return new MatchReportAndConditions("Not recorded", "No report");
+            return new MatchReportAndConditions("Not recorded", "No report", "");
         }
     }
 

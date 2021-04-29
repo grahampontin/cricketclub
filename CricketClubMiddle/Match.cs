@@ -568,9 +568,9 @@ namespace CricketClubMiddle
             return new MatchReport(ID, folder);
         }
 
-        public void CreateOrUpdateMatchReport(string conditions, string report)
+        public void CreateOrUpdateMatchReport(string conditions, string report, string reportImage)
         {
-            dao.CreateOrUpdateMatchReport(ID, conditions, report);
+            dao.CreateOrUpdateMatchReport(ID, conditions, report, reportImage);
         }
 
         public MatchReportAndConditions GetMatchReport()
