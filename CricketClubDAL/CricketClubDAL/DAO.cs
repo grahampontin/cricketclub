@@ -1700,12 +1700,14 @@ namespace CricketClubDAL
         public MatchReportAndConditions GetMatchReport(int matchId)
         {
             return db.ExecuteSQLAndReturnFirstRow($"select * from match_reports where match_id={matchId}",
-                r => new MatchReportAndConditions(r.GetString("conditions"), r.GetString("report"), r.GetString("report_image")), MatchReportAndConditions.none());
+                r => new MatchReportAndConditions(r.GetString("conditions"), r.GetString("report"), r.GetString("report_image")), MatchReportAndConditions.None);
         }
     }
 
     public class MatchReportAndConditions
     {
+        public static readonly  MatchReportAndConditions None = new MatchReportAndConditions("Not recorded", "No report", "");
+
         public string Conditions { get; }
         public string Report { get; }
         public string ReportImage { get; }
@@ -1715,11 +1717,6 @@ namespace CricketClubDAL
             Conditions = conditions;
             Report = report;
             ReportImage = reportImage;
-        }
-
-        public static MatchReportAndConditions none()
-        {
-            return new MatchReportAndConditions("Not recorded", "No report", "");
         }
     }
 
