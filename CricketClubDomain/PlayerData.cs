@@ -108,6 +108,6 @@ namespace CricketClubDomain
             set;
         }
 
-
+        public bool IsRightHandBat { get; set; }
     }
 }

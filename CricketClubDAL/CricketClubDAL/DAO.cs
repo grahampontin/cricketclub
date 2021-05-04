@@ -17,102 +17,39 @@ namespace CricketClubDAL
         {
             string sql = "select * from Players where player_id = " + playerId;
 
-            DataRow dr = db.ExecuteSQLAndReturnFirstRow(sql);
-            var newPlayer = new PlayerData
-            {
-                ID = (int) dr["player_id"],
-                EmailAddress = dr["email_address"].ToString(),
-                Name = dr["player_name"].ToString(),
-                FullName = dr["full_name"].ToString(),
-                BattingStyle = dr["batting_style"].ToString(),
-                BowlingStyle = dr["bowling_style"].ToString(),
-                FirstName = dr["first_name"].ToString(),
-                Surname = dr["last_name"].ToString(),
-                MiddleInitials = dr["middle_initials"].ToString()
-            };
-            try
-            {
-                newPlayer.RingerOf = (int) dr["ringer_of"];
-            }
-            catch
-            {
-                // ignored
-            }
+            return db.ExecuteSQLAndReturnFirstRow(sql, PlayerDataFromRow, null);
 
-            try
-            {
-                newPlayer.DateOfBirth = (DateTime) dr["dob"];
-            }
-            catch
-            {
-                newPlayer.DateOfBirth = new DateTime(1, 1, 1);
-            }
-            newPlayer.Education = dr["education"].ToString();
-            newPlayer.Location = dr["location"].ToString();
-            newPlayer.Height = dr["height"].ToString();
-            newPlayer.NickName = dr["nickname"].ToString();
-            try
-            {
-                newPlayer.IsActive = Convert.ToBoolean((int) dr["Active"]);
-            }
-            catch
-            {
-                newPlayer.IsActive = true;
-            }
-
-            return newPlayer;
         }
 
         public List<PlayerData> GetAllPlayers()
         {
             string sql = "select * from players";
-            DataSet ds = db.ExecuteSqlAndReturnAllRows(sql);
-            var players = new List<PlayerData>();
-            foreach (DataRow dr in ds.Tables[0].Rows)
+            return db.ExecuteSqlAndReturnAllRows(sql, PlayerDataFromRow).ToList();
+        }
+
+        private static PlayerData PlayerDataFromRow(Row row)
+        {
+            return new PlayerData
             {
-                var newPlayer = new PlayerData
-                {
-                    ID = (int) dr["player_id"],
-                    EmailAddress = dr["email_address"].ToString(),
-                    Name = dr["player_name"].ToString(),
-                    FullName = dr["full_name"].ToString(),
-                    BattingStyle = dr["batting_style"].ToString(),
-                    BowlingStyle = dr["bowling_style"].ToString(),
-                    FirstName = dr["first_name"].ToString(),
-                    Surname = dr["last_name"].ToString(),
-                    MiddleInitials = dr["middle_initials"].ToString()
-                };
-                try
-                {
-                    newPlayer.RingerOf = (int) dr["ringer_of"];
-                }
-                catch
-                {
-                    // ignored
-                }
-                try
-                {
-                    newPlayer.DateOfBirth = (DateTime) dr["dob"];
-                }
-                catch
-                {
-                    newPlayer.DateOfBirth = new DateTime(1, 1, 1);
-                }
-                newPlayer.Education = dr["education"].ToString();
-                newPlayer.Location = dr["location"].ToString();
-                newPlayer.Height = dr["height"].ToString();
-                newPlayer.NickName = dr["nickname"].ToString();
-                try
-                {
-                    newPlayer.IsActive = Convert.ToBoolean((int) dr["Active"]);
-                }
-                catch
-                {
-                    newPlayer.IsActive = true;
-                }
-                players.Add(newPlayer);
-            }
-            return players;
+                ID = row.GetInt("player_id"),
+                EmailAddress = row.GetString("email_address"),
+                Name = row.GetString("player_name"),
+                FullName = row.GetString("full_name"),
+                BattingStyle = row.GetString("batting_style"),
+                BowlingStyle = row.GetString("bowling_style"),
+                FirstName = row.GetString("first_name"),
+                Surname = row.GetString("last_name"),
+                MiddleInitials = row.GetString("middle_initials"),
+                RingerOf = row.GetInt("ringer_of", 0),
+                DateOfBirth = row.GetDateTime("dob", DateTime.MinValue),
+                Education = row.GetString("education"),
+                Location = row.GetString("location"),
+                Height = row.GetString("height"),
+                NickName = row.GetString("nickname"),
+                IsActive = row.GetBool("Active", true),
+                IsRightHandBat = row.GetBool("is_rhb", true)
+
+            };
         }
 
         public int CreateNewPlayer(string name)
@@ -146,6 +83,7 @@ namespace CricketClubDAL
             db.ExecuteInsertOrUpdate(string.Format(sql, "middle_initials", "'" + playerData.MiddleInitials + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "active", Convert.ToInt16(playerData.IsActive)));
             db.ExecuteInsertOrUpdate(string.Format(sql, "ringer_of", playerData.RingerOf));
+            db.ExecuteInsertOrUpdate(string.Format(sql, "is_rhb", Convert.ToInt16(playerData.IsRightHandBat)));
         }
 
         public List<BattingCardLineData> GetPlayerBattingStatsData(int playerId)

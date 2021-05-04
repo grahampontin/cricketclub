@@ -217,14 +217,24 @@ namespace CricketClubDAL
             return Convert.ToInt32(value);
         }
 
-        public bool GetBool(string columnName)
+        public bool GetBool(string columnName, bool defaultValue=false)
         {
             object value = dataRow[columnName];
             if (value is DBNull)
             {
-                return false;
+                return defaultValue;
             }
             return Convert.ToBoolean(value);
+        }
+        
+        public DateTime GetDateTime(string columnName, DateTime defaultIfNull)
+        {
+            object value = dataRow[columnName];
+            if (value is DBNull)
+            {
+                return defaultIfNull;
+            }
+            return Convert.ToDateTime(value);
         }
 
         public T GetEnum<T>(string columnName)

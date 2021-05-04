@@ -292,6 +292,12 @@ namespace CricketClubMiddle
             get { return playerData.IsActive; }
             set { playerData.IsActive = value; }
         }
+        
+        public bool IsRightHandBat
+        {
+            get { return playerData.IsRightHandBat; }
+            set { playerData.IsRightHandBat = value; }
+        }
 
         public string Bio
         {
