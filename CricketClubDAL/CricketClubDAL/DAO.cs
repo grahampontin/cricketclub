@@ -291,7 +291,7 @@ namespace CricketClubDAL
             return venue;
         }
 
-        public int CreateNewVenue(string venueName)
+        public int CreateNewVenue(string venueName, string mapsUrl)
         {
             DataRow dr = db.ExecuteSQLAndReturnFirstRow("select * from venues where venue ='" + venueName + "'");
             if (dr != null)
@@ -300,8 +300,7 @@ namespace CricketClubDAL
             }
             int newVenueId = (int) db.ExecuteSQLAndReturnSingleResult("select max(venue_id) from venues") + 1;
             int rowsAffected =
-                db.ExecuteInsertOrUpdate("insert into venues(venue_id, venue) select " + newVenueId +
-                                                ", '" + venueName + "'");
+                db.ExecuteInsertOrUpdate($"insert into venues(venue_id, venue, map_url) select {newVenueId}, '{venueName}', '{mapsUrl}'");
             if (rowsAffected == 1)
             {
                 return newVenueId;
@@ -313,17 +312,17 @@ namespace CricketClubDAL
         {
             string sql = "update venues set {0} = {1} where venue_id = " + data.ID;
             db.ExecuteInsertOrUpdate(string.Format(sql, "venue", "'" + data.Name + "'"));
+            db.ExecuteInsertOrUpdate(string.Format(sql, "map_url", "'" + data.MapUrl + "'"));
         }
 
         public IEnumerable<VenueData> GetAllVenueData()
         {
             string sql = "select * from Venues";
-            DataSet ds = db.ExecuteSqlAndReturnAllRows(sql);
-            return ds.Tables[0].Rows.Cast<DataRow>().Select(data => new VenueData
+            return db.ExecuteSqlAndReturnAllRows(sql, r => new VenueData
             {
-                ID = (int) data["venue_id"],
-                Name = data["venue"].ToString(),
-                MapUrl = ""
+                ID = r.GetInt("venue_id"),
+                Name = r.GetString("venue"),
+                MapUrl = r.GetString("map_url")
             });
         }
 
