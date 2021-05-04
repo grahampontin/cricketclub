@@ -29,11 +29,11 @@ namespace CricketClubMiddle
             }
         }
 
-        public static Venue CreateNewVenue(string VenueName)
+        public static Venue CreateNewVenue(string venueName, string mapUrl)
         {
             Dao myDAO = new Dao();
-            int newVenueid = myDAO.CreateNewVenue(VenueName);
-            return new Venue(newVenueid);
+            int newVenueId = myDAO.CreateNewVenue(venueName, mapUrl);
+            return new Venue(newVenueId);
         }
 
         public string GoogleMapsLocationURL
