@@ -40,10 +40,6 @@ namespace TestHarness
 
             //var x = p.GetComments();
 
-            DbLogger.Log("test message", new ApplicationException(), Severity.Error);
-            DbLogger.Log("test debug message", new ApplicationException(), Severity.Debug);
-            DbLogger.LoggingLevel = Severity.Debug;
-            DbLogger.Log("test info message", new ApplicationException(), Severity.Info);
 
 
 
