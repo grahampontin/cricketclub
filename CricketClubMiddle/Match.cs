@@ -674,9 +674,15 @@ namespace CricketClubMiddle
                                             inningsStatus.TheirInningsStatus == InningsStatus.Completed;
 
             if (liveScorecard.IsMatchComplete)
+            {
                 liveScorecard.ResultText =
                     currentBallByBallState.GetResultText(TeamBattingFirst(), TeamBattingSecond());
 
+                
+                
+
+            }
+                
 
             if (liveScorecard.OurInningsStatus != InningsStatus.NotStarted.ToString() &&
                 currentBallByBallState.Overs.Any())
@@ -711,12 +717,12 @@ namespace CricketClubMiddle
                     //
                 }
                 var fallOfWickets = partnershipsAndFallOfWickets.FallOfWickets;
-                    liveScorecard.LastManOut = fallOfWickets.Any() ? fallOfWickets.Last() : null;
+                liveScorecard.LastManOut = fallOfWickets.Any() ? fallOfWickets.Last() : null;
 
-                    liveScorecard.FallOfWickets = fallOfWickets;
-                    liveScorecard.Partnerships = partnershipsAndFallOfWickets.Partnerships;
+                liveScorecard.FallOfWickets = fallOfWickets;
+                liveScorecard.Partnerships = partnershipsAndFallOfWickets.Partnerships;
 
-                    liveScorecard.LiveBattingCard = GetLiveBattingCard(currentBallByBallState, fallOfWickets);
+                liveScorecard.LiveBattingCard = GetLiveBattingCard(currentBallByBallState, fallOfWickets);
                 
 
 
