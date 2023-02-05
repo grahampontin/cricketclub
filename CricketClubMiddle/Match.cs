@@ -294,13 +294,13 @@ namespace CricketClubMiddle
         public Player Captain
         {
             get => new Player(data.CaptainID);
-            set => data.CaptainID = value.ID;
+            set => data.CaptainID = value.Id;
         }
 
         public Player WicketKeeper
         {
             get => new Player(data.WicketKeeperID);
-            set => data.WicketKeeperID = value.ID;
+            set => data.WicketKeeperID = value.Id;
         }
 
         public int Overs
@@ -897,7 +897,7 @@ namespace CricketClubMiddle
             };
             extras.Save();
 
-            var playerIdToPosition = ourBattingCard.ScorecardData.ToDictionary(b => b.Batsman.ID, b => b.BattingAt);
+            var playerIdToPosition = ourBattingCard.ScorecardData.ToDictionary(b => b.Batsman.Id, b => b.BattingAt);
 
             FoWStats fallOfWicketStats = new FoWStats(ID, ThemOrUs.Us);
             fallOfWicketStats.Data.Clear();

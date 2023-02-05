@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CricketClubDomain
 {
-    public class BowlingStatsEntryData
+    public class BowlingStatsEntryData : IStatsEntryData
     {
         public BowlingStatsEntryData() {}
 

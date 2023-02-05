@@ -18,14 +18,14 @@ namespace CricketClubMiddle.Stats
             balls = new List<Ball>();
         }
 
-        public int PlayerId1 => player1.ID;
+        public int PlayerId1 => player1.Id;
 
-        public int PlayerId2 => player2.ID;
+        public int PlayerId2 => player2.Id;
         public IEnumerable<int> PlayerIds {
             get
             {
-                yield return player1.ID;
-                yield return player2.ID;
+                yield return player1.Id;
+                yield return player2.Id;
             }
         }
         public IList<Ball> Balls => balls;
@@ -65,7 +65,7 @@ namespace CricketClubMiddle.Stats
 
         private int GetPartnershipContribution(Player player)
         {
-            return BallByBallHelpers.GetPlayerScoresFromBalls(new HashSet<int> { player.ID }, balls)[player.ID];
+            return BallByBallHelpers.GetPlayerScoresFromBalls(new HashSet<int> { player.Id }, balls)[player.Id];
         }
     }
 }

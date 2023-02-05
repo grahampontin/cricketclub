@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CricketClubDomain
 {
-    public class BattingCardLineData
+    public class BattingCardLineData : IStatsEntryData
     {
         public BattingCardLineData() { }
 

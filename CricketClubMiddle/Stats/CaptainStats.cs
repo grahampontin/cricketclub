@@ -31,7 +31,7 @@ namespace CricketClubMiddle.Stats
 
         public static List<CaptainStats> GetAll(DateTime fromDate, DateTime toDate, List<MatchType> matchTypes, Venue venue)
         {
-            var captains = Match.GetResults(fromDate,toDate).Where(a => a.Captain != null && a.Captain.ID>0).Select(a => a.Captain).Distinct(new PlayerComparer());
+            var captains = Match.GetResults(fromDate,toDate).Where(a => a.Captain != null && a.Captain.Id>0).Select(a => a.Captain).Distinct(new PlayerComparer());
             List<CaptainStats> c = new List<CaptainStats>();
             foreach (Player p in captains)
             {
@@ -48,7 +48,7 @@ namespace CricketClubMiddle.Stats
             _toDate = toDate;
             _matchTypes = matchTypes;
             _venue = venue;
-            ID = player.ID;
+            ID = player.Id;
             FilteredMatchData = MatchData.Where(a => a.MatchDate > fromDate).Where(a => a.MatchDate < toDate).Where(a => matchTypes.Contains(a.Type)).Where(a => venue==null || a.VenueID == venue.ID).ToList();
         }
 
@@ -57,16 +57,16 @@ namespace CricketClubMiddle.Stats
             get
             {
                 InternalCache cache = InternalCache.GetInstance();
-                if (cache.Get("CaptainsMatchData_" + Player.ID) == null)
+                if (cache.Get("CaptainsMatchData_" + Player.Id) == null)
                 {
                     List<Match> allMatches;
-                    allMatches = Match.GetResults().Where(a => a.Captain.ID == Player.ID).ToList();
-                    cache.Insert("CaptainsMatchData_" + Player.ID, allMatches, new TimeSpan(365, 0, 0, 0));
+                    allMatches = Match.GetResults().Where(a => a.Captain.Id == Player.Id).ToList();
+                    cache.Insert("CaptainsMatchData_" + Player.Id, allMatches, new TimeSpan(365, 0, 0, 0));
                     return allMatches;
                 }
                 else
                 {
-                    return (List<Match>)cache.Get("CaptainsMatchData_" + Player.ID);
+                    return (List<Match>)cache.Get("CaptainsMatchData_" + Player.Id);
                 }
             }
         }
@@ -126,8 +126,8 @@ namespace CricketClubMiddle.Stats
         {
             try
             {
-                decimal runs = FilteredMatchData.Where(a => a.GetOurBattingScoreCard().ScorecardData.Count > 0).Select(a => a.GetOurBattingScoreCard().ScorecardData.Where(b => b.Batsman.ID == this.ID).FirstOrDefault().Score).Sum();
-                decimal innings = FilteredMatchData.Where(a => a.GetOurBattingScoreCard().ScorecardData.Count > 0).Select(a => a.GetOurBattingScoreCard().ScorecardData.Where(b => b.Batsman.ID == this.ID).FirstOrDefault()).Where(a => a.Dismissal != ModesOfDismissal.NotOut && a.Dismissal != ModesOfDismissal.RetiredHurt).Count();
+                decimal runs = FilteredMatchData.Where(a => a.GetOurBattingScoreCard().ScorecardData.Count > 0).Select(a => a.GetOurBattingScoreCard().ScorecardData.Where(b => b.Batsman.Id == this.ID).FirstOrDefault().Score).Sum();
+                decimal innings = FilteredMatchData.Where(a => a.GetOurBattingScoreCard().ScorecardData.Count > 0).Select(a => a.GetOurBattingScoreCard().ScorecardData.Where(b => b.Batsman.Id == this.ID).FirstOrDefault()).Where(a => a.Dismissal != ModesOfDismissal.NotOut && a.Dismissal != ModesOfDismissal.RetiredHurt).Count();
 
                 return Math.Round(runs / innings, 2);
             }
@@ -144,8 +144,8 @@ namespace CricketClubMiddle.Stats
                 decimal totalruns = _player.GetRunsScored(_fromDate, _toDate, _matchTypes, _venue);
                 decimal totalInning = Player.GetInnings(_fromDate, _toDate, _matchTypes, _venue) - Player.GetNotOuts(_fromDate, _toDate, _matchTypes, _venue);
 
-                decimal runs = FilteredMatchData.Select(a => a.GetOurBattingScoreCard().ScorecardData.Where(b => b.Batsman.ID == this.ID).FirstOrDefault().Score).Sum();
-                decimal innings = FilteredMatchData.Select(a => a.GetOurBattingScoreCard().ScorecardData.Where(b => b.Batsman.ID == this.ID).FirstOrDefault()).Where(a => a.Dismissal != ModesOfDismissal.NotOut && a.Dismissal != ModesOfDismissal.RetiredHurt).Count();
+                decimal runs = FilteredMatchData.Select(a => a.GetOurBattingScoreCard().ScorecardData.Where(b => b.Batsman.Id == this.ID).FirstOrDefault().Score).Sum();
+                decimal innings = FilteredMatchData.Select(a => a.GetOurBattingScoreCard().ScorecardData.Where(b => b.Batsman.Id == this.ID).FirstOrDefault()).Where(a => a.Dismissal != ModesOfDismissal.NotOut && a.Dismissal != ModesOfDismissal.RetiredHurt).Count();
 
                 return Math.Round((totalruns - runs) / (totalInning - innings), 2);
             }

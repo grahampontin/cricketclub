@@ -45,7 +45,7 @@ namespace CricketClubAccounts
 
         public int PlayerID
         {
-            get { return _player.ID; }
+            get { return _player.Id; }
         }
 
         public void AddPayment(double amount, string description, DateTime date, Match Match, PaymentStatus Status, PaymentType Type, CreditDebit CreditOrDebit)

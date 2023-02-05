@@ -104,6 +104,7 @@
     <Compile Include="FoWDataLine.cs" />
     <Compile Include="HonorsBoardEntry.cs" />
     <Compile Include="InningsStatus.cs" />
+    <Compile Include="IStatsEntryData.cs" />
     <Compile Include="MatchData.cs" />
     <Compile Include="MatchReportData.cs" />
     <Compile Include="MatchState.cs" />
