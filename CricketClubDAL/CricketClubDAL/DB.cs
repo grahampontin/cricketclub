@@ -37,6 +37,10 @@ namespace CricketClubDAL
                 {
                     key = "Laptop";
                 }
+                if (Environment.MachineName.Contains("PRO9"))
+                {
+                    key = "Surface";
+                }
                 ConnectionStringSettings cnxStr = ConfigurationManager.ConnectionStrings[key];
                 if (cnxStr == null)
                     throw new ConfigurationErrorsException("ConnectionString '" + key +
