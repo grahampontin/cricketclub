@@ -108,6 +108,7 @@
     <Compile Include="Security\Permissions.cs" />
     <Compile Include="Stats\BallByBallHelpers.cs" />
     <Compile Include="Stats\BallByBallMatch.cs" />
+    <Compile Include="Stats\BallByBallStats.cs" />
     <Compile Include="Stats\BatsmanInningsDetails.cs" />
     <Compile Include="Stats\BowlingStats.cs" />
     <Compile Include="Stats\BowlingStatsLine.cs" />

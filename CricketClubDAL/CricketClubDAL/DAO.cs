@@ -1405,29 +1405,7 @@ namespace CricketClubDAL
             {
                 var overNumber = r.GetInt("over_number");
                 var over = overs.GetValueOrInitializeDefault(overNumber, new Over {OverNumber = overNumber});
-                var ball = new Ball
-                {
-                    Amount = r.GetInt("value"),
-                    Batsman = r.GetInt("player_id"),
-                    Bowler = r.GetString("bowler"),
-                    Thing = r.GetString("type"),
-                    Angle = r.GetDecimal("angle"),
-                    BatsmanName = r.GetString("batsman_name"),
-                    BallNumber = r.GetInt("ball")
-
-                };
-                if (r.GetInt("out_player_id", -1) != -1)
-                {
-                    ball.Wicket = new Wicket()
-                    {
-                        ModeOfDismissal = GetDismissalText(r.GetInt("dismissal_id")),
-                        Description = r.GetString("description"),
-                        Fielder = r.GetString("fielder"),
-                        Player = r.GetInt("out_player_id"),
-                        PlayerName = r.GetString("out_batsman_name"),
-                        Bowler= r.GetString("bowler")
-                    };
-                }
+                var ball = BallFromRow(r);
                 
                 over.Balls = over.Balls.Add(ball);
 
@@ -1435,6 +1413,54 @@ namespace CricketClubDAL
             var oversToReturn = overs.Select(e=>e.Value).ToList();
             AddCommentaryToOvers(matchId, oversToReturn);
             return oversToReturn;
+        }        
+        
+        public List<Ball> GetAllBalls()
+        {
+            List<Ball> balls = new List<Ball>();
+
+            string sql =
+                "select over_number, value, d.player_id, bowler, [type], angle, p.player_name as batsman_name, out_p.player_name as out_batsman_name, out_player_id, fielder, dismissal_id, description, ball " +
+                "from ballbyball_data d inner " +
+                "join thevilla_admin.Players p on d.player_id = p.player_id " +
+                "left outer join thevilla_admin.Players out_p on d.out_player_id = out_p.player_id";
+
+            var rows = db.QueryMany(sql);
+            foreach (var r in rows)
+            {
+                var ball = BallFromRow(r);
+
+                balls.Add(ball);
+            }
+            return balls;
+        }
+
+        private Ball BallFromRow(Row r)
+        {
+            var ball = new Ball
+            {
+                Amount = r.GetInt("value"),
+                Batsman = r.GetInt("player_id"),
+                Bowler = r.GetString("bowler"),
+                Thing = r.GetString("type"),
+                Angle = r.GetDecimal("angle"),
+                BatsmanName = r.GetString("batsman_name"),
+                BallNumber = r.GetInt("ball")
+            };
+            if (r.GetInt("out_player_id", -1) != -1)
+            {
+                ball.Wicket = new Wicket()
+                {
+                    ModeOfDismissal = GetDismissalText(r.GetInt("dismissal_id")),
+                    Description = r.GetString("description"),
+                    Fielder = r.GetString("fielder"),
+                    Player = r.GetInt("out_player_id"),
+                    PlayerName = r.GetString("out_batsman_name"),
+                    Bowler = r.GetString("bowler")
+                };
+            }
+
+            return ball;
         }
 
         private void AddCommentaryToOvers(int matchId, List<Over> oversToReturn)
