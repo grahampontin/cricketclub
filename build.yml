@@ -17,7 +17,7 @@ variables:
 steps:
 - task: NuGetToolInstaller@1
 
-- task: NuGetCommand@3
+- task: NuGetCommand@2
   inputs:
     restoreSolution: '$(solution)'
 
@@ -32,7 +32,7 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-- task: NuGetCommand@3
+- task: NuGetCommand@2
   inputs:
     command: 'pack'
     packagesToPack: '**/*.csproj'
@@ -41,10 +41,10 @@ steps:
     minorVersion: '0'
     patchVersion: '0'
 
-- task: NuGetCommand@3
+- task: NuGetCommand@2
   inputs:
     command: 'push'
     packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
     nuGetFeedType: 'internal'
-    publishVstsFeed: '109e362b-62db-4727-9d2a-e2d0e8f55904/f8b97027-340d-42d9-8b79-52d89a6d5dcf'
+    publishVstsFeed: 'e5b624c7-47d5-4e62-ae30-4684b94ba901'
     allowPackageConflicts: true
