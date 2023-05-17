@@ -743,36 +743,30 @@ namespace CricketClubDAL
 
         public void UpdateFoWData(List<FoWDataLine> data, ThemOrUs who)
         {
-            if (data.Count > 0)
+            if (data.Count <= 0) return;
+            string table = "fow";
+            if (who == ThemOrUs.Them)
             {
-                string table = "fow";
-                if (who == ThemOrUs.Them)
-                {
-                    table = "oppo_fow";
-                }
-
-                string sql = "delete from " + table + " where match_id = " + data[0].MatchID;
-                db.ExecuteInsertOrUpdate(sql);
-
-                foreach (FoWDataLine line in data)
-                {
-                    sql = "insert into " + table +
-                          "(match_id, wicket, score, partnership, over_no, outgoing_score, outgoing_bat, no_score, no_bat) select " +
-                          line.MatchID + ", " +
-                          line.Wicket + ", " +
-                          line.Score + ", " +
-                          line.Partnership + ", " +
-                          line.OverNumber + ", " +
-                          line.OutgoingBatsmanScore + ", " +
-                          line.OutgoingBatsman + ", " +
-                          line.NotOutBatsmanScore + ", " +
-                          line.NotOutBatsman;
-                    db.ExecuteInsertOrUpdate(sql);
-                }
+                table = "oppo_fow";
             }
-            else
+
+            string sql = "delete from " + table + " where match_id = " + data[0].MatchID;
+            db.ExecuteInsertOrUpdate(sql);
+
+            foreach (FoWDataLine line in data)
             {
-                throw new InvalidOperationException("No Data found in Fow Collection");
+                sql = "insert into " + table +
+                      "(match_id, wicket, score, partnership, over_no, outgoing_score, outgoing_bat, no_score, no_bat) select " +
+                      line.MatchID + ", " +
+                      line.Wicket + ", " +
+                      line.Score + ", " +
+                      line.Partnership + ", " +
+                      line.OverNumber + ", " +
+                      line.OutgoingBatsmanScore + ", " +
+                      line.OutgoingBatsman + ", " +
+                      line.NotOutBatsmanScore + ", " +
+                      line.NotOutBatsman;
+                db.ExecuteInsertOrUpdate(sql);
             }
         }
 

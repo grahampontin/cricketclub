@@ -17,5 +17,12 @@ namespace CricketClub.Tests
             var match = new Match(394);
             match.PopulateScorecardFromBallByBallData();
         }
+
+        [Test]
+        public void CanLoad353()
+        {
+            var match = new Match(353);
+            match.GetLiveScorecard();
+        }
     }
 }
