@@ -1389,7 +1389,7 @@ namespace CricketClubDAL
             Dictionary<int,  Over> overs = new Dictionary<int, Over>();
 
             string sql =
-                "select over_number, value, d.player_id, bowler, [type], angle, p.player_name as batsman_name, out_p.player_name as out_batsman_name, out_player_id, fielder, dismissal_id, description, ball " +
+                "select over_number, value, d.player_id, bowler, [type], angle, p.player_name as batsman_name, out_p.player_name as out_batsman_name, out_player_id, fielder, dismissal_id, description, ball, match_id " +
                 "from ballbyball_data d inner " +
                 "join thevilla_admin.Players p on d.player_id = p.player_id " +
                 "left outer join thevilla_admin.Players out_p on d.out_player_id = out_p.player_id where match_id = ";
@@ -1414,7 +1414,7 @@ namespace CricketClubDAL
             List<Ball> balls = new List<Ball>();
 
             string sql =
-                "select over_number, value, d.player_id, bowler, [type], angle, p.player_name as batsman_name, out_p.player_name as out_batsman_name, out_player_id, fielder, dismissal_id, description, ball " +
+                "select over_number, value, d.player_id, bowler, [type], angle, p.player_name as batsman_name, out_p.player_name as out_batsman_name, out_player_id, fielder, dismissal_id, description, ball, match_id " +
                 "from ballbyball_data d inner " +
                 "join thevilla_admin.Players p on d.player_id = p.player_id " +
                 "left outer join thevilla_admin.Players out_p on d.out_player_id = out_p.player_id";
@@ -1439,7 +1439,8 @@ namespace CricketClubDAL
                 Thing = r.GetString("type"),
                 Angle = r.GetDecimal("angle"),
                 BatsmanName = r.GetString("batsman_name"),
-                BallNumber = r.GetInt("ball")
+                BallNumber = r.GetInt("ball"),
+                MatchId = r.GetInt("match_id")
             };
             if (r.GetInt("out_player_id", -1) != -1)
             {
