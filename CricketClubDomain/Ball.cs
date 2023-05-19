@@ -79,6 +79,7 @@ namespace CricketClubDomain
         public bool IsWide => Thing == Wides;
         public bool IsNoBall => Thing == NoBall;
         public int MatchId { get; set; }
+        public int OverNumber { get; set; }
 
         public bool IsBowlersWicket()
         {

@@ -1440,7 +1440,8 @@ namespace CricketClubDAL
                 Angle = r.GetDecimal("angle"),
                 BatsmanName = r.GetString("batsman_name"),
                 BallNumber = r.GetInt("ball"),
-                MatchId = r.GetInt("match_id")
+                MatchId = r.GetInt("match_id"),
+                OverNumber = r.GetInt("over_number")
             };
             if (r.GetInt("out_player_id", -1) != -1)
             {
