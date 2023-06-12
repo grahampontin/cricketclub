@@ -14,7 +14,8 @@ namespace CricketClubMiddle
     {
         private readonly PlayerData playerData;
 
-        private static Func<T, bool> DefaultPredicate<T>(DateTime startDate, DateTime endDate,
+        // ReSharper disable once MemberCanBePrivate.Global
+        public static Func<T, bool> DefaultPredicate<T>(DateTime startDate, DateTime endDate,
             List<MatchType> matchTypes, Venue venue) where T : IStatsEntryData
         {
             return a =>
