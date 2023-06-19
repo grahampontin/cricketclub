@@ -67,7 +67,13 @@ namespace CricketClubMiddle
         public IEnumerable<KeyValuePair<Match, FieldingStats>> GetFieldingStatsByMatch()
         {
             return
-                FieldingStatsData.Select(a => new KeyValuePair<Match, FieldingStats>(new Match(a.MatchID), new FieldingStats(GetCatchesTaken(a.MatchID), GetRunOuts(a.MatchID), GetStumpings(a.MatchID))))
+                FieldingStatsData.Select(a =>
+                    {
+                        var match = new Match(a.MatchID);
+                        return new KeyValuePair<Match, FieldingStats>(match,
+                                new FieldingStats(GetCatchesTaken(a.MatchID), GetRunOuts(a.MatchID),
+                                    GetStumpings(a.MatchID), match, this));
+                    })
                     .OrderBy(a => a.Key.MatchDate);
         }
 
