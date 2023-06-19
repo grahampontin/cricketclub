@@ -96,6 +96,7 @@
     <Compile Include="BallByBallMatchConditions.cs" />
     <Compile Include="Chat.cs" />
     <Compile Include="ChatItem.cs" />
+    <Compile Include="FieldingStats.cs" />
     <Compile Include="InningsEndDetails.cs" />
     <Compile Include="InternalCache.cs" />
     <Compile Include="Interactive\MatchPhoto.cs" />
