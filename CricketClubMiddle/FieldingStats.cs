@@ -17,7 +17,7 @@ namespace CricketClubMiddle
             MatchDate = match.MatchDate;
             MatchTypeID = (int)match.Type;
             VenueID = match.VenueID;
-            MatchTypeID = match.ID;
+            MatchID = match.ID;
             PlayerID = player.Id;
         }
 
