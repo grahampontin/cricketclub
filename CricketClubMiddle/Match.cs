@@ -348,7 +348,7 @@ namespace CricketClubMiddle
                                                  InningsStatus.Completed;
 
         public bool OppositionBattedFirst =>
-            TossWinner == Us && !TossWinnerBatted || TossWinner != Us && TossWinnerBatted;
+            TossWinner.IsUs && !TossWinnerBatted || !TossWinner.IsUs && TossWinnerBatted;
 
         public bool OurInningsInProgress
         {

@@ -104,5 +104,23 @@ namespace CricketClubMiddle
                 return new Team(0);
             }
         }
+
+        protected bool Equals(Team other)
+        {
+            return this.ID == other.ID;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((Team)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return this.ID.GetHashCode();
+        }
     }
 }
