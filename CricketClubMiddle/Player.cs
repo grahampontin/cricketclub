@@ -29,19 +29,7 @@ namespace CricketClubMiddle
             return FormalName;
         }
 
-        public bool AssociateWithUser(User user)
-        {
-            var alreadyAssigned = GetAll().Where(a => a.EmailAddress == user.EmailAddress).Any();
-            if (alreadyAssigned)
-            {
-                return false;
-            }
-
-            EmailAddress = user.EmailAddress;
-            Save();
-            return true;
-        }
-
+        
         public IEnumerable<KeyValuePair<Match, int>> GetAllScores()
         {
             return
@@ -141,13 +129,7 @@ namespace CricketClubMiddle
         {
             get { return playerData.ID; }
         }
-
-        public string EmailAddress
-        {
-            get { return playerData.EmailAddress; }
-            set { playerData.EmailAddress = value; }
-        }
-
+        
         /// <summary>
         ///     Setter is obsolete - use First Name and Surname
         /// </summary>
@@ -188,12 +170,6 @@ namespace CricketClubMiddle
 
                 return playerData.Name;
             }
-        }
-
-        public DateTime Dob
-        {
-            get { return playerData.DateOfBirth; }
-            set { playerData.DateOfBirth = value; }
         }
 
         public string FullName
@@ -240,12 +216,6 @@ namespace CricketClubMiddle
             set { playerData.NickName = value; }
         }
 
-        public string Location
-        {
-            get { return playerData.Location; }
-            set { playerData.Location = value; }
-        }
-
         public string BowlingStyle
         {
             get { return playerData.BowlingStyle; }
@@ -270,18 +240,7 @@ namespace CricketClubMiddle
             get { return BattingStatsData.Select(a => a.MatchDate).OrderBy(a => a).FirstOrDefault(); }
         }
 
-        public string Education
-        {
-            get { return playerData.Education; }
-            set { playerData.Education = value; }
-        }
-
-        public string Height
-        {
-            get { return playerData.Height; }
-            set { playerData.Height = value; }
-        }
-
+        
         public bool IsActive
         {
             get { return playerData.IsActive; }

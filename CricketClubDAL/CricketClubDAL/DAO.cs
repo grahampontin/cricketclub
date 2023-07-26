@@ -32,7 +32,6 @@ namespace CricketClubDAL
             return new PlayerData
             {
                 ID = row.GetInt("player_id"),
-                EmailAddress = row.GetString("email_address"),
                 Name = row.GetString("player_name"),
                 FullName = row.GetString("full_name"),
                 BattingStyle = row.GetString("batting_style"),
@@ -41,10 +40,6 @@ namespace CricketClubDAL
                 Surname = row.GetString("last_name"),
                 MiddleInitials = row.GetString("middle_initials"),
                 RingerOf = row.GetInt("ringer_of", 0),
-                DateOfBirth = row.GetDateTime("dob", DateTime.MinValue),
-                Education = row.GetString("education"),
-                Location = row.GetString("location"),
-                Height = row.GetString("height"),
                 NickName = row.GetString("nickname"),
                 IsActive = row.GetBool("Active", true),
                 IsRightHandBat = row.GetBool("is_rhb", true)
@@ -70,14 +65,9 @@ namespace CricketClubDAL
             string sql = "update players set {0} = {1} where player_id = " + playerData.ID;
             db.ExecuteInsertOrUpdate(string.Format(sql, "player_name", "'" + SafeForSql(playerData.Name) + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "full_name", "'" + SafeForSql(playerData.FullName) + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "dob", "'" + playerData.DateOfBirth + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "location", "'" + playerData.Location + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "height", "'" + playerData.Height + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "nickname", "'" + SafeForSql(playerData.NickName) + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "education", "'" + SafeForSql(playerData.Education) + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "batting_style", "'" + playerData.BattingStyle + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "bowling_style", "'" + playerData.BowlingStyle + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "email_address", "'" + playerData.EmailAddress + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "first_name", "'" + SafeForSql(playerData.FirstName) + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "last_name", "'" + SafeForSql(playerData.Surname) + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "middle_initials", "'" + playerData.MiddleInitials + "'"));
