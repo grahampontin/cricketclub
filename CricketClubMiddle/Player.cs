@@ -338,7 +338,9 @@ namespace CricketClubMiddle
                 if (battingStatsDataCache == null)
                 {
                     var myDao = new Dao();
-                    battingStatsDataCache = myDao.GetPlayerBattingStatsData(Id);
+                    battingStatsDataCache = myDao
+                        .GetPlayerBattingStatsData(Id)
+                        .Where(d=>d.MatchTypeID != (int)MatchType.Informal).ToList();
                 }
 
                 return battingStatsDataCache;
@@ -654,7 +656,8 @@ namespace CricketClubMiddle
                 if (bowlingStatsDataCache == null)
                 {
                     var myDao = new Dao();
-                    bowlingStatsDataCache = myDao.GetPlayerBowlingStatsData(Id);
+                    bowlingStatsDataCache = myDao.GetPlayerBowlingStatsData(Id)
+                        .Where(d=>d.MatchTypeID != (int)MatchType.Informal).ToList();
                 }
 
                 return bowlingStatsDataCache;

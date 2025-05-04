@@ -7,7 +7,7 @@ namespace CricketClubDomain
 {
     public enum MatchType
     {
-        All=-1,NELCL, NELCL_Cup, Tour, Friendly, Declaration, Twenty20
+        All=-1,NELCL, NELCL_Cup, Tour, Friendly, Declaration, Twenty20, Informal
 
 
     };
