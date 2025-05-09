@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CricketClubDAL;
 using CricketClubDomain;
+using CricketClubDomain.Stats;
 using CricketClubMiddle.Stats;
 
 namespace CricketClubMiddle

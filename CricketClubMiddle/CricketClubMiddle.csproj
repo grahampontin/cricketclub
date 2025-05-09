@@ -100,7 +100,6 @@
     <Compile Include="InningsEndDetails.cs" />
     <Compile Include="InternalCache.cs" />
     <Compile Include="Interactive\MatchPhoto.cs" />
-    <Compile Include="LiveScorecard.cs" />
     <Compile Include="MatchReport.cs" />
     <Compile Include="News.cs" />
     <Compile Include="NewsItem.cs" />
@@ -110,12 +109,10 @@
     <Compile Include="Stats\BallByBallHelpers.cs" />
     <Compile Include="Stats\BallByBallMatch.cs" />
     <Compile Include="Stats\BallByBallStats.cs" />
-    <Compile Include="Stats\BatsmanInningsDetails.cs" />
     <Compile Include="Stats\BowlingStats.cs" />
     <Compile Include="Stats\BowlingStatsLine.cs" />
     <Compile Include="Stats\CaptainStats.cs" />
     <Compile Include="Stats\Extras.cs" />
-    <Compile Include="Stats\FallOfWicket.cs" />
     <Compile Include="Stats\FoWStats.cs" />
     <Compile Include="Stats\FoWStatsLine.cs" />
     <Compile Include="Helpers.cs" />
@@ -125,7 +122,6 @@
     <Compile Include="Stats\BattingCard.cs" />
     <Compile Include="Stats\BattingCardLine.cs" />
     <Compile Include="Stats\KeeperStats.cs" />
-    <Compile Include="Stats\Partnership.cs" />
     <Compile Include="Stats\PartnershipsAndFallOfWickets.cs" />
     <Compile Include="Stats\StatsHelper.cs" />
     <Compile Include="Stats\TeamStats.cs" />

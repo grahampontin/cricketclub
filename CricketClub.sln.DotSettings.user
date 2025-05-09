@@ -7,6 +7,7 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=c28e4d02_002De158_002D46ec_002D9d16_002D83025969b10a/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="CanLoad393" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
     &lt;TestId&gt;NUnit3x::B3ECCD1D-3EF7-4928-86B4-29817E6BADFD::.NETFramework,Version=v4.7.2::CricketClub.Tests.BallByBallTests.CanLoad353&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::B3ECCD1D-3EF7-4928-86B4-29817E6BADFD::.NETFramework,Version=v4.7.2::CricketClub.Tests.PlayerTests.CanGetFieldingStats&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	

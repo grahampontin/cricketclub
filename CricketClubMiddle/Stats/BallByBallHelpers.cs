@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CricketClubDomain;
+using CricketClubDomain.Stats;
 
 static internal class BallByBallHelpers
 {
@@ -50,5 +52,39 @@ static internal class BallByBallHelpers
     public static decimal GetBallCountExcludingExtras(IList<Ball> balls)
     {
         return balls.Count(b => b.Thing != Ball.NoBall && b.Thing != Ball.Wides);
+    }
+
+    public static decimal GetRunRate(IList<Ball> balls, int score)
+    {
+        var ballCountExcludingExtras = GetBallCountExcludingExtras(balls);
+        if (ballCountExcludingExtras == 0)
+        {
+            return 0;
+        }
+
+        return Math.Round((decimal)score * 6 / ballCountExcludingExtras, 2);
+    }
+
+    public static decimal GetRunRate(Partnership partnership)
+    {
+        var ballCountExcludingExtras = GetBallCountExcludingExtras(partnership.Balls);
+        if (ballCountExcludingExtras == 0)
+        {
+            return 0;
+        }
+
+        return Math.Round((decimal)partnership.Score * 6 / ballCountExcludingExtras, 2);
+    }
+
+    public static string GetOversAsString(Partnership partnership)
+    {
+        return GetOversAsString(partnership.Balls);
+    }
+
+    public static int GetPlayerScore(Partnership partnership, int playerId) => GetPartnershipContribution(partnership, playerId);
+
+    private static int GetPartnershipContribution(Partnership partnership, int playerId)
+    {
+        return GetPlayerScoresFromBalls(new HashSet<int> { playerId }, partnership.Balls)[playerId];
     }
 }

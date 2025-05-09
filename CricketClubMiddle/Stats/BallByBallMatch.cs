@@ -5,6 +5,7 @@ using System.Security.Policy;
 using System.Text;
 using CricketClubDAL;
 using CricketClubDomain;
+using CricketClubDomain.Stats;
 
 namespace CricketClubMiddle.Stats
 {
@@ -94,7 +95,8 @@ namespace CricketClubMiddle.Stats
                 OppositionScore = OppositionScore,
                 OppositionWickets = OppositionWickets,
                 OppositionName = opposition.Name,
-                OppositionShortName = CreateShortName(opposition.Name)
+                OppositionShortName = CreateShortName(opposition.Name),
+                LiveScorecard = match.GetLiveScorecard(),
             };
         }
 

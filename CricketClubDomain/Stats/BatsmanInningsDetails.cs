@@ -1,4 +1,4 @@
-namespace CricketClubMiddle.Stats
+﻿namespace CricketClubDomain.Stats
 {
     public class BatsmanInningsDetails
     {

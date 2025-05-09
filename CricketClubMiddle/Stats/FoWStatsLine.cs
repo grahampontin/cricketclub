@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using CricketClubDomain;
 using CricketClubDAL;
+using CricketClubDomain.Stats;
 
 namespace CricketClubMiddle.Stats
 {

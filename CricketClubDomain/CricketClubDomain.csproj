@@ -105,6 +105,10 @@
     <Compile Include="HonorsBoardEntry.cs" />
     <Compile Include="InningsStatus.cs" />
     <Compile Include="IStatsEntryData.cs" />
+    <Compile Include="LiveBattingCard.cs" />
+    <Compile Include="LiveBattingCardEntry.cs" />
+    <Compile Include="LiveExtras.cs" />
+    <Compile Include="LiveScorecard.cs" />
     <Compile Include="MatchData.cs" />
     <Compile Include="MatchReportData.cs" />
     <Compile Include="MatchState.cs" />
@@ -121,6 +125,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BattingCardLineData.cs" />
     <Compile Include="SettingData.cs" />
+    <Compile Include="Stats\BatsmanInningsDetails.cs" />
+    <Compile Include="Stats\FallOfWicket.cs" />
+    <Compile Include="Stats\Partnership.cs" />
     <Compile Include="TeamData.cs" />
     <Compile Include="UserData.cs" />
     <Compile Include="VenueData.cs" />
