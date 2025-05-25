@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
-using CricketClubDomain.Stats;
+using System.Collections.Generic;
+using CricketClubDAL;
+using CricketClubDomain;
+using CricketClubMiddle.Stats;
 
-namespace CricketClubDomain
+namespace CricketClubMiddle
 {
     public class LiveScorecard
     {
@@ -44,5 +46,28 @@ namespace CricketClubDomain
         public string TheirInningsCommentary { get; set; }
         public List<BowlerInningsDetails> LiveBowlingCard { get; set; }
         public List<Partnership> Partnerships { get; set; }
+    }
+
+    public class LiveBattingCard
+    {
+        public Dictionary<string, LiveBattingCardEntry> Players;
+        public LiveExtras Extras;
+    }
+
+    public class LiveBattingCardEntry
+    {
+        public BatsmanInningsDetails BatsmanInningsDetails;
+        public Wicket Wicket;
+    }
+
+    public class LiveExtras
+    {
+        public int Byes;
+        public int LegByes;
+        public int Wides;
+        public int NoBalls;
+        public int Penalty;
+        public int Total => Byes + LegByes + Wides + NoBalls + Penalty;
+        public string DetailString => Byes + "b " + LegByes + "lb " + Wides + "wd " + NoBalls + "nb " + Penalty + "p";
     }
 }

@@ -23,7 +23,6 @@ namespace CricketClubDomain
         public string OppositionName;
         public string OppositionShortName;
         public BowlerInningsDetails[] BowlerDetails;
-        public LiveScorecard LiveScorecard;
 
         protected bool Equals(MatchState other)
         {

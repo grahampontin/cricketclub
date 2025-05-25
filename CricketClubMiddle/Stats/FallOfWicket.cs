@@ -1,4 +1,6 @@
-﻿namespace CricketClubDomain.Stats
+﻿using CricketClubDomain;
+
+namespace CricketClubMiddle.Stats
 {
     public class FallOfWicket
     {
@@ -13,7 +15,9 @@
         private readonly Partnership partnership;
         private readonly Wicket wicket;
         private readonly string bowler;
+        private readonly Player outGoingPlayer;
 
+        public Player OutGoingPlayer => outGoingPlayer;
 
         public FallOfWicket(int wicketNumber, 
                             int teamScore, 
@@ -38,6 +42,7 @@
             this.partnership = partnership;
             this.wicket = wicket;
             this.bowler = bowler;
+            this.outGoingPlayer = new Player(outGoingPlayerId);
         }
 
         public string Bowler => bowler;
@@ -53,6 +58,8 @@
         public Partnership Partnership => partnership;
 
         public Wicket Wicket => wicket;
+
+        public string OutgoingPlayerName => OutGoingPlayer.Name;
 
         public int OutGoingPlayerId => outGoingPlayerId;
 
