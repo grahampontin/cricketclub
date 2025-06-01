@@ -9,7 +9,20 @@ namespace CricketClubDAL
 {
     public class Dao
     {
-        private readonly Db db = new Db();
+        // Default constructor
+        public Dao()
+        {
+            db = new Db();
+        }
+
+        // Constructor that accepts a connection string
+        public Dao(string connectionString)
+        {
+            db = new Db(connectionString);
+        }
+        
+        
+        private readonly Db db;
 
         #region Players
 
@@ -207,28 +220,39 @@ namespace CricketClubDAL
 
         public VenueData GetVenueData(int venueId)
         {
-            string sql = "select * from Venues where venue_id = " + venueId;
+            string sql = "select * from thevilla_admin.venues where venue_id = " + venueId;
 
             var venue = new VenueData();
             DataRow data = db.ExecuteSQLAndReturnFirstRow(sql);
             venue.ID = (int) data["venue_id"];
             venue.Name = data["venue"].ToString();
             //TODO: Add map url
-            venue.MapUrl = "";
+            venue.MapUrl = data["map_url"].ToString();
+            venue.Description = data["description"].ToString();
+            try
+            {
+                venue.Coordinates = new Tuple<decimal?, decimal?>(
+                    decimal.Parse(data["latitude"].ToString()),
+                    decimal.Parse(data["longitude"].ToString()));
+            }
+            catch
+            {
+                venue.Coordinates = new Tuple<decimal?, decimal?>(null, null);
+            }
 
             return venue;
         }
 
-        public int CreateNewVenue(string venueName, string mapsUrl)
+        public int CreateNewVenue(string venueName, string mapsUrl, string description, decimal latitude, decimal longitude)
         {
-            DataRow dr = db.ExecuteSQLAndReturnFirstRow("select * from venues where venue ='" + venueName + "'");
+            DataRow dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.venues where venue ='" + venueName + "'");
             if (dr != null)
             {
                 return (int) dr["venue_id"];
             }
-            int newVenueId = (int) db.ExecuteSQLAndReturnSingleResult("select max(venue_id) from venues") + 1;
+            int newVenueId = (int) db.ExecuteSQLAndReturnSingleResult("select max(venue_id) from thevilla_admin.venues") + 1;
             int rowsAffected =
-                db.ExecuteInsertOrUpdate($"insert into venues(venue_id, venue, map_url) select {newVenueId}, '{venueName}', '{mapsUrl}'");
+                db.ExecuteInsertOrUpdate($"insert into thevilla_admin.venues(venue_id, venue, map_url, description, latitude, longitude) select {newVenueId}, '{venueName}', '{mapsUrl}', '{description}', '{latitude}', '{longitude}'");
             if (rowsAffected == 1)
             {
                 return newVenueId;
@@ -238,19 +262,26 @@ namespace CricketClubDAL
 
         public void UpdateVenue(VenueData data)
         {
-            string sql = "update venues set {0} = {1} where venue_id = " + data.ID;
+            string sql = "update thevilla_admin.venues set {0} = {1} where venue_id = " + data.ID;
             db.ExecuteInsertOrUpdate(string.Format(sql, "venue", "'" + data.Name + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "map_url", "'" + data.MapUrl + "'"));
+            db.ExecuteInsertOrUpdate(string.Format(sql, "description", "'" + data.Description + "'"));
+            db.ExecuteInsertOrUpdate(string.Format(sql, "latitude", data.Coordinates.Item1));
+            db.ExecuteInsertOrUpdate(string.Format(sql, "longitude", data.Coordinates.Item2));
+            
         }
 
         public IEnumerable<VenueData> GetAllVenueData()
         {
-            string sql = "select * from Venues";
+            string sql = "select * from thevilla_admin.venues";
             return db.ExecuteSqlAndReturnAllRows(sql, r => new VenueData
             {
                 ID = r.GetInt("venue_id"),
                 Name = r.GetString("venue"),
-                MapUrl = r.GetString("map_url")
+                MapUrl = r.GetString("map_url"),
+                Description = r.GetString("description"),
+                Coordinates = new Tuple<decimal?, decimal?>(r.GetDecimal("latitude"),
+                                                       r.GetDecimal("longitude"))
             });
         }
 

@@ -10,6 +10,17 @@ namespace CricketClubDAL
 {
     public class Db
     {
+        
+        public Db(string customConnectionString)
+        {
+            connectionString = customConnectionString;
+        }
+
+        public Db()
+        {
+            
+        }
+        
         private static string connectionString;
 
         private static OleDbConnection OpenConnection()
@@ -104,6 +115,10 @@ namespace CricketClubDAL
         {
             try
             {
+                if (!donNotLog)
+                {
+                    Console.WriteLine("Executing SQL: " + sql);
+                }
                 using (OleDbConnection conn = OpenConnection())
                 {
                     using (var command = new OleDbCommand(sql, conn))
