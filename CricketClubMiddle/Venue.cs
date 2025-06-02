@@ -29,8 +29,8 @@ namespace CricketClubMiddle
             }
         }
 
-        public static Venue CreateNewVenue(string venueName, string mapUrl, string description, decimal lat,
-            decimal lng)
+        public static Venue CreateNewVenue(string venueName, string mapUrl, string description, decimal? lat,
+            decimal? lng)
         {
             Dao myDAO = new Dao();
             int newVenueId = myDAO.CreateNewVenue(venueName, mapUrl, description, lat, lng);

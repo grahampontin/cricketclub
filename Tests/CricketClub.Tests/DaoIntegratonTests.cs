@@ -52,6 +52,36 @@ namespace CricketClub.Tests
             Assert.AreEqual(newDescription, updatedVenue.Description);
             Assert.AreEqual(newLat, updatedVenue.Coordinates.Item1);
             Assert.AreEqual(newLng, updatedVenue.Coordinates.Item2);
+
+            venue.Coordinates = new Tuple<decimal?, decimal?>(null, null);
+            _dao.UpdateVenue(venue);
+            
+            // Query again to check null coordinates
+            VenueData nullCoordsVenue = _dao.GetVenueData(venueId);
+            Assert.IsNull(nullCoordsVenue.Coordinates.Item1);
+            Assert.IsNull(nullCoordsVenue.Coordinates.Item2);
+        }
+        
+        [Test]
+        public void CanCreateVenueWithNullCoordinates()
+        {
+            // Create with null coordinates
+            string name = "Null Coords Venue " + Guid.NewGuid();
+            string mapUrl = "http://test.com/map";
+            string description = "Venue with null coordinates";
+            decimal? lat = null;
+            decimal? lng = null;
+
+            int venueId = _dao.CreateNewVenue(name, mapUrl, description, lat, lng);
+            Assert.True(venueId > 0);
+
+            // Query
+            VenueData venue = _dao.GetVenueData(venueId);
+            Assert.AreEqual(name, venue.Name);
+            Assert.AreEqual(mapUrl, venue.MapUrl);
+            Assert.AreEqual(description, venue.Description);
+            Assert.IsNull(venue.Coordinates.Item1);
+            Assert.IsNull(venue.Coordinates.Item2);
         }
     }
 }

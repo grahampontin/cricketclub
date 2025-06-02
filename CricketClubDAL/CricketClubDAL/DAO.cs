@@ -243,7 +243,7 @@ namespace CricketClubDAL
             return venue;
         }
 
-        public int CreateNewVenue(string venueName, string mapsUrl, string description, decimal latitude, decimal longitude)
+        public int CreateNewVenue(string venueName, string mapsUrl, string description, decimal? latitude, decimal? longitude)
         {
             DataRow dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.venues where venue ='" + venueName + "'");
             if (dr != null)
@@ -251,8 +251,10 @@ namespace CricketClubDAL
                 return (int) dr["venue_id"];
             }
             int newVenueId = (int) db.ExecuteSQLAndReturnSingleResult("select max(venue_id) from thevilla_admin.venues") + 1;
+            var latitude1 = latitude?.ToString(CultureInfo.InvariantCulture) ?? "null";
+            var longitude1 = longitude?.ToString(CultureInfo.InvariantCulture) ?? "null";
             int rowsAffected =
-                db.ExecuteInsertOrUpdate($"insert into thevilla_admin.venues(venue_id, venue, map_url, description, latitude, longitude) select {newVenueId}, '{venueName}', '{mapsUrl}', '{description}', '{latitude}', '{longitude}'");
+                db.ExecuteInsertOrUpdate($"insert into thevilla_admin.venues(venue_id, venue, map_url, description, latitude, longitude) select {newVenueId}, '{venueName}', '{mapsUrl}', '{description}', {latitude1}, {longitude1}");
             if (rowsAffected == 1)
             {
                 return newVenueId;
@@ -266,8 +268,10 @@ namespace CricketClubDAL
             db.ExecuteInsertOrUpdate(string.Format(sql, "venue", "'" + data.Name + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "map_url", "'" + data.MapUrl + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "description", "'" + data.Description + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "latitude", data.Coordinates.Item1));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "longitude", data.Coordinates.Item2));
+            var latitude = data.Coordinates.Item1?.ToString(CultureInfo.InvariantCulture) ?? "null";
+            db.ExecuteInsertOrUpdate(string.Format(sql, "latitude", latitude));
+            var longitude = data.Coordinates.Item2?.ToString(CultureInfo.InvariantCulture) ?? "null";
+            db.ExecuteInsertOrUpdate(string.Format(sql, "longitude", longitude));
             
         }
 
