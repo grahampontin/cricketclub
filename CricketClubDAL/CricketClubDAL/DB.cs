@@ -117,7 +117,7 @@ namespace CricketClubDAL
             }
         }
 
-        public int ExecuteInsertOrUpdate(string sql, bool donNotLog = false)
+        public int ExecuteInsertOrUpdate(string sql, bool donNotLog = true)
         {
             try
             {
