@@ -395,7 +395,7 @@ namespace CricketClubDAL
             int rowsAffected =
                 db.ExecuteInsertOrUpdate("insert into thevilla_admin.matches(match_id, match_date, oppo_id, comp_id, venue_id, home_away) select "
                                                 + newMatchId + ", '"
-                                                + matchDate.ToLongDateString() + "' , "
+                                                + matchDate.ToString("dd MMMM yyyy") + "' , "
                                                 + opponentId + ", "
                                                 + matchTypeId + ", "
                                                 + venueId + ", '"
@@ -411,7 +411,7 @@ namespace CricketClubDAL
         public void UpdateMatch(MatchData data)
         {
             string sql = "update thevilla_admin.matches set {0} = {1} where match_id = " + data.ID;
-            db.ExecuteInsertOrUpdate(string.Format(sql, "match_date", "'" + data.Date.ToLongDateString() + "'"));
+            db.ExecuteInsertOrUpdate(string.Format(sql, "match_date", "'" + data.Date.ToString("dd MMMM yyyy") + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "oppo_id", data.OppositionID));
             db.ExecuteInsertOrUpdate(string.Format(sql, "comp_id", data.MatchType));
             db.ExecuteInsertOrUpdate(string.Format(sql, "venue_id", data.VenueID));
@@ -439,7 +439,7 @@ namespace CricketClubDAL
 
         public int GetNextMatch(DateTime date)
         {
-            string sql = "select * from matches where match_date >= '" + date.ToLongDateString() +
+            string sql = "select * from matches where match_date >= '" + date.ToString("dd MMMM yyyy") +
                          "' order by match_date asc";
             DataRow dr = db.ExecuteSQLAndReturnFirstRow(sql);
             try
@@ -454,7 +454,7 @@ namespace CricketClubDAL
 
         public int GetPreviousMatch(DateTime date)
         {
-            string sql = "select * from matches where match_date <= '" + date.ToUniversalTime().ToLongDateString() +
+            string sql = "select * from matches where match_date <= '" + date.ToUniversalTime().ToString("dd MMMM yyyy") +
                          "' order by match_date desc";
             DataRow dr = db.ExecuteSQLAndReturnFirstRow(sql);
             try
@@ -1092,7 +1092,7 @@ namespace CricketClubDAL
                                                 + type + ", "
                                                 + matchId + ", "
                                                 + status + ", '"
-                                                + transactionDate.ToLongDateString() + "'"
+                                                + transactionDate.ToString("dd MMMM yyyy")+ "'"
                     );
             if (rowsAffected == 1)
             {
