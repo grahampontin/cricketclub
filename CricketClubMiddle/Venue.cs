@@ -29,7 +29,8 @@ namespace CricketClubMiddle
             }
         }
 
-        public static Venue CreateNewVenue(string venueName, string mapUrl, string description, decimal lat, decimal lng)
+        public static Venue CreateNewVenue(string venueName, string mapUrl, string description, decimal lat,
+            decimal lng)
         {
             Dao myDAO = new Dao();
             int newVenueId = myDAO.CreateNewVenue(venueName, mapUrl, description, lat, lng);
@@ -38,38 +39,20 @@ namespace CricketClubMiddle
 
         public string GoogleMapsLocationURL
         {
-            get
-            {
-                return _data.MapUrl;
-            }
-            set
-            {
-                _data.MapUrl = value;
-            }
+            get => _data.MapUrl;
+            set => _data.MapUrl = value;
         }
 
         public string Name
         {
-            get
-            {
-                return _data.Name;
-            }
-            set
-            {
-                _data.Name = value;
-            }
+            get => _data.Name;
+            set => _data.Name = value;
         }
 
-        public int ID
-        {
-            get
-            {
-                return _data.ID;
-            }
-        }
+        public int ID => _data.ID;
 
         public void Save()
-        {  
+        {
             myDAO.UpdateVenue(_data);
         }
 
@@ -82,6 +65,7 @@ namespace CricketClubMiddle
                 venues.Add(new Venue(item));
 
             }
+
             return venues;
         }
 
@@ -105,6 +89,18 @@ namespace CricketClubMiddle
         public VenueStats GetStats(DateTime fromDate, DateTime toDate, List<MatchType> matchTypes)
         {
             return new VenueStats(this, fromDate, toDate, matchTypes);
+        }
+
+        public string Description
+        {
+            get => _data.Description;
+            set => _data.Description = value;
+        }
+
+        public Tuple<decimal?, decimal?> Coordinates
+        {
+            get => _data.Coordinates;
+            set => _data.Coordinates = value;
         }
     }
 }
