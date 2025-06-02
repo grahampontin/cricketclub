@@ -5,6 +5,7 @@ using CricketClubDomain;
 using CricketClubMiddle;
 using CricketClubMiddle.Stats;
 using NUnit.Framework;
+using Match = System.Text.RegularExpressions.Match;
 
 namespace CricketClub.Tests
 {
@@ -61,7 +62,8 @@ namespace CricketClub.Tests
             da.UpdateCurrentBallByBallState(matchState, matchId);
 
 
-            var ballByBallMatch = BallByBallMatch.Load(matchId, null);
+            var match = new CricketClubMiddle.Match(matchId);
+            var ballByBallMatch = BallByBallMatch.Load(matchId, match);
 
             var stateAfterSave = ballByBallMatch.GetMatchState();
             var stateToMutate = ballByBallMatch.GetMatchState();
@@ -93,13 +95,13 @@ namespace CricketClub.Tests
 
             da.UpdateCurrentBallByBallState(stateToMutate, matchId);
 
-            var stateAfterUpdate = BallByBallMatch.Load(matchId, null).GetMatchState();
+            var stateAfterUpdate = BallByBallMatch.Load(matchId, match).GetMatchState();
 
             Assert.That(stateAfterUpdate.Players.Length, Is.EqualTo(11));
 
             da.DeleteBallByBallOver(matchId, 2);
 
-            var stateAfterRollback = BallByBallMatch.Load(matchId, null).GetMatchState();
+            var stateAfterRollback = BallByBallMatch.Load(matchId, match).GetMatchState();
 
 
 

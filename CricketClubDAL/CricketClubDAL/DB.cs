@@ -52,6 +52,12 @@ namespace CricketClubDAL
                 {
                     key = "Surface";
                 }
+
+                if (Environment.CommandLine.ToUpper().Contains("TEST"))
+                {
+                    key = "TestDB";
+                }
+                
                 ConnectionStringSettings cnxStr = ConfigurationManager.ConnectionStrings[key];
                 if (cnxStr == null)
                     throw new ConfigurationErrorsException("ConnectionString '" + key +

@@ -124,6 +124,7 @@
   <ItemGroup>
     <Compile Include="BallByBallDaoTests.cs" />
     <Compile Include="BallByBallTests.cs" />
+    <Compile Include="DaoIntegratonTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

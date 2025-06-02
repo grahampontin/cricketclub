@@ -14,7 +14,9 @@ namespace CricketClub.Tests
         [Test]
         public void CanPopuateScorecards()
         {
-            var match = new Match(394);
+            var match = new Match(381);
+            var liveScorecard = match.GetLiveScorecard();
+            Assert.NotNull(liveScorecard.LiveBattingCard);
             match.PopulateScorecardFromBallByBallData();
         }
 
