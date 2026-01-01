@@ -70,32 +70,32 @@ namespace CricketClubMiddle.Interactive
 
         public User(int ID)
         {
-            User u = (from a in GetAll() where a.ID == ID select a).FirstOrDefault();
+            var u = (from a in GetAll() where a.ID == ID select a).FirstOrDefault();
             _data = u._data;
         }
 
         public static User GetByName(string Username)
         {
-            User u = (from a in GetAll() where a.Name == Username select a).FirstOrDefault();
+            var u = (from a in GetAll() where a.Name == Username select a).FirstOrDefault();
             return u;
         }
 
         public static User CreateNew(string UserName, string Password, string emailaddress, string displayname) 
         {
-            Dao myDAO = new Dao();
-            int id = myDAO.CreateNewUser(UserName, emailaddress, Password, displayname);
+            var myDAO = new Dao();
+            var id = myDAO.CreateNewUser(UserName, emailaddress, Password, displayname);
             return new User(id);
         }
 
         public static List<User> GetAll()
         {
-            Dao myDao = new Dao();
+            var myDao = new Dao();
             return (from a in myDao.GetAllUsers() select new User(a)).ToList(); 
         }
 
         public void Save()
         {
-            Dao myDao = new Dao();
+            var myDao = new Dao();
             myDao.UpdateUser(_data);
         }
 

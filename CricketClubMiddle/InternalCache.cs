@@ -27,7 +27,7 @@ namespace CricketClubMiddle
 
         public object Get(string key)
         {
-            CacheObject thisItem = (CacheObject)thisCache[key];
+            var thisItem = (CacheObject)thisCache[key];
             if (thisItem != null && !thisItem.HasExpired)
             {
                 return thisItem.Value;

@@ -16,23 +16,23 @@ namespace CricketClubMiddle.Web
             //init the base class!!!//
             base.OnInit(e);
 
-            string LogonPage = ConfigurationManager.AppSettings["logonPage"];
+            var LogonPage = ConfigurationManager.AppSettings["logonPage"];
 
-            HttpCookie usernameCookie = Request.Cookies["VCCUsername"];
-            string username = "";
+            var usernameCookie = Request.Cookies["VCCUsername"];
+            var username = "";
             if (usernameCookie != null)
             {
                 username = usernameCookie.Value;
             }
 
-            HttpCookie passwordCookie = Request.Cookies["VCCPassword"];
-            string password = "";
+            var passwordCookie = Request.Cookies["VCCPassword"];
+            var password = "";
             if (passwordCookie != null)
             {
                 password = passwordCookie.Value;
             }
 
-            CricketClubMiddle.Interactive.User thisUser = CricketClubMiddle.Interactive.User.GetByName(username);
+            var thisUser = CricketClubMiddle.Interactive.User.GetByName(username);
             if (thisUser != null)
             {
                 thisUser.AuthenticateUser(password, true);

@@ -41,7 +41,7 @@ namespace CricketClubDomain
         {
             unchecked
             {
-                int hashCode = LastCompletedOver;
+                var hashCode = LastCompletedOver;
                 hashCode = (hashCode*397) ^ (Over != null ? Over.GetHashCode() : 0);
                 hashCode = (hashCode*397) ^ (Players != null ? Players.GetHashCode() : 0);
                 hashCode = (hashCode*397) ^ RunRate.GetHashCode();

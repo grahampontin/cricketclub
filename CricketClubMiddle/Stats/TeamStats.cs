@@ -37,7 +37,7 @@ namespace CricketClubMiddle.Stats
         {
             get
             {
-                InternalCache cache = InternalCache.GetInstance();
+                var cache = InternalCache.GetInstance();
                 if (cache.Get("TeamMatchData_" + _team.ID) == null)
                 {
                     List<Match> allMatches;
@@ -87,8 +87,8 @@ namespace CricketClubMiddle.Stats
         public decimal GetAverageBattingScore()
         {
             if (GetMatchesPlayed() == 0) return 0;
-            int runsScored = 0;
-            foreach (Match m in FilteredMatchData)
+            var runsScored = 0;
+            foreach (var m in FilteredMatchData)
             {
                 runsScored += m.GetTeamScore(this._team);
             }
@@ -102,8 +102,8 @@ namespace CricketClubMiddle.Stats
         public decimal GetAverageBowlingScore()
         {
             if (GetMatchesPlayed() == 0) return 0;
-            int runsScored = 0;
-            foreach (Match m in FilteredMatchData)
+            var runsScored = 0;
+            foreach (var m in FilteredMatchData)
             {
                 if (this.ID == 0)
                 {
@@ -123,8 +123,8 @@ namespace CricketClubMiddle.Stats
         /// <returns></returns>
         public int GetWicketsLost()
         {
-            int totalWicketsLost = 0;
-            foreach (Match m in FilteredMatchData)
+            var totalWicketsLost = 0;
+            foreach (var m in FilteredMatchData)
             {
                 totalWicketsLost += m.GetTeamWicketsDown(this._team);
             }
@@ -137,8 +137,8 @@ namespace CricketClubMiddle.Stats
         /// <returns></returns>
         public int GetWicketsTaken()
         {
-            int totalWicketsLost = 0;
-            foreach (Match m in FilteredMatchData)
+            var totalWicketsLost = 0;
+            foreach (var m in FilteredMatchData)
             {
                 if (this.ID == 0)
                 {
@@ -159,8 +159,8 @@ namespace CricketClubMiddle.Stats
         /// <returns></returns>
         public int GetNumberOfWickets(ModesOfDismissal HowOut)
         {
-            List<BattingCardLine> WicketsData = new List<BattingCardLine>();
-            foreach (Match m in FilteredMatchData)
+            var WicketsData = new List<BattingCardLine>();
+            foreach (var m in FilteredMatchData)
             {
                 if (this.ID == 0)
                 {
@@ -181,8 +181,8 @@ namespace CricketClubMiddle.Stats
         /// <returns></returns>
         public int GetNumberOfDismissals(ModesOfDismissal HowOut)
         {
-            List<BattingCardLine> WicketsData = new List<BattingCardLine>();
-            foreach (Match m in FilteredMatchData)
+            var WicketsData = new List<BattingCardLine>();
+            foreach (var m in FilteredMatchData)
             {
                 if (this.ID == 0)
                 {

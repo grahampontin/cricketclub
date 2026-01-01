@@ -15,7 +15,7 @@ namespace CricketClubMiddle
 
         public static IEnumerable<ChatItem> GetAllBetween(DateTime startDate, DateTime endDate)
         {
-            Dao myDao = new Dao();
+            var myDao = new Dao();
             
             return from a in myDao.GetChatBetween(startDate, endDate) select new ChatItem(a);
         
@@ -23,7 +23,7 @@ namespace CricketClubMiddle
 
         public static IEnumerable<ChatItem> GetAllCommentsAfter(int CommentID)
         {
-            Dao myDao = new Dao();
+            var myDao = new Dao();
 
             return from a in myDao.GetChatAfter(CommentID) select new ChatItem(a);
 
@@ -31,7 +31,7 @@ namespace CricketClubMiddle
 
         public static void PostItem(ChatItem item)
         {
-            Dao myDao = new Dao();
+            var myDao = new Dao();
             myDao.SubmitChatComment(item._data);
         }
     }

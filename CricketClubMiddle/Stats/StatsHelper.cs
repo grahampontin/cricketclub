@@ -7,10 +7,10 @@ namespace CricketClubMiddle.Stats
     {
         public static double GetBattingAverage(IEnumerable<BattingCardLineData> seasonStats)
         {
-            int dismissals = 0;
-            int runs = 0;
+            var dismissals = 0;
+            var runs = 0;
 
-            foreach (BattingCardLineData battingCardLineData in seasonStats)
+            foreach (var battingCardLineData in seasonStats)
             {
                 runs += battingCardLineData.Score;
                 if (!StatsHelper.IsNotOut(battingCardLineData))
@@ -28,7 +28,7 @@ namespace CricketClubMiddle.Stats
 
         private static bool IsNotOut(BattingCardLineData battingCardLineData)
         {
-            ModesOfDismissal dismissal = (ModesOfDismissal)battingCardLineData.ModeOfDismissal;
+            var dismissal = (ModesOfDismissal)battingCardLineData.ModeOfDismissal;
             return dismissal == ModesOfDismissal.DidNotBat || dismissal==ModesOfDismissal.NotOut || dismissal==ModesOfDismissal.RetiredHurt;
         }
     }

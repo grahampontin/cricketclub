@@ -26,7 +26,7 @@ namespace CricketClubMiddle.Stats
                 }
                 else
                 {
-                    Player player = new Player(_data.PlayerID);
+                    var player = new Player(_data.PlayerID);
                     return player.Name;
                 }
             }
@@ -162,12 +162,12 @@ namespace CricketClubMiddle.Stats
         {
             get
             {
-                string name = Bowler.Name;
+                var name = Bowler.Name;
                 if (string.IsNullOrEmpty(PlayerName))
                 {
                     name = "unknown";
                 }
-                ModesOfDismissal howout = (ModesOfDismissal)_data.ModeOfDismissal;
+                var howout = (ModesOfDismissal)_data.ModeOfDismissal;
                 
                 if (howout == ModesOfDismissal.CaughtAndBowled)
                 {
@@ -192,11 +192,11 @@ namespace CricketClubMiddle.Stats
         {
             get
             {
-                string name = Fielder.Name;
+                var name = Fielder.Name;
                 if (name == null || name.Length==0) {
                     name = "unknown";
                 }
-                ModesOfDismissal howout = (ModesOfDismissal)_data.ModeOfDismissal;
+                var howout = (ModesOfDismissal)_data.ModeOfDismissal;
                 if (howout == ModesOfDismissal.Caught)
                 {
                     return "c " + name;

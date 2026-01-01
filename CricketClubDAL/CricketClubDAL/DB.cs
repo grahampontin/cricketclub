@@ -35,7 +35,7 @@ namespace CricketClubDAL
         {
             if (connectionString == null)
             {
-                string key = "ProdDB";
+                var key = "ProdDB";
                 if (Environment.MachineName.Contains("TABLET"))
                 {
                     key = "LocalDB";
@@ -58,7 +58,7 @@ namespace CricketClubDAL
                     key = "TestDB";
                 }
                 
-                ConnectionStringSettings cnxStr = ConfigurationManager.ConnectionStrings[key];
+                var cnxStr = ConfigurationManager.ConnectionStrings[key];
                 if (cnxStr == null)
                     throw new ConfigurationErrorsException("ConnectionString '" + key +
                                                            "' was not found in the configuration file.");
@@ -81,7 +81,7 @@ namespace CricketClubDAL
         {
             try
             {
-                using (OleDbConnection connection = OpenConnection())
+                using (var connection = OpenConnection())
                 {
                     var data = new DataSet();
                     var adaptor = new OleDbDataAdapter(sql, connection);
@@ -103,7 +103,7 @@ namespace CricketClubDAL
         {
             try
             {
-                using (OleDbConnection conn = OpenConnection())
+                using (var conn = OpenConnection())
                 {
                     using (var command = new OleDbCommand(sql, conn))
                     {
@@ -125,7 +125,7 @@ namespace CricketClubDAL
                 {
                     Console.WriteLine("Executing SQL: " + sql);
                 }
-                using (OleDbConnection conn = OpenConnection())
+                using (var conn = OpenConnection())
                 {
                     using (var command = new OleDbCommand(sql, conn))
                     {
@@ -150,7 +150,7 @@ namespace CricketClubDAL
         {
             try
             {
-                using (OleDbConnection conn = OpenConnection())
+                using (var conn = OpenConnection())
                 {
                     var data = new DataSet();
                     var adaptor = new OleDbDataAdapter(sql, conn);
@@ -215,7 +215,7 @@ namespace CricketClubDAL
 
         public int GetInt(int index, int valueIfNull)
         {
-            object value = dataRow[index];
+            var value = dataRow[index];
             if (value is DBNull)
             {
                 return valueIfNull;
@@ -225,7 +225,7 @@ namespace CricketClubDAL
 
         public int GetInt(string columnName, int valueIfNull)
         {
-            object value = dataRow[columnName];
+            var value = dataRow[columnName];
             if (value is DBNull)
             {
                 return valueIfNull;
@@ -235,7 +235,7 @@ namespace CricketClubDAL
 
         public bool GetBool(string columnName, bool defaultValue=false)
         {
-            object value = dataRow[columnName];
+            var value = dataRow[columnName];
             if (value is DBNull)
             {
                 return defaultValue;
@@ -245,7 +245,7 @@ namespace CricketClubDAL
         
         public DateTime GetDateTime(string columnName, DateTime defaultIfNull)
         {
-            object value = dataRow[columnName];
+            var value = dataRow[columnName];
             if (value is DBNull)
             {
                 return defaultIfNull;

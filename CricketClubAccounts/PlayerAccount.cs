@@ -26,9 +26,9 @@ namespace CricketClubAccounts
 
         public double GetBalance()
         {
-            double balance = 0.0;
+            var balance = 0.0;
 
-            foreach (AccountEntry entry in this.GetStatement())
+            foreach (var entry in this.GetStatement())
             {
                 if (entry.CreditOrDebit == CreditDebit.Credit)
                 {

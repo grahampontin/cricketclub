@@ -95,7 +95,7 @@ namespace CricketClubAccounts
 
         public AccountEntry(int AccountEntryID)
         {
-            AccountEntry ac = (from a in GetAll() where a.ID == AccountEntryID select a).FirstOrDefault();
+            var ac = (from a in GetAll() where a.ID == AccountEntryID select a).FirstOrDefault();
             if (ac != null)
             {
                 _data = ac._data;
@@ -108,8 +108,8 @@ namespace CricketClubAccounts
 
         internal static AccountEntry Create(PlayerAccount account, double amount, string description, DateTime Date, CreditDebit CreditOrDebit, PaymentType Type, int MatchID, PaymentStatus Status)
         {
-            Dao myDao = new Dao();
-            int newID = myDao.CreateNewAccountEntry(account.PlayerID, description, amount,(int)CreditOrDebit, (int)Type, MatchID, (int)Status, Date);
+            var myDao = new Dao();
+            var newID = myDao.CreateNewAccountEntry(account.PlayerID, description, amount,(int)CreditOrDebit, (int)Type, MatchID, (int)Status, Date);
             ClearCache();
             return new AccountEntry(newID);
         }
@@ -120,10 +120,10 @@ namespace CricketClubAccounts
         {
             if (_accountCache == null)
             {
-                List<AccountEntry> allAccounts = new List<AccountEntry>();
-                Dao myDao = new Dao();
-                List<AccountEntryData> data = myDao.GetAllAccountData();
-                foreach (AccountEntryData row in data)
+                var allAccounts = new List<AccountEntry>();
+                var myDao = new Dao();
+                var data = myDao.GetAllAccountData();
+                foreach (var row in data)
                 {
                     allAccounts.Add(new AccountEntry(row));
                 }
@@ -134,7 +134,7 @@ namespace CricketClubAccounts
 
         public void Save()
         {
-            Dao myDao = new Dao();
+            var myDao = new Dao();
             myDao.UpdateAccountEntry(_data);
             ClearCache();
         }

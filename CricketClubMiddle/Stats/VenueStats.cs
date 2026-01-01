@@ -36,7 +36,7 @@ namespace CricketClubMiddle.Stats
         {
             get
             {
-                InternalCache cache = InternalCache.GetInstance();
+                var cache = InternalCache.GetInstance();
                 if (cache.Get("VenueMatchData_" + _venue.ID) == null)
                 {
                     List<Match> allMatches;
@@ -88,8 +88,8 @@ namespace CricketClubMiddle.Stats
 
         public decimal GetNumberOfWicketsPerInnings(ModesOfDismissal HowOut)
         {
-            List<BattingCardLine> WicketsData = new List<BattingCardLine>();
-            foreach (Match m in FilteredMatchData)
+            var WicketsData = new List<BattingCardLine>();
+            foreach (var m in FilteredMatchData)
             {
                 WicketsData.AddRange(m.GetOurBattingScoreCard().ScorecardData);
                 WicketsData.AddRange(m.GetTheirBattingScoreCard().ScorecardData);

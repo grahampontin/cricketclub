@@ -13,7 +13,7 @@ namespace CricketClubMiddle.Stats
         public FoWStats(int MatchID, ThemOrUs who)
         {
             Who = who;
-            Dao myDAO = new Dao();
+            var myDAO = new Dao();
             Data = (from a in myDAO.GetFoWData(MatchID, who) 
                    select new FoWStatsLine(a)).ToList();
         }
@@ -32,9 +32,9 @@ namespace CricketClubMiddle.Stats
 
         public void Save()
         {
-            Dao myDAO = new Dao();
+            var myDAO = new Dao();
 
-            List<FoWDataLine> _data = (from a in Data select a._data).ToList();
+            var _data = (from a in Data select a._data).ToList();
             myDAO.UpdateFoWData(_data, Who);
         }
 

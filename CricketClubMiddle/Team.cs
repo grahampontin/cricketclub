@@ -35,8 +35,8 @@ namespace CricketClubMiddle
 
         public static Team CreateNewTeam(string TeamName)
         {
-            Dao myDAO = new Dao();
-            int newTeamid = myDAO.CreateNewTeam(TeamName);
+            var myDAO = new Dao();
+            var newTeamid = myDAO.CreateNewTeam(TeamName);
             return new Team(newTeamid);
         }
 
@@ -70,9 +70,9 @@ namespace CricketClubMiddle
 
         public static List<Team> GetAll()
         {
-            IEnumerable<TeamData> data = new Dao().GetAllTeamData();
-            List<Team> teams = new List<Team>();
-            foreach (TeamData item in data)
+            var data = new Dao().GetAllTeamData();
+            var teams = new List<Team>();
+            foreach (var item in data)
             {
                 teams.Add(new Team(item));
 
@@ -82,7 +82,7 @@ namespace CricketClubMiddle
 
         public static Team GetByName(string Name)
         {
-            Team team = (from a in Team.GetAll() where a.Name == Name select a).FirstOrDefault();
+            var team = (from a in Team.GetAll() where a.Name == Name select a).FirstOrDefault();
             return team;
         }
 

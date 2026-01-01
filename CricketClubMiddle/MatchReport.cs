@@ -14,7 +14,7 @@ namespace CricketClubMiddle
         MatchReportData _data;
         public MatchReport(int MatchID, string ReportsFolder)
         {
-            Dao myDAO = new Dao();
+            var myDAO = new Dao();
             _data = myDAO.GetMatchReportData(MatchID);
             folder = ReportsFolder;
         }
@@ -33,8 +33,8 @@ namespace CricketClubMiddle
             {
                 try
                 {
-                    StreamReader stream = new StreamReader(folder + _data.ReportFilename);
-                    string temp = stream.ReadToEnd();
+                    var stream = new StreamReader(folder + _data.ReportFilename);
+                    var temp = stream.ReadToEnd();
                     stream.Close();
                     return temp;
 
@@ -46,12 +46,12 @@ namespace CricketClubMiddle
             }
             set
             {
-                string filename = _data.ReportFilename;
+                var filename = _data.ReportFilename;
                 if (string.IsNullOrEmpty(filename))
                 {
                     filename = "match_report_" + MatchID.ToString() + ".html";
                 }
-                string path = folder + filename;
+                var path = folder + filename;
                 
                 if (File.Exists(path))
                 {
@@ -65,7 +65,7 @@ namespace CricketClubMiddle
         public void Save()
         {
             
-            Dao myDAO = new Dao();
+            var myDAO = new Dao();
             myDAO.SaveMatchReport(_data);
         }
 

@@ -32,8 +32,8 @@ namespace CricketClubMiddle
         public static Venue CreateNewVenue(string venueName, string mapUrl, string description, decimal? lat,
             decimal? lng)
         {
-            Dao myDAO = new Dao();
-            int newVenueId = myDAO.CreateNewVenue(venueName, mapUrl, description, lat, lng);
+            var myDAO = new Dao();
+            var newVenueId = myDAO.CreateNewVenue(venueName, mapUrl, description, lat, lng);
             return new Venue(newVenueId);
         }
 
@@ -58,9 +58,9 @@ namespace CricketClubMiddle
 
         public static List<Venue> GetAll()
         {
-            IEnumerable<VenueData> data = new Dao().GetAllVenueData();
-            List<Venue> venues = new List<Venue>();
-            foreach (VenueData item in data)
+            var data = new Dao().GetAllVenueData();
+            var venues = new List<Venue>();
+            foreach (var item in data)
             {
                 venues.Add(new Venue(item));
 
@@ -71,7 +71,7 @@ namespace CricketClubMiddle
 
         public static Venue GetByName(string Name)
         {
-            Venue venue = (from a in Venue.GetAll() where a.Name == Name select a).FirstOrDefault();
+            var venue = (from a in Venue.GetAll() where a.Name == Name select a).FirstOrDefault();
             return venue;
         }
 

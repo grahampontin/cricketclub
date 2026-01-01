@@ -58,19 +58,19 @@ namespace CricketClubMiddle.Interactive
 
         public static PhotoComment AddCommentToPhoto(int PhotoID, User Author, string Comment)
         {
-            PhotoCommentData thisComment = new PhotoCommentData();
+            var thisComment = new PhotoCommentData();
             thisComment.AuthorID = Author.ID;
             thisComment.Comment = Comment;
             thisComment.PhotoID = PhotoID;
             thisComment.CommentTime = DateTime.Now;
-            PhotoComment newComment = new PhotoComment(thisComment);
+            var newComment = new PhotoComment(thisComment);
             thisComment.ID = newComment.Save();
             return newComment;
         }
 
         public static List<PhotoComment> GetAll()
         {
-            Dao myDao = new Dao();
+            var myDao = new Dao();
             return (from a in myDao.GetAllPhotoComments() select new PhotoComment(a)).ToList();
         }
 
@@ -81,7 +81,7 @@ namespace CricketClubMiddle.Interactive
 
         private int Save()
         {
-            Dao myDao = new Dao();
+            var myDao = new Dao();
             return myDao.SubmitPhotoComment(_data);
         }
     }

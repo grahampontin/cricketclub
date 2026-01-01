@@ -17,7 +17,7 @@ namespace CricketClubMiddle.Stats
         /// <param name="Us">is this for us (true), or for the opposition (false)</param>
         public BowlingStats(int MatchID, ThemOrUs who)
         {
-            Dao myDAO = new Dao();
+            var myDAO = new Dao();
             BowlingStatsData = (from a in myDAO.GetBowlingStats(MatchID, who)
                                 select new BowlingStatsLine(a)).ToList();
             Who = who;
@@ -37,8 +37,8 @@ namespace CricketClubMiddle.Stats
 
         public void Save()
         {
-            Dao myDao = new Dao();
-            List<BowlingStatsEntryData> data = (from a in BowlingStatsData select a._data).ToList();
+            var myDao = new Dao();
+            var data = (from a in BowlingStatsData select a._data).ToList();
             myDao.UpdateBowlingStats(data, Who);
         }
     }

@@ -188,7 +188,7 @@ namespace CricketClubMiddle.Stats
         private Tuple<PlayerState, PlayerState> GetBattingPlayers()
         {
             var battingPlayers = GetPlayersInState(PlayerState.Batting);
-            PlayerState secondPlayer = new PlayerState()
+            var secondPlayer = new PlayerState()
             {
                 PlayerId = -1
             };
@@ -335,15 +335,15 @@ namespace CricketClubMiddle.Stats
 
         public PartnershipsAndFallOfWickets GetPartnershipsAndFallOfWickets()
         {
-            List<Partnership> partnerships = new List<Partnership>();
-            List<FallOfWicket> fallOfWickets = new List<FallOfWicket>();
+            var partnerships = new List<Partnership>();
+            var fallOfWickets = new List<FallOfWicket>();
             var openingPair = playerStates.Where(ps => ps.Position <= 2 && ps.Position >0).ToList();
             if (openingPair.Count != 2)
             {
                 throw new Exception("There should always be 2 batsmen to open an innings", new Exception());
             }
             var balls = GetSortedBallsFirstToLast();
-            Partnership partnership = new Partnership(openingPair[0].PlayerId, openingPair[1].PlayerId);
+            var partnership = new Partnership(openingPair[0].PlayerId, openingPair[1].PlayerId);
             try
             {
                 foreach (var ball in balls)
@@ -377,7 +377,7 @@ namespace CricketClubMiddle.Stats
                         {
                             break;
                         }
-                        int nextManInBattingAt = lastBatsman + 1;
+                        var nextManInBattingAt = lastBatsman + 1;
                         var nextBatsman = playerStates.Single(ps => ps.Position == nextManInBattingAt).PlayerId;
 
                         partnership = new Partnership(notOutPlayer, nextBatsman);
@@ -409,12 +409,12 @@ namespace CricketClubMiddle.Stats
 
         public BowlerInningsDetails GetBowlerOneDetails()
         {
-            string bowlerOne = GetBowlerOne();
+            var bowlerOne = GetBowlerOne();
             return GetBowlerDetails(bowlerOne);
         }
         public BowlerInningsDetails GetBowlerTwoDetails()
         {
-            string bowlerTwo = GetBowlerTwo();
+            var bowlerTwo = GetBowlerTwo();
             if (string.IsNullOrEmpty(bowlerTwo))
             {
                 return new BowlerInningsDetails();
@@ -446,8 +446,8 @@ namespace CricketClubMiddle.Stats
 
         private List<Over> GetOversInLastSpell(string bowlerOne)
         {
-            int oversSinceThisBowlerLastBowled = 0;
-            List<Over> spell = new List<Over>();
+            var oversSinceThisBowlerLastBowled = 0;
+            var spell = new List<Over>();
             foreach (var over in overs.Select(o=>o).Reverse())
             {
                 if (over.WasBowledBy(bowlerOne))

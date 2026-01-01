@@ -16,7 +16,7 @@ namespace CricketClubMiddle.Stats
         /// <param name="themOrUs">Do you want the website team's batting or the opposition's</param>
         public BattingCard(int matchId, ThemOrUs themOrUs)
         {
-            Dao dao = new Dao();
+            var dao = new Dao();
             ScorecardData = (dao.GetBattingCard(matchId, themOrUs).Where(a => a.PlayerID != -1).Where(
                 a => a.PlayerName != "(Frank) Extras").Select(a => new BattingCardLine(a))).OrderBy(b=>b.BattingAt).ToList();
             MatchId = matchId;
@@ -74,7 +74,7 @@ namespace CricketClubMiddle.Stats
 
         public void Save(BattingOrBowling batOrBowl)
         {
-            Dao dao = new Dao();
+            var dao = new Dao();
             var data = new List<BattingCardLineData>();
             foreach (var line in ScorecardData)
             {

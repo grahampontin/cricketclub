@@ -11,9 +11,9 @@ namespace CricketClubMiddle
     {
         public static string ReadableOversString(decimal Overs)
         {
-            decimal wholepart = Math.Round(Overs, 0);
-            decimal fraction = Overs - wholepart;
-            string overFraction = "";
+            var wholepart = Math.Round(Overs, 0);
+            var fraction = Overs - wholepart;
+            var overFraction = "";
             try
             {
                 overFraction = Math.Round((fraction * 6), 1).ToString().Substring(1, 2);
@@ -22,7 +22,7 @@ namespace CricketClubMiddle
             {
                 //Exact number of overs
             }
-            string wholePartString = wholepart.ToString();
+            var wholePartString = wholepart.ToString();
 
             if (overFraction == ".0")
             {
@@ -34,7 +34,7 @@ namespace CricketClubMiddle
 
         public static void ResizeImage(string OriginalFile, string NewFile, int NewWidth, int MaxHeight, bool OnlyResizeIfWider)
         {
-            System.Drawing.Image FullsizeImage = System.Drawing.Image.FromFile(OriginalFile);
+            var FullsizeImage = System.Drawing.Image.FromFile(OriginalFile);
 
             // Prevent using images internal thumbnail
             FullsizeImage.RotateFlip(System.Drawing.RotateFlipType.Rotate180FlipNone);
@@ -48,7 +48,7 @@ namespace CricketClubMiddle
                 }
             }
 
-            int NewHeight = FullsizeImage.Height * NewWidth / FullsizeImage.Width;
+            var NewHeight = FullsizeImage.Height * NewWidth / FullsizeImage.Width;
             if (NewHeight > MaxHeight)
             {
                 // Resize with height instead
@@ -56,7 +56,7 @@ namespace CricketClubMiddle
                 NewHeight = MaxHeight;
             }
 
-            System.Drawing.Image NewImage = FullsizeImage.GetThumbnailImage(NewWidth, NewHeight, null, IntPtr.Zero);
+            var NewImage = FullsizeImage.GetThumbnailImage(NewWidth, NewHeight, null, IntPtr.Zero);
             
             // Clear handle to original file so that we can overwrite it if necessary
             FullsizeImage.Dispose();
@@ -67,23 +67,23 @@ namespace CricketClubMiddle
 
         public static string MD5HashString(string Value)
         {
-            System.Security.Cryptography.MD5CryptoServiceProvider x = new System.Security.Cryptography.MD5CryptoServiceProvider();
-            byte[] data = System.Text.Encoding.ASCII.GetBytes(Value);
+            var x = new System.Security.Cryptography.MD5CryptoServiceProvider();
+            var data = System.Text.Encoding.ASCII.GetBytes(Value);
             data = x.ComputeHash(data);
-            string ret = "";
-            for (int i = 0; i < data.Length; i++)
+            var ret = "";
+            for (var i = 0; i < data.Length; i++)
                 ret += data[i].ToString("x2").ToLower();
             return ret;
         }
 
         public static string CreateRandomPassword(int PasswordLength)
         {
-            string _allowedChars = "abcdefghijkmnopqrstuvwxyzABCDEFGH­JKLMNOPQRSTUVWXYZ0123456789!@$?";
-            Random randNum = new Random();
-            char[] chars = new char[PasswordLength];
-            int allowedCharCount = _allowedChars.Length;
+            var _allowedChars = "abcdefghijkmnopqrstuvwxyzABCDEFGH­JKLMNOPQRSTUVWXYZ0123456789!@$?";
+            var randNum = new Random();
+            var chars = new char[PasswordLength];
+            var allowedCharCount = _allowedChars.Length;
 
-            for (int i = 0; i < PasswordLength; i++)
+            for (var i = 0; i < PasswordLength; i++)
             {
                 chars[i] = _allowedChars[(int)((_allowedChars.Length) * randNum.NextDouble())];
             }

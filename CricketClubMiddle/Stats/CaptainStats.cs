@@ -32,8 +32,8 @@ namespace CricketClubMiddle.Stats
         public static List<CaptainStats> GetAll(DateTime fromDate, DateTime toDate, List<MatchType> matchTypes, Venue venue)
         {
             var captains = Match.GetResults(fromDate,toDate).Where(a => a.Captain != null && a.Captain.Id>0).Select(a => a.Captain).Distinct(new PlayerComparer());
-            List<CaptainStats> c = new List<CaptainStats>();
-            foreach (Player p in captains)
+            var c = new List<CaptainStats>();
+            foreach (var p in captains)
             {
                 c.Add(new CaptainStats(p, fromDate, toDate, matchTypes, venue));
             }
@@ -56,7 +56,7 @@ namespace CricketClubMiddle.Stats
         {
             get
             {
-                InternalCache cache = InternalCache.GetInstance();
+                var cache = InternalCache.GetInstance();
                 if (cache.Get("CaptainsMatchData_" + Player.Id) == null)
                 {
                     List<Match> allMatches;

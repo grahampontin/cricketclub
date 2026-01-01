@@ -33,8 +33,8 @@ namespace CricketClubMiddle.Stats
         public static List<KeeperStats> GetAll(DateTime fromDate, DateTime toDate, List<MatchType> matchTypes, Venue venue)
         {
             var keepers = Match.GetResults(fromDate,toDate).Where(a => a.WicketKeeper != null && a.WicketKeeper.Id>0).Select(a => a.WicketKeeper).Distinct(new PlayerComparer());
-            List<KeeperStats> c = new List<KeeperStats>();
-            foreach (Player p in keepers)
+            var c = new List<KeeperStats>();
+            foreach (var p in keepers)
             {
                 c.Add(new KeeperStats(p, fromDate, toDate, matchTypes, venue));
             }
@@ -57,7 +57,7 @@ namespace CricketClubMiddle.Stats
         {
             get
             {
-                InternalCache cache = InternalCache.GetInstance();
+                var cache = InternalCache.GetInstance();
                 if (cache.Get("KeepersMatchData_" + Player.Id) == null)
                 {
                     List<Match> allMatches;
@@ -81,8 +81,8 @@ namespace CricketClubMiddle.Stats
 
         public decimal GetCatchesPerMatch()
         {
-            List<BattingCardLine> WicketsData = new List<BattingCardLine>();
-            foreach (Match m in FilteredMatchData)
+            var WicketsData = new List<BattingCardLine>();
+            foreach (var m in FilteredMatchData)
             {
                 WicketsData.AddRange(m.GetOurBattingScoreCard().ScorecardData);
                 WicketsData.AddRange(m.GetTheirBattingScoreCard().ScorecardData);
@@ -92,8 +92,8 @@ namespace CricketClubMiddle.Stats
 
         public decimal GetStumpingsPerMatch()
         {
-            List<BattingCardLine> WicketsData = new List<BattingCardLine>();
-            foreach (Match m in FilteredMatchData)
+            var WicketsData = new List<BattingCardLine>();
+            foreach (var m in FilteredMatchData)
             {
                 WicketsData.AddRange(m.GetOurBattingScoreCard().ScorecardData);
                 WicketsData.AddRange(m.GetTheirBattingScoreCard().ScorecardData);

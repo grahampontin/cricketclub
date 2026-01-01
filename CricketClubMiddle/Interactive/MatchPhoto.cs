@@ -14,7 +14,7 @@ namespace CricketClubMiddle.Interactive
 
         public MatchPhoto(int PhotoID)
         {
-            MatchPhoto p = (from a in GetAll() where a.ID == PhotoID select a).FirstOrDefault();
+            var p = (from a in GetAll() where a.ID == PhotoID select a).FirstOrDefault();
             _data = p._data;
  
         }
@@ -32,7 +32,7 @@ namespace CricketClubMiddle.Interactive
 
         public static List<MatchPhoto> GetAll()
         {
-            Dao myDAO = new Dao();
+            var myDAO = new Dao();
             return (from a in myDAO.GetAllPhotos() select new MatchPhoto(a)).ToList();
         }
 
@@ -111,20 +111,20 @@ namespace CricketClubMiddle.Interactive
 
         public static MatchPhoto AddNew(string FileName, string Title, int MatchID, User Owner)
         {
-            PhotoData data = new PhotoData();
+            var data = new PhotoData();
             data.UploadDate = DateTime.Now;
             data.AuthorID = Owner.ID;
             data.Title = Title;
             data.FileName = FileName;
             data.MatchID = MatchID;
-            MatchPhoto photo = new MatchPhoto(data);
+            var photo = new MatchPhoto(data);
             data.ID = photo.Save();
             return photo;
         }
 
         private int Save()
         {
-            Dao myDao = new Dao();
+            var myDao = new Dao();
             return myDao.AddOrUpdatePhoto(_data);
 
         }

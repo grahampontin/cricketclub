@@ -56,7 +56,7 @@ namespace CricketClubDomain
         {
             unchecked
             {
-                int hashCode = Amount;
+                var hashCode = Amount;
                 hashCode = (hashCode*397) ^ (Thing != null ? Thing.GetHashCode() : 0);
                 hashCode = (hashCode*397) ^ Batsman;
                 hashCode = (hashCode*397) ^ (BatsmanName != null ? BatsmanName.GetHashCode() : 0);

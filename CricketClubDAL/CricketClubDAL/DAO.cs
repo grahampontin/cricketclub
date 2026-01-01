@@ -28,7 +28,7 @@ namespace CricketClubDAL
 
         public PlayerData GetPlayerData(int playerId)
         {
-            string sql = "select * from thevilla_admin.Players where player_id = " + playerId;
+            var sql = "select * from thevilla_admin.Players where player_id = " + playerId;
 
             return db.ExecuteSQLAndReturnFirstRow(sql, PlayerDataFromRow, null);
 
@@ -36,7 +36,7 @@ namespace CricketClubDAL
 
         public List<PlayerData> GetAllPlayers()
         {
-            string sql = "select * from thevilla_admin.players";
+            var sql = "select * from thevilla_admin.players";
             return db.ExecuteSqlAndReturnAllRows(sql, PlayerDataFromRow).ToList();
         }
 
@@ -62,8 +62,8 @@ namespace CricketClubDAL
 
         public int CreateNewPlayer(string name)
         {
-            int newPlayerId = (int) db.ExecuteSQLAndReturnSingleResult("select max(player_id) from players") + 1;
-            int rowsAffected =
+            var newPlayerId = (int) db.ExecuteSQLAndReturnSingleResult("select max(player_id) from players") + 1;
+            var rowsAffected =
                 db.ExecuteInsertOrUpdate("insert into thevilla_admin.players(player_id, player_name) select " + newPlayerId +
                                                 ", '" + SafeForSql(name) + "'");
             if (rowsAffected == 1)
@@ -75,7 +75,7 @@ namespace CricketClubDAL
 
         public void UpdatePlayer(PlayerData playerData)
         {
-            string sql = "update thevilla_admin.players set {0} = {1} where player_id = " + playerData.ID;
+            var sql = "update thevilla_admin.players set {0} = {1} where player_id = " + playerData.ID;
             db.ExecuteInsertOrUpdate(string.Format(sql, "player_name", "'" + SafeForSql(playerData.Name) + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "full_name", "'" + SafeForSql(playerData.FullName) + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "nickname", "'" + SafeForSql(playerData.NickName) + "'"));
@@ -91,11 +91,11 @@ namespace CricketClubDAL
 
         public List<BattingCardLineData> GetPlayerBattingStatsData(int playerId)
         {
-            string sql =
+            var sql =
                 "select * from thevilla_admin.batting_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id and player_id = " +
                 playerId;
 
-            DataSet ds = db.ExecuteSqlAndReturnAllRows(sql);
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
 
             return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new BattingCardLineData
             {
@@ -118,11 +118,11 @@ namespace CricketClubDAL
 
         public List<BattingCardLineData> GetPlayerFieldingStatsData(int playerId)
         {
-            string sql =
+            var sql =
                 "select * from thevilla_admin.bowling_scorecards a, matches b where a.match_id = b.match_id and (fielder_id = " +
                 playerId + " or bowler_id = " + playerId + ")";
 
-            DataSet ds = db.ExecuteSqlAndReturnAllRows(sql);
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
 
             return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new BattingCardLineData
             {
@@ -142,10 +142,10 @@ namespace CricketClubDAL
 
         public List<BowlingStatsEntryData> GetPlayerBowlingStatsData(int playerId)
         {
-            string sql = "select * from thevilla_admin.bowling_stats a, thevilla_admin.matches b where a.match_id = b.match_id and player_id = " +
-                         playerId;
+            var sql = "select * from thevilla_admin.bowling_stats a, thevilla_admin.matches b where a.match_id = b.match_id and player_id = " +
+                      playerId;
 
-            DataSet ds = db.ExecuteSqlAndReturnAllRows(sql);
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
 
             return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new BowlingStatsEntryData
             {
@@ -167,9 +167,9 @@ namespace CricketClubDAL
 
         public TeamData GetTeamData(int teamId)
         {
-            string sql = "select * from thevilla_admin.Teams where team_id = " + teamId;
+            var sql = "select * from thevilla_admin.Teams where team_id = " + teamId;
 
-            DataRow dr = db.ExecuteSQLAndReturnFirstRow(sql);
+            var dr = db.ExecuteSQLAndReturnFirstRow(sql);
             var data = new TeamData
             {
                 ID = (int) dr["team_id"],
@@ -180,13 +180,13 @@ namespace CricketClubDAL
 
         public int CreateNewTeam(string teamName)
         {
-            DataRow dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.teams where team ='" + teamName + "'");
+            var dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.teams where team ='" + teamName + "'");
             if (dr != null)
             {
                 return (int) dr["team_id"];
             }
-            int newTeamId = (int) db.ExecuteSQLAndReturnSingleResult("select max(team_id) from teams") + 1;
-            int rowsAffected =
+            var newTeamId = (int) db.ExecuteSQLAndReturnSingleResult("select max(team_id) from teams") + 1;
+            var rowsAffected =
                 db.ExecuteInsertOrUpdate("insert into thevilla_admin.teams(team_id, team) select " + newTeamId +
                                                 ", '" + teamName + "'");
             if (rowsAffected == 1)
@@ -198,14 +198,14 @@ namespace CricketClubDAL
 
         public void UpdateTeam(TeamData data)
         {
-            string sql = "update thevilla_admin.teams set {0} = {1} where team_id = " + data.ID;
+            var sql = "update thevilla_admin.teams set {0} = {1} where team_id = " + data.ID;
             db.ExecuteInsertOrUpdate(string.Format(sql, "team", "'" + data.Name + "'"));
         }
 
         public IEnumerable<TeamData> GetAllTeamData()
         {
-            string sql = "select * from thevilla_admin.teams";
-            DataSet ds = db.ExecuteSqlAndReturnAllRows(sql);
+            var sql = "select * from thevilla_admin.teams";
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
 
             return (ds.Tables[0].Rows.Cast<DataRow>().Select(data => new TeamData
             {
@@ -220,10 +220,10 @@ namespace CricketClubDAL
 
         public VenueData GetVenueData(int venueId)
         {
-            string sql = "select * from thevilla_admin.venues where venue_id = " + venueId;
+            var sql = "select * from thevilla_admin.venues where venue_id = " + venueId;
 
             var venue = new VenueData();
-            DataRow data = db.ExecuteSQLAndReturnFirstRow(sql);
+            var data = db.ExecuteSQLAndReturnFirstRow(sql);
             venue.ID = (int) data["venue_id"];
             venue.Name = data["venue"].ToString();
             //TODO: Add map url
@@ -245,15 +245,15 @@ namespace CricketClubDAL
 
         public int CreateNewVenue(string venueName, string mapsUrl, string description, decimal? latitude, decimal? longitude)
         {
-            DataRow dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.venues where venue ='" + venueName + "'");
+            var dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.venues where venue ='" + venueName + "'");
             if (dr != null)
             {
                 return (int) dr["venue_id"];
             }
-            int newVenueId = (int) db.ExecuteSQLAndReturnSingleResult("select max(venue_id) from thevilla_admin.venues") + 1;
+            var newVenueId = (int) db.ExecuteSQLAndReturnSingleResult("select max(venue_id) from thevilla_admin.venues") + 1;
             var latitude1 = latitude?.ToString(CultureInfo.InvariantCulture) ?? "null";
             var longitude1 = longitude?.ToString(CultureInfo.InvariantCulture) ?? "null";
-            int rowsAffected =
+            var rowsAffected =
                 db.ExecuteInsertOrUpdate($"insert into thevilla_admin.venues(venue_id, venue, map_url, description, latitude, longitude) select {newVenueId}, '{venueName}', '{mapsUrl}', '{description}', {latitude1}, {longitude1}");
             if (rowsAffected == 1)
             {
@@ -264,7 +264,7 @@ namespace CricketClubDAL
 
         public void UpdateVenue(VenueData data)
         {
-            string sql = "update thevilla_admin.venues set {0} = {1} where venue_id = " + data.ID;
+            var sql = "update thevilla_admin.venues set {0} = {1} where venue_id = " + data.ID;
             db.ExecuteInsertOrUpdate(string.Format(sql, "venue", "'" + data.Name + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "map_url", "'" + data.MapUrl + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "description", "'" + data.Description + "'"));
@@ -277,7 +277,7 @@ namespace CricketClubDAL
 
         public IEnumerable<VenueData> GetAllVenueData()
         {
-            string sql = "select * from thevilla_admin.venues";
+            var sql = "select * from thevilla_admin.venues";
             return db.ExecuteSqlAndReturnAllRows(sql, r => new VenueData
             {
                 ID = r.GetInt("venue_id"),
@@ -295,10 +295,10 @@ namespace CricketClubDAL
 
         public MatchData GetMatchData(int matchId)
         {
-            string sql = "select * from thevilla_admin.Matches where match_id = " + matchId;
+            var sql = "select * from thevilla_admin.Matches where match_id = " + matchId;
 
             var match = new MatchData();
-            DataRow dr = db.ExecuteSQLAndReturnFirstRow(sql);
+            var dr = db.ExecuteSQLAndReturnFirstRow(sql);
 
             match.ID = (int) dr["match_id"];
             match.MatchType = (int) dr["comp_id"];
@@ -395,8 +395,8 @@ namespace CricketClubDAL
 
         public int CreateNewMatch(int opponentId, DateTime matchDate, int venueId, int matchTypeId, HomeOrAway homeAway)
         {
-            int newMatchId = (int) db.ExecuteSQLAndReturnSingleResult("select max(match_id) from thevilla_admin.matches") + 1;
-            int rowsAffected =
+            var newMatchId = (int) db.ExecuteSQLAndReturnSingleResult("select max(match_id) from thevilla_admin.matches") + 1;
+            var rowsAffected =
                 db.ExecuteInsertOrUpdate("insert into thevilla_admin.matches(match_id, match_date, oppo_id, comp_id, venue_id, home_away) select "
                                                 + newMatchId + ", '"
                                                 + matchDate.ToString("dd MMMM yyyy") + "' , "
@@ -414,7 +414,7 @@ namespace CricketClubDAL
 
         public void UpdateMatch(MatchData data)
         {
-            string sql = "update thevilla_admin.matches set {0} = {1} where match_id = " + data.ID;
+            var sql = "update thevilla_admin.matches set {0} = {1} where match_id = " + data.ID;
             db.ExecuteInsertOrUpdate(string.Format(sql, "match_date", "'" + data.Date.ToString("dd MMMM yyyy") + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "oppo_id", data.OppositionID));
             db.ExecuteInsertOrUpdate(string.Format(sql, "comp_id", data.MatchType));
@@ -443,9 +443,9 @@ namespace CricketClubDAL
 
         public int GetNextMatch(DateTime date)
         {
-            string sql = "select * from matches where match_date >= '" + date.ToString("dd MMMM yyyy") +
-                         "' order by match_date asc";
-            DataRow dr = db.ExecuteSQLAndReturnFirstRow(sql);
+            var sql = "select * from matches where match_date >= '" + date.ToString("dd MMMM yyyy") +
+                      "' order by match_date asc";
+            var dr = db.ExecuteSQLAndReturnFirstRow(sql);
             try
             {
                 return (int) dr["match_id"];
@@ -458,9 +458,9 @@ namespace CricketClubDAL
 
         public int GetPreviousMatch(DateTime date)
         {
-            string sql = "select * from matches where match_date <= '" + date.ToUniversalTime().ToString("dd MMMM yyyy") +
-                         "' order by match_date desc";
-            DataRow dr = db.ExecuteSQLAndReturnFirstRow(sql);
+            var sql = "select * from matches where match_date <= '" + date.ToUniversalTime().ToString("dd MMMM yyyy") +
+                      "' order by match_date desc";
+            var dr = db.ExecuteSQLAndReturnFirstRow(sql);
             try
             {
                 return (int) dr["match_id"];
@@ -473,8 +473,8 @@ namespace CricketClubDAL
 
         public List<MatchData> GetAllMatches()
         {
-            string sql = "select * from matches";
-            DataSet ds = db.ExecuteSqlAndReturnAllRows(sql);
+            var sql = "select * from matches";
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
             var matches = new List<MatchData>();
             foreach (DataRow dr in ds.Tables[0].Rows)
             {
@@ -581,9 +581,9 @@ namespace CricketClubDAL
 
         public IEnumerable<BattingCardLineData> GetBattingCard(int matchId, ThemOrUs themOrUs)
         {
-            string tableName = themOrUs == ThemOrUs.Us ? "batting_scorecards" : "bowling_scorecards";
-            string sql = "select * from thevilla_admin." + tableName + " where match_id = " + matchId;
-            DataSet ds = db.ExecuteSqlAndReturnAllRows(sql);
+            var tableName = themOrUs == ThemOrUs.Us ? "batting_scorecards" : "bowling_scorecards";
+            var sql = "select * from thevilla_admin." + tableName + " where match_id = " + matchId;
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
             foreach (DataRow row in ds.Tables[0].Rows)
             {
                 var scData = new BattingCardLineData
@@ -618,14 +618,14 @@ namespace CricketClubDAL
         {
             if (battingData.Count > 0)
             {
-                string table = "batting_scorecards";
+                var table = "batting_scorecards";
                 if (battingOrBowling == BattingOrBowling.Bowling)
                 {
                     table = "bowling_scorecards";
                 }
-                string sql = "delete from thevilla_admin." + table + " where match_id = " + battingData[0].MatchID;
+                var sql = "delete from thevilla_admin." + table + " where match_id = " + battingData[0].MatchID;
                 db.ExecuteInsertOrUpdate(sql);
-                foreach (BattingCardLineData row in battingData)
+                foreach (var row in battingData)
                 {
                     if (battingOrBowling == BattingOrBowling.Bowling)
                     {
@@ -646,7 +646,7 @@ namespace CricketClubDAL
                     db.ExecuteInsertOrUpdate(sql);
                 }
 
-                int franksPosition = battingData.Select(d => d.BattingAt - 1).Max() + 1;
+                var franksPosition = battingData.Select(d => d.BattingAt - 1).Max() + 1;
                 if (franksPosition < 11)
                 {
                     franksPosition = 11;
@@ -677,8 +677,8 @@ namespace CricketClubDAL
         {
             var tableName = who == ThemOrUs.Us ? "bowling_stats" : "oppo_bowling_stats";
             var data = new List<BowlingStatsEntryData>();
-            string sql = "select * from thevilla_admin." + tableName + " where match_id = " + matchId;
-            DataSet ds = db.ExecuteSqlAndReturnAllRows(sql);
+            var sql = "select * from thevilla_admin." + tableName + " where match_id = " + matchId;
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
             foreach (DataRow row in ds.Tables[0].Rows)
             {
                 var scData = new BowlingStatsEntryData
@@ -707,16 +707,16 @@ namespace CricketClubDAL
         {
             if (data.Count > 0)
             {
-                string table = "bowling_stats";
+                var table = "bowling_stats";
                 if (who == ThemOrUs.Them)
                 {
                     table = "oppo_bowling_stats";
                 }
 
-                string sql = "delete from thevilla_admin." + table + " where match_id = " + data[0].MatchID;
+                var sql = "delete from thevilla_admin." + table + " where match_id = " + data[0].MatchID;
                 db.ExecuteInsertOrUpdate(sql);
 
-                foreach (BowlingStatsEntryData line in data)
+                foreach (var line in data)
                 {
                     if (who == ThemOrUs.Us)
                     {
@@ -742,14 +742,14 @@ namespace CricketClubDAL
 
         public List<FoWDataLine> GetFoWData(int matchId, ThemOrUs who)
         {
-            string table = "fow";
+            var table = "fow";
             if (who == ThemOrUs.Them)
             {
                 table = "oppo_fow";
             }
 
-            string sql = "select * from thevilla_admin." + table + " where match_id = " + matchId;
-            DataSet ds = db.ExecuteSqlAndReturnAllRows(sql);
+            var sql = "select * from thevilla_admin." + table + " where match_id = " + matchId;
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
 
             return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new FoWDataLine
             {
@@ -769,16 +769,16 @@ namespace CricketClubDAL
         public void UpdateFoWData(List<FoWDataLine> data, ThemOrUs who)
         {
             if (data.Count <= 0) return;
-            string table = "fow";
+            var table = "fow";
             if (who == ThemOrUs.Them)
             {
                 table = "oppo_fow";
             }
 
-            string sql = "delete from thevilla_admin." + table + " where match_id = " + data[0].MatchID;
+            var sql = "delete from thevilla_admin." + table + " where match_id = " + data[0].MatchID;
             db.ExecuteInsertOrUpdate(sql);
 
-            foreach (FoWDataLine line in data)
+            foreach (var line in data)
             {
                 sql = "insert into thevilla_admin." + table +
                       "(match_id, wicket, score, partnership, over_no, outgoing_score, outgoing_bat, no_score, no_bat) select " +
@@ -797,13 +797,13 @@ namespace CricketClubDAL
 
         public ExtrasData GetExtras(int matchId, ThemOrUs who)
         {
-            string table = "extras";
+            var table = "extras";
             if (who == ThemOrUs.Them)
             {
                 table = "oppo_extras";
             }
-            string sql = "select * from thevilla_admin." + table + " where match_id = " + matchId;
-            DataRow data = db.ExecuteSQLAndReturnFirstRow(sql);
+            var sql = "select * from thevilla_admin." + table + " where match_id = " + matchId;
+            var data = db.ExecuteSQLAndReturnFirstRow(sql);
 
             var ed = new ExtrasData {MatchID = matchId};
             if (data != null)
@@ -819,13 +819,13 @@ namespace CricketClubDAL
 
         public void UpdateExtras(ExtrasData data, ThemOrUs who)
         {
-            string table = "extras";
+            var table = "extras";
             if (who == ThemOrUs.Them)
             {
                 table = "oppo_extras";
             }
 
-            string sql = "delete from thevilla_admin." + table + " where match_id = " + data.MatchID;
+            var sql = "delete from thevilla_admin." + table + " where match_id = " + data.MatchID;
             db.ExecuteInsertOrUpdate(sql);
 
             sql = "insert into thevilla_admin." + table + "(match_id, wides, no_balls, penalty, leg_byes, byes) select " + data.MatchID +
@@ -835,7 +835,7 @@ namespace CricketClubDAL
 
         private string GetDismissalText(int dismissalId)
         {
-            string sql = "select dismissal from thevilla_admin.how_out where dismissal_id = " + dismissalId;
+            var sql = "select dismissal from thevilla_admin.how_out where dismissal_id = " + dismissalId;
             return db.ExecuteSQLAndReturnSingleResult(sql).ToString();
         }
 
@@ -845,7 +845,7 @@ namespace CricketClubDAL
 
         public void SaveNewsStory(NewsData data)
         {
-            string story = data.Story;
+            var story = data.Story;
             var storyChunks = new List<string>();
             //Break into bits of 250 - note, not 255 as the replacement of ' for "''" might add extra chars
             while (story.Length > 250)
@@ -855,8 +855,8 @@ namespace CricketClubDAL
             }
             storyChunks.Add(story);
 
-            string sql = "select max(news_id) as id from news";
-            int newsId = (int) db.ExecuteSQLAndReturnSingleResult(sql) + 1;
+            var sql = "select max(news_id) as id from news";
+            var newsId = (int) db.ExecuteSQLAndReturnSingleResult(sql) + 1;
 
             sql = "insert into News(news_id, headline, short_headline, teaser, item_date) select "
                   + newsId + ", '"
@@ -867,8 +867,8 @@ namespace CricketClubDAL
 
             db.ExecuteInsertOrUpdate(sql);
 
-            int counter = 0;
-            foreach (string chunk in storyChunks)
+            var counter = 0;
+            foreach (var chunk in storyChunks)
             {
                 counter ++;
                 if (counter <= 20 && counter > 1)
@@ -900,8 +900,8 @@ namespace CricketClubDAL
 
         public List<NewsData> GetTopXStories(int x)
         {
-            string sql = "select top " + x + " * from News order by item_date desc";
-            DataSet ds = db.ExecuteSqlAndReturnAllRows(sql);
+            var sql = "select top " + x + " * from News order by item_date desc";
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
 
             return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new NewsData
             {
@@ -923,7 +923,7 @@ namespace CricketClubDAL
 
         public void SubmitChatComment(ChatData data)
         {
-            string comment = data.Comment;
+            var comment = data.Comment;
             var commentChunks = new List<string>();
             //Break into bits of 250 - note, not 255 as the replacement of ' for "''" might add extra chars
             while (comment.Length > 250)
@@ -933,10 +933,10 @@ namespace CricketClubDAL
             }
             commentChunks.Add(comment);
 
-            string sql = "insert into Chat(annon_user_name, image_url, post_time) select '"
-                         + SafeForSql(data.Name) + "', '"
-                         + SafeForSql(data.ImageUrl) + "', '"
-                         + data.Date.ToString("U") + "'";
+            var sql = "insert into Chat(annon_user_name, image_url, post_time) select '"
+                      + SafeForSql(data.Name) + "', '"
+                      + SafeForSql(data.ImageUrl) + "', '"
+                      + data.Date.ToString("U") + "'";
 
             db.ExecuteInsertOrUpdate(sql);
 
@@ -951,8 +951,8 @@ namespace CricketClubDAL
             {
                 chatId = 0;
             }
-            int counter = 0;
-            foreach (string chunk in commentChunks)
+            var counter = 0;
+            foreach (var chunk in commentChunks)
             {
                 counter++;
                 if (counter <= 10 && counter > 0)
@@ -965,10 +965,10 @@ namespace CricketClubDAL
 
         public List<ChatData> GetChatBetween(DateTime startDate, DateTime endDate)
         {
-            string sql = "select * from chat where post_time between '" +
-                         startDate.ToString(CultureInfo.CreateSpecificCulture("en-US")) + "' and '" +
-                         endDate.ToString(CultureInfo.CreateSpecificCulture("en-US")) + "'";
-            DataSet ds = db.ExecuteSqlAndReturnAllRows(sql);
+            var sql = "select * from chat where post_time between '" +
+                      startDate.ToString(CultureInfo.CreateSpecificCulture("en-US")) + "' and '" +
+                      endDate.ToString(CultureInfo.CreateSpecificCulture("en-US")) + "'";
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
             return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new ChatData
             {
                 Date = DateTimeFromRow(row["post_time"]),
@@ -983,8 +983,8 @@ namespace CricketClubDAL
 
         public List<ChatData> GetChatAfter(int commentId)
         {
-            string sql = "select * from chat where ID > " + commentId;
-            DataSet ds = db.ExecuteSqlAndReturnAllRows(sql);
+            var sql = "select * from chat where ID > " + commentId;
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
             return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new ChatData
             {
                 Date = DateTimeFromRow(row["post_time"]),
@@ -999,10 +999,10 @@ namespace CricketClubDAL
 
         public MatchReportData GetMatchReportData(int matchId)
         {
-            string sql = "select * from Match_Reports where match_id = " + matchId;
+            var sql = "select * from Match_Reports where match_id = " + matchId;
 
             var match = new MatchReportData();
-            DataRow dr = db.ExecuteSQLAndReturnFirstRow(sql);
+            var dr = db.ExecuteSQLAndReturnFirstRow(sql);
 
             match.MatchID = matchId;
             try
@@ -1028,7 +1028,7 @@ namespace CricketClubDAL
 
         public void SaveMatchReport(MatchReportData data)
         {
-            string sql = "delete from match_reports where match_id = " + data.MatchID;
+            var sql = "delete from match_reports where match_id = " + data.MatchID;
             db.ExecuteInsertOrUpdate(sql);
             sql = "insert into match_reports(match_id, [filename], [password], [photos]) select " + data.MatchID + ", '" +
                   data.ReportFilename + "', '" + data.Password + "', " + Convert.ToInt16(data.HasPhotos);
@@ -1040,8 +1040,8 @@ namespace CricketClubDAL
         public List<AccountEntryData> GetAllAccountData()
         {
             var accounts = new List<AccountEntryData>();
-            string sql = "select * from accounts";
-            DataSet ds = db.ExecuteSqlAndReturnAllRows(sql);
+            var sql = "select * from accounts";
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
             foreach (DataRow data in ds.Tables[0].Rows)
             {
                 var entry = new AccountEntryData
@@ -1072,7 +1072,7 @@ namespace CricketClubDAL
 
         public void UpdateAccountEntry(AccountEntryData data)
         {
-            string sql = "update accounts set {0} = {1} where id = " + data.ID;
+            var sql = "update accounts set {0} = {1} where id = " + data.ID;
             db.ExecuteInsertOrUpdate(string.Format(sql, "amount", data.Amount.ToString(CultureInfo.InvariantCulture)));
             db.ExecuteInsertOrUpdate(string.Format(sql, "debit_credit", "'" + data.CreditOrDebit + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "transaction_time", "'" + data.Date + "'"));
@@ -1087,7 +1087,7 @@ namespace CricketClubDAL
             creditDebit, int type,
                                          int matchId, int status, DateTime transactionDate)
         {
-            int rowsAffected =
+            var rowsAffected =
                 db.ExecuteInsertOrUpdate("insert into accounts(player_id, description, amount, debit_credit, payment_type, match_id, status, transaction_time) select "
                                                 + playerId + ", '"
                                                 + description + "' , "
@@ -1111,8 +1111,8 @@ namespace CricketClubDAL
 
         public List<UserData> GetAllUsers()
         {
-            string sql = "select * from users";
-            DataSet ds = db.ExecuteSqlAndReturnAllRows(sql);
+            var sql = "select * from users";
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
             return (from DataRow dr in ds.Tables[0].Rows
                 select new UserData
                 {
@@ -1122,7 +1122,7 @@ namespace CricketClubDAL
 
         public int CreateNewUser(string name, string emailaddress, string password, string displayname)
         {
-            int newUserId = 1;
+            var newUserId = 1;
             try
             {
                 newUserId = (int) db.ExecuteSQLAndReturnSingleResult("select max(user_id) from users") + 1;
@@ -1131,7 +1131,7 @@ namespace CricketClubDAL
             {
                 // ignored
             }
-            int rowsAffected =
+            var rowsAffected =
                 db.ExecuteInsertOrUpdate(
                     "insert into users([user_id], [username], [password], [email_address], [display_name]) select " +
                     newUserId + ",'" + name + "', '" + password + "', '" + emailaddress + "', '" + displayname + "'");
@@ -1147,7 +1147,7 @@ namespace CricketClubDAL
 
         public void UpdateUser(UserData userData)
         {
-            string sql = "update [users] set [{0}] = {1} where user_id = " + userData.ID;
+            var sql = "update [users] set [{0}] = {1} where user_id = " + userData.ID;
             db.ExecuteInsertOrUpdate(string.Format(sql, "username", "'" + userData.Name + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "password", "'" + userData.Password + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "email_address", "'" + userData.EmailAddress + "'"));
@@ -1159,8 +1159,8 @@ namespace CricketClubDAL
 
         public List<PhotoData> GetAllPhotos()
         {
-            string sql = "select * from Match_Photos";
-            DataSet ds = db.ExecuteSqlAndReturnAllRows(sql);
+            var sql = "select * from Match_Photos";
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
             var photos = new List<PhotoData>();
             foreach (DataRow dr in ds.Tables[0].Rows)
             {
@@ -1189,10 +1189,10 @@ namespace CricketClubDAL
         {
             if (photo.ID != 0)
             {
-                string sql = "delete from [Match_Photos] where Image_ID = " + photo.ID;
+                var sql = "delete from [Match_Photos] where Image_ID = " + photo.ID;
                 db.ExecuteInsertOrUpdate(sql);
             }
-            int newPhotoId = 1;
+            var newPhotoId = 1;
             try
             {
                 newPhotoId =
@@ -1203,7 +1203,7 @@ namespace CricketClubDAL
             {
                 //
             }
-            int rowsAffected =
+            var rowsAffected =
                 db.ExecuteInsertOrUpdate(
                     "insert into [Match_Photos](imageID, ImageNAme, ImageTitle, Match_ID, [author], uploadDate) select " +
                     newPhotoId +
@@ -1221,8 +1221,8 @@ namespace CricketClubDAL
 
         public List<PhotoCommentData> GetAllPhotoComments()
         {
-            string sql = "select * from Match_Image_Comments";
-            DataSet ds = db.ExecuteSqlAndReturnAllRows(sql);
+            var sql = "select * from Match_Image_Comments";
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
             var comments = new List<PhotoCommentData>();
             foreach (DataRow dr in ds.Tables[0].Rows)
             {
@@ -1253,7 +1253,7 @@ namespace CricketClubDAL
 
         public int SubmitPhotoComment(PhotoCommentData data)
         {
-            string comment = data.Comment;
+            var comment = data.Comment;
             var commentChunks = new List<string>();
             //Break into bits of 250 - note, not 255 as the replacement of ' for "''" might add extra chars
             while (comment.Length > 250)
@@ -1263,10 +1263,10 @@ namespace CricketClubDAL
             }
             commentChunks.Add(comment);
 
-            string sql = "insert into Match_Image_Comments(ImageID, UserID, CommentTime) select "
-                         + data.PhotoID + ", "
-                         + data.AuthorID + ", '"
-                         + data.CommentTime.ToString("U") + "'";
+            var sql = "insert into Match_Image_Comments(ImageID, UserID, CommentTime) select "
+                      + data.PhotoID + ", "
+                      + data.AuthorID + ", '"
+                      + data.CommentTime.ToString("U") + "'";
 
             db.ExecuteInsertOrUpdate(sql);
 
@@ -1281,8 +1281,8 @@ namespace CricketClubDAL
             {
                 chatId = 0;
             }
-            int counter = 0;
-            foreach (string chunk in commentChunks)
+            var counter = 0;
+            foreach (var chunk in commentChunks)
             {
                 counter++;
                 if (counter <= 5 && counter > 0)
@@ -1301,7 +1301,7 @@ namespace CricketClubDAL
 
         public string GetSetting(string settingName)
         {
-            string sql = "select [value] from Settings where [key] = '" + settingName + "'";
+            var sql = "select [value] from Settings where [key] = '" + settingName + "'";
             try
             {
                 return db.ExecuteSQLAndReturnSingleResult(sql).ToString();
@@ -1314,7 +1314,7 @@ namespace CricketClubDAL
 
         public void SetSetting(string settingName, string value, string description)
         {
-            string sql = "delete from Settings where [key] = '" + settingName + "'";
+            var sql = "delete from Settings where [key] = '" + settingName + "'";
             db.ExecuteInsertOrUpdate(sql);
             sql = "insert into Settings([key],[value], description) select '" + settingName + "','" + value + "','" +
                   SafeForSql(description) + "'";
@@ -1323,8 +1323,8 @@ namespace CricketClubDAL
 
         public List<SettingData> GetAllSettings()
         {
-            string sql = "select * from Settings";
-            DataSet data = db.ExecuteSqlAndReturnAllRows(sql);
+            var sql = "select * from Settings";
+            var data = db.ExecuteSqlAndReturnAllRows(sql);
 
             return (data.Tables[0].Rows.Cast<DataRow>().Select(row => new SettingData
             {
@@ -1340,9 +1340,9 @@ namespace CricketClubDAL
 
         public void LogMessage(string message, string stack, string level, DateTime when, string innerExceptionText)
         {
-            string sql = "insert into log(Message, Stack, Severity, MessageTime, InnerException) select '" +
-                         SafeForSql(message) + "','" + SafeForSql(stack) + "','" + level + "','" + when.ToString("U") +
-                         "', '" + SafeForSql(innerExceptionText) + "'";
+            var sql = "insert into log(Message, Stack, Severity, MessageTime, InnerException) select '" +
+                      SafeForSql(message) + "','" + SafeForSql(stack) + "','" + level + "','" + when.ToString("U") +
+                      "', '" + SafeForSql(innerExceptionText) + "'";
             db.ExecuteInsertOrUpdate(sql, true);
         }
 
@@ -1359,7 +1359,7 @@ namespace CricketClubDAL
 
         public bool IsBallByBallCoverageInProgress(int matchId)
         {
-            Row result = db.QueryOne("select count(*) from ballbyball_team where match_id=" + matchId);
+            var result = db.QueryOne("select count(*) from ballbyball_team where match_id=" + matchId);
             return result.GetInt(0) > 0;
         }
 
@@ -1367,7 +1367,7 @@ namespace CricketClubDAL
         {
             try
             {
-                foreach (int playerId in playerIds)
+                foreach (var playerId in playerIds)
                 {
                     db.ExecuteInsertOrUpdate($"insert into ballbyball_team(match_id,player_id, as_of_over) values ({id},{playerId}, 0)");
                 } 
@@ -1411,9 +1411,9 @@ namespace CricketClubDAL
 
         public List<Over> GetAllBallsForMatch(int matchId)
         {
-            Dictionary<int,  Over> overs = new Dictionary<int, Over>();
+            var overs = new Dictionary<int, Over>();
 
-            string sql =
+            var sql =
                 "select over_number, value, d.player_id, bowler, [type], angle, p.player_name as batsman_name, out_p.player_name as out_batsman_name, out_player_id, fielder, dismissal_id, description, ball, match_id " +
                 "from ballbyball_data d inner " +
                 "join thevilla_admin.Players p on d.player_id = p.player_id " +
@@ -1436,9 +1436,9 @@ namespace CricketClubDAL
         
         public List<Ball> GetAllBalls()
         {
-            List<Ball> balls = new List<Ball>();
+            var balls = new List<Ball>();
 
-            string sql =
+            var sql =
                 "select over_number, value, d.player_id, bowler, [type], angle, p.player_name as batsman_name, out_p.player_name as out_batsman_name, out_player_id, fielder, dismissal_id, description, ball, match_id " +
                 "from ballbyball_data d inner " +
                 "join thevilla_admin.Players p on d.player_id = p.player_id " +
@@ -1513,17 +1513,17 @@ namespace CricketClubDAL
 
         public void UpdateCurrentBallByBallState(MatchState matchState, int matchId)
         {
-            List<Action> rollbacks = new List<Action>();
+            var rollbacks = new List<Action>();
             try
             {
-                int thisOver = matchState.LastCompletedOver + 1;
+                var thisOver = matchState.LastCompletedOver + 1;
                 foreach (var playerState in matchState.Players)
                 {
                     rollbacks.Add(UpdatePlayerState(playerState, matchId, thisOver));
                 }
 
                 rollbacks.Add(AddOverCommentary(matchState.Over, matchId, thisOver));
-                int ballNumber = 0;
+                var ballNumber = 0;
                 foreach (var ball in matchState.Over.Balls)
                 {
                     ballNumber++;
@@ -1553,8 +1553,8 @@ namespace CricketClubDAL
 
         private Action AddBallToMatch(Ball ball, int matchId, int overNumber, int ballNumber)
         {
-            string outPlayerId = "NULL";
-            string dismissalId = "NULL";
+            var outPlayerId = "NULL";
+            var dismissalId = "NULL";
             string fielder = null;
             string description = null;
             if (ball.Wicket != null)
@@ -1564,7 +1564,7 @@ namespace CricketClubDAL
                 fielder = ball.Wicket.Fielder;
                 description = ball.Wicket.Description;
             }
-            string angle = ball.Angle.HasValue ? ball.Angle.Value.ToString(CultureInfo.InvariantCulture) : "null";
+            var angle = ball.Angle.HasValue ? ball.Angle.Value.ToString(CultureInfo.InvariantCulture) : "null";
 
             db.ExecuteInsertOrUpdate(
                 $"insert into dbo.ballbyball_data (ball, over_number, type, value, player_id, match_id, bowler, out_player_id, dismissal_id, fielder, description, angle) VALUES ({ballNumber},{overNumber},'{ball.Thing}',{ball.Amount},{ball.Batsman},{matchId},'{ball.Bowler}',{outPlayerId},{dismissalId},'{fielder}','{SafeForSql(description)}', {angle})");

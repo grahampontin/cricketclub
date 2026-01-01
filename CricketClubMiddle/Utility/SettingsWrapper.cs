@@ -16,20 +16,20 @@ namespace CricketClubMiddle.Utility
         /// <param name="settingValue">The String version of the Value</param>
         public static void Set(string settingName, string settingValue, string description)
         {
-            Dao myDao = new Dao();
+            var myDao = new Dao();
             myDao.SetSetting(settingName, settingValue, description);
         }
 
         public static double GetSettingDouble(string settingName, double defaultValue)
         {
-            double returnVaue = defaultValue;
+            var returnVaue = defaultValue;
             double.TryParse(GetSetting(settingName), out returnVaue);
             return returnVaue;
         }
 
         public static string GetSettingString(string settingName, string defaultValue)
         {
-            string returnVaue = defaultValue;
+            var returnVaue = defaultValue;
             if (GetSetting(settingName).Length > 0)
             {
                 returnVaue = GetSetting(settingName);
@@ -39,15 +39,15 @@ namespace CricketClubMiddle.Utility
 
         public static int GetSettingInt(string settingName, int defaultValue)
         {
-            int returnVaue = defaultValue;
+            var returnVaue = defaultValue;
             int.TryParse(GetSetting(settingName), out returnVaue);
             return returnVaue;
         }
 
         private static string GetSetting(string settingName)
         {
-            Dao myDao = new Dao();
-            string returnValue = myDao.GetSetting(settingName);
+            var myDao = new Dao();
+            var returnValue = myDao.GetSetting(settingName);
             if (returnValue == null)
             {
                 return "";
@@ -58,7 +58,7 @@ namespace CricketClubMiddle.Utility
 
         public static List<Setting> GetAll()
         {
-            Dao myDao = new Dao();
+            var myDao = new Dao();
             return (from a in myDao.GetAllSettings() select new Setting(a)).OrderBy(a=>a.Name).ToList();
 
         }
