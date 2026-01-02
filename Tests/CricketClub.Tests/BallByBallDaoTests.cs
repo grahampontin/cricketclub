@@ -10,7 +10,7 @@ using Match = System.Text.RegularExpressions.Match;
 namespace CricketClub.Tests
 {
     [TestFixture]
-    public class BallByBallDaoTests
+    public class BallByBallDaoTests : IntegrationTestSupport
     {
         private static MatchState MakeMatchState(int lastCompletedOver)
         {

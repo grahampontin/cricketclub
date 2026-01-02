@@ -9,7 +9,7 @@ using NUnit.Framework;
 namespace CricketClub.Tests
 {
     [TestFixture]
-    class BallByBallTests
+    class BallByBallTests: IntegrationTestSupport
     {
         [Test]
         public void CanPopuateScorecards()
