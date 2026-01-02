@@ -15,6 +15,6 @@ namespace CricketClubDomain
         public Award Award { get; set; }
         public int PlayerId { get; set; }
         public string Data { get; set; }
-        public int ID { get; set; }
+        public int Id { get; set; }
     }
 }

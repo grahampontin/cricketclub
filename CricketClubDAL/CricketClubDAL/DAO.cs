@@ -307,7 +307,7 @@ namespace CricketClubDAL
         {
             var award = new AwardData
             {
-                ID = data.GetInt("award_id"),
+                Id = data.GetInt("award_id"),
                 Award = data.GetEnum<Award>("award"),
                 PlayerId = data.GetInt("player_id"),
                 Data = data.GetString("data"),
@@ -339,7 +339,7 @@ namespace CricketClubDAL
 
         public void UpdateAward(AwardData data)
         {
-            var sql = "update dbo.awards set {0} = {1} where award_id = " + data.ID;
+            var sql = "update dbo.awards set {0} = {1} where award_id = " + data.Id;
             db.ExecuteInsertOrUpdate(string.Format(sql, "award", "'" + data.Award + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "player_id", data.PlayerId));
             db.ExecuteInsertOrUpdate(string.Format(sql, "year", data.Year));
@@ -1228,6 +1228,64 @@ namespace CricketClubDAL
             db.ExecuteInsertOrUpdate(string.Format(sql, "display_name", "'" + userData.DisplayName + "'"));
             db.ExecuteInsertOrUpdate(string.Format(sql, "permissions", userData.Permissions + ""));
         }
+        
+        private static CommitteeData CommitteeDataFromRow(Row r)
+        {
+            return new CommitteeData
+            {
+                Id = r.GetInt("committee_id"),
+                Post = r.GetEnum<Post>("role"),
+                Year = r.GetInt("year"),
+                PlayerId = r.GetInt("player_id"),
+            };
+        }
+
+        public CommitteeData GetCommitteeData(int committeeId)
+        {
+            var sql = "select * from dbo.committee where committee.committee_id = " + committeeId;
+            var dr = db.ExecuteSQLAndReturnFirstRow(sql);
+            if (dr == null) return null;
+            return CommitteeDataFromRow(new Row(dr));
+        }
+
+        public IEnumerable<CommitteeData> GetAllCommitteeData()
+        {
+            var sql = "select * from dbo.committee";
+            return db.ExecuteSqlAndReturnAllRows(sql, r => CommitteeDataFromRow(r)).ToList();
+        }
+
+        public int CreateNewCommittee(CommitteeData data)
+        {
+            // prevent duplicates for same member and year
+            var existing = db.ExecuteSQLAndReturnFirstRow("select * from dbo.committee where role = '" + SafeForSql(data.Post.ToString()) + "' and year = " + data.Year);
+            if (existing != null)
+            {
+                return (int) existing["committee_id"];
+            }
+
+            var rawResult = db.ExecuteSqlAndReturnSingleResult("select max(committee_id) from dbo.committee");
+            var result = rawResult is DBNull ? 0 : (int) rawResult;
+            var newId = result + 1;
+
+            var rowsAffected = db.ExecuteInsertOrUpdate(
+                $"insert into dbo.committee(committee_id, role, year, player_id) select {newId}, '{SafeForSql(data.Post.ToString())}', {data.Year}, {data.PlayerId}");
+
+            return rowsAffected == 1 ? newId : 0;
+        }
+
+        public void UpdateCommittee(CommitteeData data)
+        {
+            var sql = "update dbo.committee set {0} = {1} where committee_id = " + data.Id;
+            db.ExecuteInsertOrUpdate(string.Format(sql, "player_id", data.PlayerId));
+            db.ExecuteInsertOrUpdate(string.Format(sql, "role", "'" + SafeForSql(data.Post.ToString()) + "'"));
+            db.ExecuteInsertOrUpdate(string.Format(sql, "year", data.Year));
+        }
+
+        public void DeleteCommittee(int committeeId)
+        {
+            db.ExecuteInsertOrUpdate("delete from dbo.committee where committee_id = " + committeeId);
+        }
+
 
         #region Photos
 
@@ -1803,4 +1861,7 @@ namespace CricketClubDAL
             };
         }
     }
+    
+    
+    
 }

@@ -129,6 +129,7 @@
     <Compile Include="AwardsIntegratonTests.cs" />
     <Compile Include="BallByBallDaoTests.cs" />
     <Compile Include="BallByBallTests.cs" />
+    <Compile Include="CommitteeIntegrationTests.cs" />
     <Compile Include="IntegrationTestSupport.cs" />
     <Compile Include="VenueIntegratonTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

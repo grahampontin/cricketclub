@@ -21,7 +21,7 @@ namespace CricketClub.Tests
         {
             foreach (var awardData in dao.GetAllAwardsData())
             {
-                dao.DeleteAward(awardData.ID);
+                dao.DeleteAward(awardData.Id);
             }
         }
         
@@ -105,7 +105,7 @@ namespace CricketClub.Tests
 
             var awardDatas = dao.GetAllAwardsData() as AwardData[] ?? dao.GetAllAwardsData().ToArray();
             Assert.IsTrue(awardDatas.Any());
-            Assert.IsTrue(awardDatas.Any(a => a.ID == awardId));
+            Assert.IsTrue(awardDatas.Any(a => a.Id == awardId));
         }
     }
 }
