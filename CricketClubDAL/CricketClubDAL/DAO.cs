@@ -62,7 +62,7 @@ namespace CricketClubDAL
 
         public int CreateNewPlayer(string name)
         {
-            var newPlayerId = (int) db.ExecuteSQLAndReturnSingleResult("select max(player_id) from players") + 1;
+            var newPlayerId = (int) db.ExecuteSqlAndReturnSingleResult("select max(player_id) from players") + 1;
             var rowsAffected =
                 db.ExecuteInsertOrUpdate("insert into thevilla_admin.players(player_id, player_name) select " + newPlayerId +
                                                 ", '" + SafeForSql(name) + "'");
@@ -119,7 +119,7 @@ namespace CricketClubDAL
         public List<BattingCardLineData> GetPlayerFieldingStatsData(int playerId)
         {
             var sql =
-                "select * from thevilla_admin.bowling_scorecards a, matches b where a.match_id = b.match_id and (fielder_id = " +
+                "select * from thevilla_admin.bowling_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id and (fielder_id = " +
                 playerId + " or bowler_id = " + playerId + ")";
 
             var ds = db.ExecuteSqlAndReturnAllRows(sql);
@@ -185,7 +185,7 @@ namespace CricketClubDAL
             {
                 return (int) dr["team_id"];
             }
-            var newTeamId = (int) db.ExecuteSQLAndReturnSingleResult("select max(team_id) from teams") + 1;
+            var newTeamId = (int) db.ExecuteSqlAndReturnSingleResult("select max(team_id) from teams") + 1;
             var rowsAffected =
                 db.ExecuteInsertOrUpdate("insert into thevilla_admin.teams(team_id, team) select " + newTeamId +
                                                 ", '" + teamName + "'");
@@ -250,7 +250,7 @@ namespace CricketClubDAL
             {
                 return (int) dr["venue_id"];
             }
-            var newVenueId = (int) db.ExecuteSQLAndReturnSingleResult("select max(venue_id) from thevilla_admin.venues") + 1;
+            var newVenueId = (int) db.ExecuteSqlAndReturnSingleResult("select max(venue_id) from thevilla_admin.venues") + 1;
             var latitude1 = latitude?.ToString(CultureInfo.InvariantCulture) ?? "null";
             var longitude1 = longitude?.ToString(CultureInfo.InvariantCulture) ?? "null";
             var rowsAffected =
@@ -288,9 +288,83 @@ namespace CricketClubDAL
                                                        r.GetDecimal("longitude"))
             });
         }
+        
+        
 
         #endregion
 
+        #region Awards
+
+        public AwardData GetAwardData(int awardId)
+        {
+            var sql = "select * from dbo.awards where award_id = " + awardId;
+
+            var data = db.ExecuteSQLAndReturnFirstRow(sql);
+            return AwardDataFromRow(new Row(data));
+        }
+
+        private static AwardData AwardDataFromRow(Row data)
+        {
+            var award = new AwardData
+            {
+                ID = data.GetInt("award_id"),
+                Award = data.GetEnum<Award>("award"),
+                PlayerId = data.GetInt("player_id"),
+                Data = data.GetString("data"),
+                Year = data.GetInt("year")
+            };
+
+            return award;
+        }
+
+        public int CreateNewAward(Award award, int year, int playerId, string data)
+        {
+            var dr = db.ExecuteSQLAndReturnFirstRow("select * from dbo.awards where award ='" + award + "' and year = " + year);
+            if (dr != null)
+            {
+                throw new Exception("Award already exists");
+            }
+
+            var rawResult = db.ExecuteSqlAndReturnSingleResult("select max(award_id) from dbo.awards");
+            var result = rawResult is DBNull ? 0 : (int)rawResult;
+            var newAwardId = result + 1;
+            var rowsAffected =
+                db.ExecuteInsertOrUpdate($"insert into dbo.awards(award_id, award, year, player_id, data)  select {newAwardId}, '{award}', {year}, {playerId}, '{data}'");
+            if (rowsAffected == 1)
+            {
+                return newAwardId;
+            }
+            return 0;
+        }
+
+        public void UpdateAward(AwardData data)
+        {
+            var sql = "update dbo.awards set {0} = {1} where award_id = " + data.ID;
+            db.ExecuteInsertOrUpdate(string.Format(sql, "award", "'" + data.Award + "'"));
+            db.ExecuteInsertOrUpdate(string.Format(sql, "player_id", data.PlayerId));
+            db.ExecuteInsertOrUpdate(string.Format(sql, "year", data.Year));
+            db.ExecuteInsertOrUpdate(string.Format(sql, "data", "'"+ data.Data+ "'"));
+            
+        }
+        
+        
+        public void DeleteAward(int awardDataId)
+        {
+            db.ExecuteInsertOrUpdate("delete from awards where award_id = " + awardDataId);
+        }
+
+        public IEnumerable<AwardData> GetAllAwardsData()
+        {
+            var sql = "select * from dbo.awards";
+            return db.ExecuteSqlAndReturnAllRows(sql, r => AwardDataFromRow(r));
+        }
+        
+        
+
+        #endregion
+        
+        
+        
         #region Matches
 
         public MatchData GetMatchData(int matchId)
@@ -395,7 +469,7 @@ namespace CricketClubDAL
 
         public int CreateNewMatch(int opponentId, DateTime matchDate, int venueId, int matchTypeId, HomeOrAway homeAway)
         {
-            var newMatchId = (int) db.ExecuteSQLAndReturnSingleResult("select max(match_id) from thevilla_admin.matches") + 1;
+            var newMatchId = (int) db.ExecuteSqlAndReturnSingleResult("select max(match_id) from thevilla_admin.matches") + 1;
             var rowsAffected =
                 db.ExecuteInsertOrUpdate("insert into thevilla_admin.matches(match_id, match_date, oppo_id, comp_id, venue_id, home_away) select "
                                                 + newMatchId + ", '"
@@ -836,7 +910,7 @@ namespace CricketClubDAL
         private string GetDismissalText(int dismissalId)
         {
             var sql = "select dismissal from thevilla_admin.how_out where dismissal_id = " + dismissalId;
-            return db.ExecuteSQLAndReturnSingleResult(sql).ToString();
+            return db.ExecuteSqlAndReturnSingleResult(sql).ToString();
         }
 
         #endregion
@@ -856,7 +930,7 @@ namespace CricketClubDAL
             storyChunks.Add(story);
 
             var sql = "select max(news_id) as id from news";
-            var newsId = (int) db.ExecuteSQLAndReturnSingleResult(sql) + 1;
+            var newsId = (int) db.ExecuteSqlAndReturnSingleResult(sql) + 1;
 
             sql = "insert into News(news_id, headline, short_headline, teaser, item_date) select "
                   + newsId + ", '"
@@ -945,7 +1019,7 @@ namespace CricketClubDAL
             int chatId;
             try
             {
-                chatId = (int) db.ExecuteSQLAndReturnSingleResult(sql);
+                chatId = (int) db.ExecuteSqlAndReturnSingleResult(sql);
             }
             catch (NullReferenceException)
             {
@@ -1102,7 +1176,7 @@ namespace CricketClubDAL
             {
                 var newAccEntryId =
                     (int)
-                    db.ExecuteSQLAndReturnSingleResult("select max([id]) from accounts where player_id = " +
+                    db.ExecuteSqlAndReturnSingleResult("select max([id]) from accounts where player_id = " +
                                                               playerId);
                 return newAccEntryId;
             }
@@ -1125,7 +1199,7 @@ namespace CricketClubDAL
             var newUserId = 1;
             try
             {
-                newUserId = (int) db.ExecuteSQLAndReturnSingleResult("select max(user_id) from users") + 1;
+                newUserId = (int) db.ExecuteSqlAndReturnSingleResult("select max(user_id) from users") + 1;
             }
             catch
             {
@@ -1196,7 +1270,7 @@ namespace CricketClubDAL
             try
             {
                 newPhotoId =
-                    (int) db.ExecuteSQLAndReturnSingleResult("select max([ImageID]) as [ID] from [Match_Photos]") +
+                    (int) db.ExecuteSqlAndReturnSingleResult("select max([ImageID]) as [ID] from [Match_Photos]") +
                     1;
             }
             catch (Exception)
@@ -1275,7 +1349,7 @@ namespace CricketClubDAL
             int chatId;
             try
             {
-                chatId = (int) db.ExecuteSQLAndReturnSingleResult(sql);
+                chatId = (int) db.ExecuteSqlAndReturnSingleResult(sql);
             }
             catch (NullReferenceException)
             {
@@ -1304,7 +1378,7 @@ namespace CricketClubDAL
             var sql = "select [value] from Settings where [key] = '" + settingName + "'";
             try
             {
-                return db.ExecuteSQLAndReturnSingleResult(sql).ToString();
+                return db.ExecuteSqlAndReturnSingleResult(sql).ToString();
             }
             catch
             {
@@ -1343,7 +1417,7 @@ namespace CricketClubDAL
             var sql = "insert into log(Message, Stack, Severity, MessageTime, InnerException) select '" +
                       SafeForSql(message) + "','" + SafeForSql(stack) + "','" + level + "','" + when.ToString("U") +
                       "', '" + SafeForSql(innerExceptionText) + "'";
-            db.ExecuteInsertOrUpdate(sql, true);
+            db.ExecuteInsertOrUpdate(sql);
         }
 
         #endregion
@@ -1576,7 +1650,7 @@ namespace CricketClubDAL
         private int GetDismissalId(string ballByBallCode)
         {
             return
-                (int) db.ExecuteSQLAndReturnSingleResult("select dismissal_id from thevilla_admin.how_out where ball_by_ball_short_code = '" +
+                (int) db.ExecuteSqlAndReturnSingleResult("select dismissal_id from thevilla_admin.how_out where ball_by_ball_short_code = '" +
                                                          ballByBallCode + "'");
         }
 
@@ -1686,6 +1760,7 @@ namespace CricketClubDAL
             return db.ExecuteSQLAndReturnFirstRow($"select * from thevilla_admin.match_reports where match_id={matchId}",
                 r => new MatchReportAndConditions(r.GetString("conditions"), r.GetString("report"), r.GetString("report_image")), MatchReportAndConditions.None);
         }
+
     }
 
     public class MatchReportAndConditions

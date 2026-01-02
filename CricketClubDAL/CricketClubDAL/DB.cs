@@ -4,7 +4,9 @@ using System.Configuration;
 using System.Data;
 using System.Data.OleDb;
 using System.Linq;
+using System.Text.RegularExpressions;
 using CricketClubDomain;
+using log4net;
 
 namespace CricketClubDAL
 {
@@ -22,12 +24,22 @@ namespace CricketClubDAL
         }
         
         private static string connectionString;
+        private static readonly ILog Log = LogManager.GetLogger(typeof(Db));
+
 
         private static OleDbConnection OpenConnection()
         {
-            var conn = new OleDbConnection(GetScorebookConnectionString());
+            var scorebookConnectionString = GetScorebookConnectionString();
+            var conn = new OleDbConnection(scorebookConnectionString);
             conn.Open();
             return conn;
+        }
+
+        private static string SanitizeConnectionString(string cs)
+        {
+            if (string.IsNullOrEmpty(cs)) return cs;
+            var pattern = @"(password|pwd)\s*=\s*([^;]+)";
+            return Regex.Replace(cs, pattern, "$1=****", RegexOptions.IgnoreCase);
         }
 
 
@@ -62,9 +74,9 @@ namespace CricketClubDAL
                 if (cnxStr == null)
                     throw new ConfigurationErrorsException("ConnectionString '" + key +
                                                            "' was not found in the configuration file.");
-                Console.Out.WriteLine("Connecting to: " + key + " @" + cnxStr.ConnectionString);
-                
+
                 connectionString = cnxStr.ConnectionString;
+                Log.Info("Connection string: " + SanitizeConnectionString(connectionString));
             }
             
             return connectionString;
@@ -83,13 +95,18 @@ namespace CricketClubDAL
             {
                 using (var connection = OpenConnection())
                 {
+                    Log.Debug("Executing SQL: " + sql);
                     var data = new DataSet();
                     var adaptor = new OleDbDataAdapter(sql, connection);
                     adaptor.Fill(data);
                     if (data.Tables[0] != null && data.Tables[0].Rows.Count > 0)
                     {
-                        return data.Tables[0].Rows[0];
+                        Log.Debug("Found " + data.Tables[0].Rows.Count + " rows.");
+                        var firstRow = data.Tables[0].Rows[0];
+                        Log.Debug("Result: " + firstRow.ItemArray.Aggregate("", (current, item) => current + (item + ", ")));
+                        return firstRow;
                     }
+                    Log.Debug("Result: null");
                     return null;
                 }
             }
@@ -99,7 +116,7 @@ namespace CricketClubDAL
             }
         }
 
-        public object ExecuteSQLAndReturnSingleResult(string sql)
+        public object ExecuteSqlAndReturnSingleResult(string sql)
         {
             try
             {
@@ -107,7 +124,13 @@ namespace CricketClubDAL
                 {
                     using (var command = new OleDbCommand(sql, conn))
                     {
-                        return command.ExecuteScalar();
+                        Log.Debug("Executing SQL: " + sql);
+                        var executeSqlAndReturnSingleResult = command.ExecuteScalar();
+                        var returnedValue = executeSqlAndReturnSingleResult is DBNull
+                            ? "null"
+                            : (executeSqlAndReturnSingleResult?.ToString() ?? "null");
+                        Log.Debug("Result: " + returnedValue);
+                        return executeSqlAndReturnSingleResult;
                     }
                 }
             }
@@ -117,14 +140,11 @@ namespace CricketClubDAL
             }
         }
 
-        public int ExecuteInsertOrUpdate(string sql, bool donNotLog = true)
+        public int ExecuteInsertOrUpdate(string sql)
         {
             try
             {
-                if (!donNotLog)
-                {
-                    Console.WriteLine("Executing SQL: " + sql);
-                }
+                Log.Debug("Executing SQL: " + sql);
                 using (var conn = OpenConnection())
                 {
                     using (var command = new OleDbCommand(sql, conn))
@@ -135,13 +155,21 @@ namespace CricketClubDAL
             }
             catch (Exception exception)
             {
+                Log.Error("Error executing SQL: " + sql, exception);
                 throw new Exception("Error executing: " + sql, exception);
             }
         }
 
         public IEnumerable<T> ExecuteSqlAndReturnAllRows<T>(string sql, Func<Row, T> rowConverter)
         {
+            Log.Debug("Executing SQL: " + sql);
             var dataSet = ExecuteSqlAndReturnAllRows(sql);
+            Log.Debug("Found " + dataSet.Tables[0].Rows.Count + " rows.");
+            dataSet.Tables[0].Rows.Cast<DataRow>().ToList().ForEach(r =>
+            {
+                var rowData = r.ItemArray.Aggregate("", (current, item) => current + (item + ", "));
+                Log.Debug("Row: " + rowData);
+            });
             return dataSet.Tables[0].Rows.Cast<DataRow>().Select(r=>new Row(r)).Select(rowConverter);
         }
 

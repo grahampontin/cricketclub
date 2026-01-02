@@ -93,6 +93,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AccountEntryData.cs" />
+    <Compile Include="Award.cs" />
+    <Compile Include="AwardData.cs" />
     <Compile Include="Ball.cs" />
     <Compile Include="BowlerInningsDetails.cs" />
     <Compile Include="BowlingDetails.cs" />

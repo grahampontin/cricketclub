@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace CricketClub.Tests
 {
-    public class DaoIntegrationTests
+    public class VenueIntegrationTests
     {
     
         private readonly Dao _dao = new Dao();
