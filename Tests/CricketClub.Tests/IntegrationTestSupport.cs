@@ -8,6 +8,9 @@ namespace CricketClub.Tests
 {
     public abstract class IntegrationTestSupport
     {
+        protected static readonly ILog Log = LogManager.GetLogger(typeof(IntegrationTestSupport));
+
+        
         [OneTimeSetUp]
         public void Init()
         {

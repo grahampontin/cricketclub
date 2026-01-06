@@ -97,22 +97,36 @@ namespace CricketClubDAL
 
             var ds = db.ExecuteSqlAndReturnAllRows(sql);
 
-            return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new BattingCardLineData
+            return (ds.Tables[0].Rows.Cast<DataRow>().Select(RowToBattingCardLineData)).ToList();
+        }
+        
+        public ILookup<int, BattingCardLineData> GetAllBattingStatsData()
+        {
+            var sql = "select * from thevilla_admin.batting_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id";
+
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
+
+            return (ds.Tables[0].Rows.Cast<DataRow>().Select(RowToBattingCardLineData)).ToLookup(r=>r.PlayerID);
+        }
+
+        private BattingCardLineData RowToBattingCardLineData(DataRow row)
+        {
+            return new BattingCardLineData
             {
-                BattingAt = (int) row["batting at"],
+                BattingAt = (int)row["batting at"],
                 BowlerName = row["bowler_name"].ToString(),
                 FielderName = row["fielder_name"].ToString(),
-                Fours = (int) row["4s"],
-                Sixes = (int) row["6s"],
-                ModeOfDismissal = (int) row["dismissal_id"],
-                PlayerID = (int) row["player_id"],
-                MatchID = (int) row["match_id"],
-                Score = (int) row["score"],
-                MatchTypeID = (int) row["comp_id"],
+                Fours = (int)row["4s"],
+                Sixes = (int)row["6s"],
+                ModeOfDismissal = (int)row["dismissal_id"],
+                PlayerID = (int)row["player_id"],
+                MatchID = (int)row["match_id"],
+                Score = (int)row["score"],
+                MatchTypeID = (int)row["comp_id"],
                 MatchDate = DateTimeFromRow(row["match_date"]),
-                VenueID = (int) row["venue_id"],
-                BallsFaced = (int) row["balls_faced"]
-            })).ToList();
+                VenueID = (int)row["venue_id"],
+                BallsFaced = (int)row["balls_faced"]
+            };
         }
 
 
@@ -124,19 +138,41 @@ namespace CricketClubDAL
 
             var ds = db.ExecuteSqlAndReturnAllRows(sql);
 
-            return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new BattingCardLineData
+            return (ds.Tables[0].Rows.Cast<DataRow>().Select(FieldingStatsDataFromRow)).ToList();
+        }
+        
+        public Dictionary<int, List<BattingCardLineData>> GetAllFieldingStatsData()
+        {
+            var sql =
+                "select * from thevilla_admin.bowling_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id";
+
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
+
+            var allFieldingStatsData = (ds.Tables[0].Rows.Cast<DataRow>().Select(FieldingStatsDataFromRow)).ToList();
+            var fielders = allFieldingStatsData.Select(f => f.BowlerID).Union(allFieldingStatsData.Select(f => f.FielderID))
+                .Distinct();
+            
+            return fielders.Select(f=> new Tuple<int, List<BattingCardLineData>>(f, 
+                allFieldingStatsData.Where(a=> a.BowlerID == f || a.FielderID == f).ToList()))
+                .ToDictionary(t=>t.Item1, t=>t.Item2);
+            
+        }
+
+        private BattingCardLineData FieldingStatsDataFromRow(DataRow row)
+        {
+            return new BattingCardLineData
             {
-                BattingAt = (int) row["batting at"],
-                BowlerID = (int) row["bowler_id"],
-                FielderID = (int) row["fielder_id"],
-                ModeOfDismissal = (int) row["dismissal_id"],
+                BattingAt = (int)row["batting at"],
+                BowlerID = (int)row["bowler_id"],
+                FielderID = (int)row["fielder_id"],
+                ModeOfDismissal = (int)row["dismissal_id"],
                 PlayerName = row["player_name"].ToString(),
-                MatchID = (int) row["match_id"],
-                Score = (int) row["score"],
-                MatchTypeID = (int) row["comp_id"],
+                MatchID = (int)row["match_id"],
+                Score = (int)row["score"],
+                MatchTypeID = (int)row["comp_id"],
                 MatchDate = DateTimeFromRow(row["match_date"]),
-                VenueID = (int) row["venue_id"]
-            })).ToList();
+                VenueID = (int)row["venue_id"]
+            };
         }
 
 
@@ -147,7 +183,21 @@ namespace CricketClubDAL
 
             var ds = db.ExecuteSqlAndReturnAllRows(sql);
 
-            return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new BowlingStatsEntryData
+            return (ds.Tables[0].Rows.Cast<DataRow>().Select(BowlingStatsDataFromRow)).ToList();
+        }
+        public ILookup<int, BowlingStatsEntryData> GetAllBowlingStatsData()
+        {
+            var sql = "select * from thevilla_admin.bowling_stats a, thevilla_admin.matches b where a.match_id = b.match_id";
+
+            var ds = db.ExecuteSqlAndReturnAllRows(sql);
+
+            return (ds.Tables[0].Rows.Cast<DataRow>().Select(BowlingStatsDataFromRow))
+                .ToLookup(b =>b.PlayerID, b=>b);
+        }
+
+        private BowlingStatsEntryData BowlingStatsDataFromRow(DataRow row)
+        {
+            return new BowlingStatsEntryData
             {
                 Overs = decimal.Parse(row["overs"].ToString()),
                 Maidens = (int) row["maidens"],
@@ -158,7 +208,7 @@ namespace CricketClubDAL
                 MatchTypeID = (int) row["comp_id"],
                 MatchDate = DateTimeFromRow(row["match_date"]),
                 VenueID = (int) row["venue_id"]
-            })).ToList();
+            };
         }
 
         #endregion

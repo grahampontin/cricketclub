@@ -131,6 +131,7 @@
     <Compile Include="BallByBallTests.cs" />
     <Compile Include="CommitteeIntegrationTests.cs" />
     <Compile Include="IntegrationTestSupport.cs" />
+    <Compile Include="PlayersIntegrationTest.cs" />
     <Compile Include="VenueIntegratonTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

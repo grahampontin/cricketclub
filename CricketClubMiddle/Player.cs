@@ -29,7 +29,7 @@ namespace CricketClubMiddle
             return FormalName;
         }
 
-        
+
         public IEnumerable<KeyValuePair<Match, int>> GetAllScores()
         {
             return
@@ -40,7 +40,8 @@ namespace CricketClubMiddle
 
         public bool WasNotOutIn(Match match)
         {
-            var modeOfDismissal = BattingStatsData.FirstOrDefault(a => a.MatchID == match.ID)?.ModeOfDismissal??(int)ModesOfDismissal.DidNotBat;
+            var modeOfDismissal = BattingStatsData.FirstOrDefault(a => a.MatchID == match.ID)?.ModeOfDismissal ??
+                                  (int)ModesOfDismissal.DidNotBat;
             return modeOfDismissal == (int)ModesOfDismissal.NotOut ||
                    modeOfDismissal == (int)ModesOfDismissal.RetiredHurt;
         }
@@ -59,16 +60,16 @@ namespace CricketClubMiddle
                     {
                         var match = new Match(a.MatchID);
                         return new KeyValuePair<Match, FieldingStats>(match,
-                                new FieldingStats(GetCatchesTaken(a.MatchID), GetRunOuts(a.MatchID),
-                                    GetStumpings(a.MatchID), match, this));
+                            new FieldingStats(GetCatchesTaken(a.MatchID), GetRunOuts(a.MatchID),
+                                GetStumpings(a.MatchID), match, this));
                     })
                     .OrderBy(a => a.Key.MatchDate);
         }
 
         public IEnumerable<KeyValuePair<Match, BowlingStatsEntryData>> GetBowlingStatsByMatch()
         {
-            return BowlingStatsData.Select(
-                a => new KeyValuePair<Match, BowlingStatsEntryData>(new Match(a.MatchID), a));
+            return BowlingStatsData.Select(a =>
+                new KeyValuePair<Match, BowlingStatsEntryData>(new Match(a.MatchID), a));
         }
 
         public Dictionary<Match, List<BattingCardLineData>> GetDismissedBatsmenData()
@@ -115,10 +116,71 @@ namespace CricketClubMiddle
             return new Player(newPlayerId);
         }
 
-        public static List<Player> GetAll()
+        public static List<Player> GetAll(bool fullyHydrated = false)
         {
-            var data = new Dao().GetAllPlayers();
-            return (from a in data select new Player(a)).OrderBy(a => a.FormalName).ToList();
+            var db = new Dao();
+            var data = db.GetAllPlayers();
+
+            var players = data.Select(a => new Player(a)).OrderBy(a => a.FormalName).ToList();
+            if (!fullyHydrated) return players;
+            
+            var allBattingStatsData = db.GetAllBattingStatsData();
+            var allBowlingStatsData = db.GetAllBowlingStatsData();
+            var allFieldingStatsData = db.GetAllFieldingStatsData();
+            
+            foreach (var player in players)
+            {
+                PopulateBattingCache(allBattingStatsData, player);
+                PopulateBowlingCache(allBowlingStatsData, player);
+                PopulateFieldingCache(allFieldingStatsData, player);
+            }
+
+            return players;
+        }
+
+        private static void PopulateFieldingCache(Dictionary<int, List<BattingCardLineData>> allFieldingStatsData, Player player)
+        {
+            var fieldingStatsDatas = allFieldingStatsData.GetValueOrInitializeDefault(player.Id, new List<BattingCardLineData>())
+                .Where(d => d.MatchTypeID != (int)MatchType.Informal).ToList();
+            if (fieldingStatsDatas.Any())
+            {
+                player.InitFieldingStatsCache(fieldingStatsDatas.ToList());
+            }
+        }
+
+        private static void PopulateBowlingCache(ILookup<int, BowlingStatsEntryData> allBowlingStatsData, Player player)
+        {
+            var bowlingStatsEntryDatas = allBowlingStatsData[player.Id]
+                .Where(d => d.MatchTypeID != (int)MatchType.Informal).ToList();
+            if (bowlingStatsEntryDatas.Any())
+            {
+                player.InitBowlingStatsCache(bowlingStatsEntryDatas.ToList());
+            }
+        }
+
+        private static void PopulateBattingCache(ILookup<int, BattingCardLineData> allBattingStatsData, Player player)
+        {
+            var battingCardLineDatas = allBattingStatsData[player.Id]
+                .Where(d => d.MatchTypeID != (int)MatchType.Informal).ToList();
+            if (battingCardLineDatas.Any())
+            {
+                player.InitBattingStatsCache(battingCardLineDatas.ToList());
+            }
+        }
+
+        private void InitFieldingStatsCache(List<BattingCardLineData> battingCardLineDatas)
+        {
+            fieldingStatsDataCache = battingCardLineDatas;
+        }
+
+        private void InitBowlingStatsCache(List<BowlingStatsEntryData> bowlingStatsEntryDatas)
+        {
+            bowlingStatsDataCache = bowlingStatsEntryDatas;
+        }
+
+        private void InitBattingStatsCache(List<BattingCardLineData> battingCardLineDatas)
+        {
+            battingStatsDataCache = battingCardLineDatas;
         }
 
         #endregion
@@ -129,7 +191,7 @@ namespace CricketClubMiddle
         {
             get { return playerData.ID; }
         }
-        
+
         /// <summary>
         ///     Setter is obsolete - use First Name and Surname
         /// </summary>
@@ -240,7 +302,7 @@ namespace CricketClubMiddle
             get { return BattingStatsData.Select(a => a.MatchDate).OrderBy(a => a).FirstOrDefault(); }
         }
 
-        
+
         public bool IsActive
         {
             get { return playerData.IsActive; }
@@ -340,7 +402,7 @@ namespace CricketClubMiddle
                     var myDao = new Dao();
                     battingStatsDataCache = myDao
                         .GetPlayerBattingStatsData(Id)
-                        .Where(d=>d.MatchTypeID != (int)MatchType.Informal).ToList();
+                        .Where(d => d.MatchTypeID != (int)MatchType.Informal).ToList();
                 }
 
                 return battingStatsDataCache;
@@ -657,7 +719,7 @@ namespace CricketClubMiddle
                 {
                     var myDao = new Dao();
                     bowlingStatsDataCache = myDao.GetPlayerBowlingStatsData(Id)
-                        .Where(d=>d.MatchTypeID != (int)MatchType.Informal).ToList();
+                        .Where(d => d.MatchTypeID != (int)MatchType.Informal).ToList();
                 }
 
                 return bowlingStatsDataCache;
@@ -729,7 +791,6 @@ namespace CricketClubMiddle
             try
             {
                 var fraction = GetRunsConceeded(predicate) /
-                               
                                GetOversBowled(predicate);
                 return Math.Round(fraction, 2);
             }
@@ -991,7 +1052,8 @@ namespace CricketClubMiddle
         {
             return FieldingStatsData
                 .Where(predicate)
-                .Where(a => a.FielderID == Id).Count(a => (ModesOfDismissal)a.ModeOfDismissal == ModesOfDismissal.Stumped);
+                .Where(a => a.FielderID == Id)
+                .Count(a => (ModesOfDismissal)a.ModeOfDismissal == ModesOfDismissal.Stumped);
         }
 
         public int GetStumpings(int matchId)

@@ -162,14 +162,8 @@ namespace CricketClubDAL
 
         public IEnumerable<T> ExecuteSqlAndReturnAllRows<T>(string sql, Func<Row, T> rowConverter)
         {
-            Log.Debug("Executing SQL: " + sql);
             var dataSet = ExecuteSqlAndReturnAllRows(sql);
-            Log.Debug("Found " + dataSet.Tables[0].Rows.Count + " rows.");
-            dataSet.Tables[0].Rows.Cast<DataRow>().ToList().ForEach(r =>
-            {
-                var rowData = r.ItemArray.Aggregate("", (current, item) => current + (item + ", "));
-                Log.Debug("Row: " + rowData);
-            });
+            
             return dataSet.Tables[0].Rows.Cast<DataRow>().Select(r=>new Row(r)).Select(rowConverter);
         }
 
@@ -178,12 +172,19 @@ namespace CricketClubDAL
         {
             try
             {
+                Log.Debug("Executing SQL: " + sql);
                 using (var conn = OpenConnection())
                 {
-                    var data = new DataSet();
+                    var dataSet = new DataSet();
                     var adaptor = new OleDbDataAdapter(sql, conn);
-                    adaptor.Fill(data);
-                    return data;
+                    adaptor.Fill(dataSet);
+                    Log.Debug("Found " + dataSet.Tables[0].Rows.Count + " rows.");
+                    dataSet.Tables[0].Rows.Cast<DataRow>().ToList().ForEach(r =>
+                    {
+                        var rowData = r.ItemArray.Aggregate("", (current, item) => current + (item + ", "));
+                        Log.Debug("Row: " + rowData);
+                    });
+                    return dataSet;
                 }
             }
             catch (Exception exception)
