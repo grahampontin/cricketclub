@@ -393,7 +393,7 @@ namespace CricketClubMiddle
 
         private List<BattingCardLineData> battingStatsDataCache;
 
-        private List<BattingCardLineData> BattingStatsData
+        public IEnumerable<BattingCardLineData> BattingStatsData
         {
             get
             {
@@ -598,7 +598,7 @@ namespace CricketClubMiddle
 
         public int GetMatchesPlayed()
         {
-            return TheGreaterOf(BattingStatsData.Count, BowlingStatsData.Count);
+            return TheGreaterOf(BattingStatsData.Count(), BowlingStatsData.Count());
         }
 
         private int TheGreaterOf(int valueOne, int valueTwo)
@@ -711,7 +711,7 @@ namespace CricketClubMiddle
 
         private List<BowlingStatsEntryData> bowlingStatsDataCache;
 
-        private List<BowlingStatsEntryData> BowlingStatsData
+        public IEnumerable<BowlingStatsEntryData> BowlingStatsData
         {
             get
             {
@@ -999,7 +999,7 @@ namespace CricketClubMiddle
         private List<BattingCardLineData> fieldingStatsDataCache;
         private readonly Dao dao;
 
-        private List<BattingCardLineData> FieldingStatsData
+        public IEnumerable<BattingCardLineData> FieldingStatsData
         {
             get
             {
