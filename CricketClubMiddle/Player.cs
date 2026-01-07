@@ -135,6 +135,12 @@ namespace CricketClubMiddle
                 PopulateFieldingCache(allFieldingStatsData, player);
             }
 
+            var playersById = players.ToDictionary(p=>p.Id, p=>p);
+            foreach (var player in players.Where(p => p.RingerOfId > 0))
+            {
+                player.RingerOf = playersById.GetValueOrInitializeDefault(player.RingerOfId, null);
+            }
+
             return players;
         }
 
@@ -262,14 +268,19 @@ namespace CricketClubMiddle
         {
             get
             {
-                if (playerData.RingerOf > 0)
-                {
-                    return new Player(playerData.RingerOf);
-                }
+                if (ringerOf != null) return ringerOf;
+                if (playerData.RingerOf <= 0) return null;
+                ringerOf = new Player(playerData.RingerOf);
 
-                return null;
+                return ringerOf;
             }
-            set { playerData.RingerOf = value.Id; }
+            set => ringerOf = value;
+        }
+        
+        public int RingerOfId
+        {
+            get => playerData.RingerOf;
+            set => playerData.RingerOf = value;
         }
 
         public string Nickname
@@ -998,6 +1009,7 @@ namespace CricketClubMiddle
 
         private List<BattingCardLineData> fieldingStatsDataCache;
         private readonly Dao dao;
+        private Player ringerOf;
 
         public IEnumerable<BattingCardLineData> FieldingStatsData
         {
