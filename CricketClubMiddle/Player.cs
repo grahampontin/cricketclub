@@ -123,11 +123,11 @@ namespace CricketClubMiddle
 
             var players = data.Select(a => new Player(a)).OrderBy(a => a.FormalName).ToList();
             if (!fullyHydrated) return players;
-            
+
             var allBattingStatsData = db.GetAllBattingStatsData();
             var allBowlingStatsData = db.GetAllBowlingStatsData();
             var allFieldingStatsData = db.GetAllFieldingStatsData();
-            
+
             foreach (var player in players)
             {
                 PopulateBattingCache(allBattingStatsData, player);
@@ -135,7 +135,7 @@ namespace CricketClubMiddle
                 PopulateFieldingCache(allFieldingStatsData, player);
             }
 
-            var playersById = players.ToDictionary(p=>p.Id, p=>p);
+            var playersById = players.ToDictionary(p => p.Id, p => p);
             foreach (var player in players.Where(p => p.RingerOfId > 0))
             {
                 player.RingerOf = playersById.GetValueOrInitializeDefault(player.RingerOfId, null);
@@ -144,34 +144,27 @@ namespace CricketClubMiddle
             return players;
         }
 
-        private static void PopulateFieldingCache(Dictionary<int, List<BattingCardLineData>> allFieldingStatsData, Player player)
+        private static void PopulateFieldingCache(Dictionary<int, List<BattingCardLineData>> allFieldingStatsData,
+            Player player)
         {
-            var fieldingStatsDatas = allFieldingStatsData.GetValueOrInitializeDefault(player.Id, new List<BattingCardLineData>())
+            var fieldingStatsDatas = allFieldingStatsData
+                .GetValueOrInitializeDefault(player.Id, new List<BattingCardLineData>())
                 .Where(d => d.MatchTypeID != (int)MatchType.Informal).ToList();
-            if (fieldingStatsDatas.Any())
-            {
-                player.InitFieldingStatsCache(fieldingStatsDatas.ToList());
-            }
+            player.InitFieldingStatsCache(fieldingStatsDatas.ToList());
         }
 
         private static void PopulateBowlingCache(ILookup<int, BowlingStatsEntryData> allBowlingStatsData, Player player)
         {
             var bowlingStatsEntryDatas = allBowlingStatsData[player.Id]
                 .Where(d => d.MatchTypeID != (int)MatchType.Informal).ToList();
-            if (bowlingStatsEntryDatas.Any())
-            {
-                player.InitBowlingStatsCache(bowlingStatsEntryDatas.ToList());
-            }
+            player.InitBowlingStatsCache(bowlingStatsEntryDatas.ToList());
         }
 
         private static void PopulateBattingCache(ILookup<int, BattingCardLineData> allBattingStatsData, Player player)
         {
             var battingCardLineDatas = allBattingStatsData[player.Id]
                 .Where(d => d.MatchTypeID != (int)MatchType.Informal).ToList();
-            if (battingCardLineDatas.Any())
-            {
-                player.InitBattingStatsCache(battingCardLineDatas.ToList());
-            }
+            player.InitBattingStatsCache(battingCardLineDatas.ToList());
         }
 
         private void InitFieldingStatsCache(List<BattingCardLineData> battingCardLineDatas)
@@ -276,7 +269,7 @@ namespace CricketClubMiddle
             }
             set => ringerOf = value;
         }
-        
+
         public int RingerOfId
         {
             get => playerData.RingerOf;
