@@ -8,7 +8,7 @@ namespace CricketClub.Tests
 {
     public class PlayersIntegrationTest : IntegrationTestSupport
     {
-        [Test]
+        [Test, Ignore("Slow Test - for manual performance testing only")]
         public void GetAllPlayersWithHydration()
         {
             var repo = LogManager.GetRepository();
@@ -42,7 +42,7 @@ namespace CricketClub.Tests
             }
         }
 
-        [Test]
+        [Test, Ignore("Slow Test - for manual performance testing only")]
         public void HydratingIsFaster()
         {
             var repo = LogManager.GetRepository();
