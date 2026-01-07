@@ -95,13 +95,13 @@ namespace CricketClubDAL
             {
                 using (var connection = OpenConnection())
                 {
-                    Log.Debug("Executing SQL: " + sql);
+                    Log.Info("Executing SQL: " + sql);
                     var data = new DataSet();
                     var adaptor = new OleDbDataAdapter(sql, connection);
                     adaptor.Fill(data);
                     if (data.Tables[0] != null && data.Tables[0].Rows.Count > 0)
                     {
-                        Log.Debug("Found " + data.Tables[0].Rows.Count + " rows.");
+                        Log.Info("Found " + data.Tables[0].Rows.Count + " rows.");
                         var firstRow = data.Tables[0].Rows[0];
                         Log.Debug("Result: " + firstRow.ItemArray.Aggregate("", (current, item) => current + (item + ", ")));
                         return firstRow;
@@ -172,13 +172,13 @@ namespace CricketClubDAL
         {
             try
             {
-                Log.Debug("Executing SQL: " + sql);
+                Log.Info("Executing SQL: " + sql);
                 using (var conn = OpenConnection())
                 {
                     var dataSet = new DataSet();
                     var adaptor = new OleDbDataAdapter(sql, conn);
                     adaptor.Fill(dataSet);
-                    Log.Debug("Found " + dataSet.Tables[0].Rows.Count + " rows.");
+                    Log.Info("Found " + dataSet.Tables[0].Rows.Count + " rows.");
                     dataSet.Tables[0].Rows.Cast<DataRow>().ToList().ForEach(r =>
                     {
                         var rowData = r.ItemArray.Aggregate("", (current, item) => current + (item + ", "));
@@ -189,6 +189,7 @@ namespace CricketClubDAL
             }
             catch (Exception exception)
             {
+                Log.Error("Error executing SQL: " + sql, exception);
                 throw new Exception("Error executing: " + sql, exception);
             }
         }
