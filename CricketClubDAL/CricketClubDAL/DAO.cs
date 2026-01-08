@@ -151,10 +151,11 @@ namespace CricketClubDAL
         public List<BattingCardLineData> GetPlayerFieldingStatsData(int playerId)
         {
             var sql =
-                "select * from thevilla_admin.bowling_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id and (fielder_id = " +
-                playerId + " or bowler_id = " + playerId + ")";
+                "select * from thevilla_admin.bowling_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id and (fielder_id = ? or bowler_id = ?)";
 
-            return db.ExecuteSqlAndReturnAllRows(sql, FieldingStatsDataFromRow).ToList();
+            return db.ExecuteSqlAndReturnAllRows(sql, FieldingStatsDataFromRow,
+                new OleDbParameter("@playerId1", playerId),
+                new OleDbParameter("@playerId2", playerId)).ToList();
         }
         
         public Dictionary<int, List<BattingCardLineData>> GetAllFieldingStatsData()
@@ -192,10 +193,10 @@ namespace CricketClubDAL
 
         public List<BowlingStatsEntryData> GetPlayerBowlingStatsData(int playerId)
         {
-            var sql = "select * from thevilla_admin.bowling_stats a, thevilla_admin.matches b where a.match_id = b.match_id and player_id = " +
-                      playerId;
+            var sql = "select * from thevilla_admin.bowling_stats a, thevilla_admin.matches b where a.match_id = b.match_id and player_id = ?";
 
-            return db.ExecuteSqlAndReturnAllRows(sql, BowlingStatsDataFromRow).ToList();
+            return db.ExecuteSqlAndReturnAllRows(sql, BowlingStatsDataFromRow,
+                new OleDbParameter("@playerId", playerId)).ToList();
         }
         public ILookup<int, BowlingStatsEntryData> GetAllBowlingStatsData()
         {
@@ -546,7 +547,7 @@ namespace CricketClubDAL
         public IEnumerable<BattingCardLineData> GetBattingCard(int matchId, ThemOrUs themOrUs)
         {
             var tableName = themOrUs == ThemOrUs.Us ? "batting_scorecards" : "bowling_scorecards";
-            var sql = "select * from thevilla_admin." + tableName + " where match_id = " + matchId;
+            var sql = "select * from thevilla_admin." + tableName + " where match_id = ?";
             
             if (themOrUs == ThemOrUs.Us)
             {
@@ -561,7 +562,7 @@ namespace CricketClubDAL
                     Fours = row.GetInt("4s"),
                     Sixes = row.GetInt("6s"),
                     PlayerID = row.GetInt("player_id")
-                });
+                }, new OleDbParameter("@matchId", matchId));
             }
             else
             {
@@ -574,7 +575,7 @@ namespace CricketClubDAL
                     BowlerID = row.GetInt("bowler_id"),
                     FielderID = row.GetInt("fielder_id"),
                     PlayerName = row.GetString("player_name")
-                });
+                }, new OleDbParameter("@matchId", matchId));
             }
         }
 
@@ -641,7 +642,7 @@ namespace CricketClubDAL
         public List<BowlingStatsEntryData> GetBowlingStats(int matchId, ThemOrUs who)
         {
             var tableName = who == ThemOrUs.Us ? "bowling_stats" : "oppo_bowling_stats";
-            var sql = "select * from thevilla_admin." + tableName + " where match_id = " + matchId;
+            var sql = "select * from thevilla_admin." + tableName + " where match_id = ?";
             
             if (who == ThemOrUs.Us)
             {
@@ -653,7 +654,7 @@ namespace CricketClubDAL
                     Wickets = row.GetInt("wickets"),
                     PlayerID = row.GetInt("player_id"),
                     MatchID = row.GetInt("match_id")
-                }).ToList();
+                }, new OleDbParameter("@matchId", matchId)).ToList();
             }
             else
             {
@@ -665,7 +666,7 @@ namespace CricketClubDAL
                     Wickets = row.GetInt("wickets"),
                     PlayerName = row.GetString("player_name"),
                     MatchID = row.GetInt("match_id")
-                }).ToList();
+                }, new OleDbParameter("@matchId", matchId)).ToList();
             }
         }
 
@@ -714,7 +715,7 @@ namespace CricketClubDAL
                 table = "oppo_fow";
             }
 
-            var sql = "select * from thevilla_admin." + table + " where match_id = " + matchId;
+            var sql = "select * from thevilla_admin." + table + " where match_id = ?";
 
             return db.ExecuteSqlAndReturnAllRows(sql, row => new FoWDataLine
             {
@@ -728,7 +729,7 @@ namespace CricketClubDAL
                 Score = row.GetInt("score"),
                 Wicket = row.GetInt("wicket"),
                 Who = who
-            }).ToList();
+            }, new OleDbParameter("@matchId", matchId)).ToList();
         }
 
         public void UpdateFoWData(List<FoWDataLine> data, ThemOrUs who)
