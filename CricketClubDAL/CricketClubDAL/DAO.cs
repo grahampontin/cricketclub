@@ -236,21 +236,24 @@ namespace CricketClubDAL
 
         public TeamData GetTeamData(int teamId)
         {
-            var sql = "select * from thevilla_admin.Teams where team_id = " + teamId;
-            return db.ExecuteSQLAndReturnFirstRow(sql, TeamDataFromRow, null);
+            var sql = "select * from thevilla_admin.Teams where team_id = ?";
+            return db.ExecuteSQLAndReturnFirstRow(sql, TeamDataFromRow, null,
+                new OleDbParameter("@teamId", teamId));
         }
 
         public int CreateNewTeam(string teamName)
         {
-            var dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.teams where team ='" + teamName + "'");
+            var dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.teams where team = ?",
+                new OleDbParameter("@teamName", teamName));
             if (dr != null)
             {
                 return (int) dr["team_id"];
             }
             var newTeamId = (int) db.ExecuteSqlAndReturnSingleResult("select max(team_id) from teams") + 1;
             var rowsAffected =
-                db.ExecuteInsertOrUpdate("insert into thevilla_admin.teams(team_id, team) select " + newTeamId +
-                                                ", '" + teamName + "'");
+                db.ExecuteInsertOrUpdate("insert into thevilla_admin.teams(team_id, team) values (?, ?)",
+                    new OleDbParameter("@teamId", newTeamId),
+                    new OleDbParameter("@teamName", teamName));
             if (rowsAffected == 1)
             {
                 return newTeamId;
@@ -260,8 +263,9 @@ namespace CricketClubDAL
 
         public void UpdateTeam(TeamData data)
         {
-            var sql = "update thevilla_admin.teams set {0} = {1} where team_id = " + data.ID;
-            db.ExecuteInsertOrUpdate(string.Format(sql, "team", "'" + data.Name + "'"));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.teams set team = ? where team_id = ?",
+                new OleDbParameter("@team", data.Name),
+                new OleDbParameter("@teamId", data.ID));
         }
 
         public IEnumerable<TeamData> GetAllTeamData()
@@ -289,22 +293,28 @@ namespace CricketClubDAL
 
         public VenueData GetVenueData(int venueId)
         {
-            var sql = "select * from thevilla_admin.venues where venue_id = " + venueId;
-            return db.ExecuteSQLAndReturnFirstRow(sql, VenueDataFromRow, null);
+            var sql = "select * from thevilla_admin.venues where venue_id = ?";
+            return db.ExecuteSQLAndReturnFirstRow(sql, VenueDataFromRow, null,
+                new OleDbParameter("@venueId", venueId));
         }
 
         public int CreateNewVenue(string venueName, string mapsUrl, string description, decimal? latitude, decimal? longitude)
         {
-            var dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.venues where venue ='" + venueName + "'");
+            var dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.venues where venue = ?",
+                new OleDbParameter("@venueName", venueName));
             if (dr != null)
             {
                 return (int) dr["venue_id"];
             }
             var newVenueId = (int) db.ExecuteSqlAndReturnSingleResult("select max(venue_id) from thevilla_admin.venues") + 1;
-            var latitude1 = latitude?.ToString(CultureInfo.InvariantCulture) ?? "null";
-            var longitude1 = longitude?.ToString(CultureInfo.InvariantCulture) ?? "null";
             var rowsAffected =
-                db.ExecuteInsertOrUpdate($"insert into thevilla_admin.venues(venue_id, venue, map_url, description, latitude, longitude) select {newVenueId}, '{venueName}', '{mapsUrl}', '{description}', {latitude1}, {longitude1}");
+                db.ExecuteInsertOrUpdate("insert into thevilla_admin.venues(venue_id, venue, map_url, description, latitude, longitude) values (?, ?, ?, ?, ?, ?)",
+                    new OleDbParameter("@venueId", newVenueId),
+                    new OleDbParameter("@venueName", venueName),
+                    new OleDbParameter("@mapsUrl", mapsUrl),
+                    new OleDbParameter("@description", description),
+                    new OleDbParameter("@latitude", (object)latitude ?? DBNull.Value),
+                    new OleDbParameter("@longitude", (object)longitude ?? DBNull.Value));
             if (rowsAffected == 1)
             {
                 return newVenueId;
@@ -314,15 +324,13 @@ namespace CricketClubDAL
 
         public void UpdateVenue(VenueData data)
         {
-            var sql = "update thevilla_admin.venues set {0} = {1} where venue_id = " + data.ID;
-            db.ExecuteInsertOrUpdate(string.Format(sql, "venue", "'" + data.Name + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "map_url", "'" + data.MapUrl + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "description", "'" + data.Description + "'"));
-            var latitude = data.Coordinates.Item1?.ToString(CultureInfo.InvariantCulture) ?? "null";
-            db.ExecuteInsertOrUpdate(string.Format(sql, "latitude", latitude));
-            var longitude = data.Coordinates.Item2?.ToString(CultureInfo.InvariantCulture) ?? "null";
-            db.ExecuteInsertOrUpdate(string.Format(sql, "longitude", longitude));
-            
+            db.ExecuteInsertOrUpdate("update thevilla_admin.venues set venue = ?, map_url = ?, description = ?, latitude = ?, longitude = ? where venue_id = ?",
+                new OleDbParameter("@venue", data.Name),
+                new OleDbParameter("@mapUrl", data.MapUrl),
+                new OleDbParameter("@description", data.Description),
+                new OleDbParameter("@latitude", (object)data.Coordinates.Item1 ?? DBNull.Value),
+                new OleDbParameter("@longitude", (object)data.Coordinates.Item2 ?? DBNull.Value),
+                new OleDbParameter("@venueId", data.ID));
         }
 
         public IEnumerable<VenueData> GetAllVenueData()
@@ -333,7 +341,8 @@ namespace CricketClubDAL
 
         public void DeleteVenue(int venueId)
         {
-            db.ExecuteInsertOrUpdate("delete from thevilla_admin.venues where venue_id = " + venueId);
+            db.ExecuteInsertOrUpdate("delete from thevilla_admin.venues where venue_id = ?",
+                new OleDbParameter("@venueId", venueId));
         }
 
         #endregion
@@ -439,22 +448,22 @@ namespace CricketClubDAL
 
         public MatchData GetMatchData(int matchId)
         {
-            var sql = "select * from thevilla_admin.Matches where match_id = " + matchId;
-            return db.ExecuteSQLAndReturnFirstRow(sql, MatchDataFromRow, null);
+            var sql = "select * from thevilla_admin.Matches where match_id = ?";
+            return db.ExecuteSQLAndReturnFirstRow(sql, MatchDataFromRow, null,
+                new OleDbParameter("@matchId", matchId));
         }
 
         public int CreateNewMatch(int opponentId, DateTime matchDate, int venueId, int matchTypeId, HomeOrAway homeAway)
         {
             var newMatchId = (int) db.ExecuteSqlAndReturnSingleResult("select max(match_id) from thevilla_admin.matches") + 1;
             var rowsAffected =
-                db.ExecuteInsertOrUpdate("insert into thevilla_admin.matches(match_id, match_date, oppo_id, comp_id, venue_id, home_away) select "
-                                                + newMatchId + ", '"
-                                                + matchDate.ToString("dd MMMM yyyy") + "' , "
-                                                + opponentId + ", "
-                                                + matchTypeId + ", "
-                                                + venueId + ", '"
-                                                + homeAway.ToString().Substring(0, 1).ToUpper() + "'"
-                    );
+                db.ExecuteInsertOrUpdate("insert into thevilla_admin.matches(match_id, match_date, oppo_id, comp_id, venue_id, home_away) values (?, ?, ?, ?, ?, ?)",
+                    new OleDbParameter("@matchId", newMatchId),
+                    new OleDbParameter("@matchDate", matchDate.ToString("dd MMMM yyyy")),
+                    new OleDbParameter("@oppoId", opponentId),
+                    new OleDbParameter("@compId", matchTypeId),
+                    new OleDbParameter("@venueId", venueId),
+                    new OleDbParameter("@homeAway", homeAway.ToString().Substring(0, 1).ToUpper()));
             if (rowsAffected == 1)
             {
                 return newMatchId;
@@ -464,26 +473,29 @@ namespace CricketClubDAL
 
         public void UpdateMatch(MatchData data)
         {
-            var sql = "update thevilla_admin.matches set {0} = {1} where match_id = " + data.ID;
-            db.ExecuteInsertOrUpdate(string.Format(sql, "match_date", "'" + data.Date.ToString("dd MMMM yyyy") + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "oppo_id", data.OppositionID));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "comp_id", data.MatchType));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "venue_id", data.VenueID));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "home_away", SurroundInSingleQuotes(data.HomeOrAway)));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "won_toss", (Convert.ToInt16(data.WonToss))));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "batted", (Convert.ToInt16(data.Batted))));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "was_declaration",
-                                                          (Convert.ToInt16(data.WasDeclarationGame))));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "captain_id", data.CaptainID));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "wicketkeeper_id", data.WicketKeeperID));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "match_overs", data.Overs));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "their_innings_was_declared",
-                                                          (Convert.ToInt16(data.TheyDeclared))));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "our_innings_was_declared",
-                                                          (Convert.ToInt16(data.WeDeclared))));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "their_innings_length", data.TheirInningsLength));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "our_innings_length", data.OurInningsLength));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "abandoned", (Convert.ToInt16(data.Abandoned))));
+            db.ExecuteInsertOrUpdate(@"update thevilla_admin.matches set 
+                match_date = ?, oppo_id = ?, comp_id = ?, venue_id = ?, home_away = ?, 
+                won_toss = ?, batted = ?, was_declaration = ?, captain_id = ?, wicketkeeper_id = ?, 
+                match_overs = ?, their_innings_was_declared = ?, our_innings_was_declared = ?, 
+                their_innings_length = ?, our_innings_length = ?, abandoned = ? 
+                where match_id = ?",
+                new OleDbParameter("@matchDate", data.Date.ToString("dd MMMM yyyy")),
+                new OleDbParameter("@oppoId", data.OppositionID),
+                new OleDbParameter("@compId", data.MatchType),
+                new OleDbParameter("@venueId", data.VenueID),
+                new OleDbParameter("@homeAway", data.HomeOrAway),
+                new OleDbParameter("@wonToss", Convert.ToInt16(data.WonToss)),
+                new OleDbParameter("@batted", Convert.ToInt16(data.Batted)),
+                new OleDbParameter("@wasDeclaration", Convert.ToInt16(data.WasDeclarationGame)),
+                new OleDbParameter("@captainId", data.CaptainID),
+                new OleDbParameter("@wicketkeeeperId", data.WicketKeeperID),
+                new OleDbParameter("@matchOvers", data.Overs),
+                new OleDbParameter("@theirInningsDeclared", Convert.ToInt16(data.TheyDeclared)),
+                new OleDbParameter("@ourInningsDeclared", Convert.ToInt16(data.WeDeclared)),
+                new OleDbParameter("@theirInningsLength", data.TheirInningsLength),
+                new OleDbParameter("@ourInningsLength", data.OurInningsLength),
+                new OleDbParameter("@abandoned", Convert.ToInt16(data.Abandoned)),
+                new OleDbParameter("@matchId", data.ID));
         }
 
         private string SurroundInSingleQuotes(string item)
