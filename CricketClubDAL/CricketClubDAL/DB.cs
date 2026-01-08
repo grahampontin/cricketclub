@@ -238,6 +238,12 @@ namespace CricketClubDAL
             
         }
 
+        public decimal GetDecimal(string columnName, decimal defaultValue)
+        {
+            var value = dataRow[columnName];
+            return value is DBNull ? defaultValue : Convert.ToDecimal(value);
+        }
+
         public string GetString(string columnName)
         {
             return dataRow[columnName].ToString();
@@ -273,6 +279,16 @@ namespace CricketClubDAL
             return Convert.ToBoolean(value);
         }
         
+        public double GetDouble(string columnName, double defaultValue=0.0)
+        {
+            var value = dataRow[columnName];
+            if (value is DBNull)
+            {
+                return defaultValue;
+            }
+            return Convert.ToDouble(value);
+        }
+        
         public DateTime GetDateTime(string columnName, DateTime defaultIfNull)
         {
             var value = dataRow[columnName];
@@ -281,6 +297,11 @@ namespace CricketClubDAL
                 return defaultIfNull;
             }
             return Convert.ToDateTime(value);
+        }
+
+        public DateTime GetDateTime(string columnName)
+        {
+            return Convert.ToDateTime(dataRow[columnName]);
         }
 
         public T GetEnum<T>(string columnName)
