@@ -501,9 +501,9 @@ namespace CricketClubDAL
 
         public int GetNextMatch(DateTime date)
         {
-            var sql = "select * from thevilla_admin.matches where match_date >= '" + date.ToString("dd MMMM yyyy") +
-                      "' order by match_date asc";
-            var dr = db.ExecuteSQLAndReturnFirstRow(sql);
+            var sql = "select * from thevilla_admin.matches where match_date >= ? order by match_date asc";
+            var dr = db.ExecuteSQLAndReturnFirstRow(sql, 
+                new OleDbParameter("@date", date.ToString("dd MMMM yyyy")));
             try
             {
                 return (int) dr["match_id"];
@@ -516,9 +516,9 @@ namespace CricketClubDAL
 
         public int GetPreviousMatch(DateTime date)
         {
-            var sql = "select * from thevilla_admin.matches where match_date <= '" + date.ToUniversalTime().ToString("dd MMMM yyyy") +
-                      "' order by match_date desc";
-            var dr = db.ExecuteSQLAndReturnFirstRow(sql);
+            var sql = "select * from thevilla_admin.matches where match_date <= ? order by match_date desc";
+            var dr = db.ExecuteSQLAndReturnFirstRow(sql,
+                new OleDbParameter("@date", date.ToUniversalTime().ToString("dd MMMM yyyy")));
             try
             {
                 return (int) dr["match_id"];
