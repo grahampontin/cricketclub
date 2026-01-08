@@ -513,33 +513,34 @@ namespace CricketClubDAL
         {
             var tableName = themOrUs == ThemOrUs.Us ? "batting_scorecards" : "bowling_scorecards";
             var sql = "select * from thevilla_admin." + tableName + " where match_id = " + matchId;
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-            foreach (DataRow row in ds.Tables[0].Rows)
+            
+            if (themOrUs == ThemOrUs.Us)
             {
-                var scData = new BattingCardLineData
+                return db.ExecuteSqlAndReturnAllRows(sql, row => new BattingCardLineData
                 {
-                    BattingAt = ((int) row["batting at"]) + 1,
-                    MatchID = (int) row["match_id"],
-                    Score = (int) row["score"],
-                    ModeOfDismissal = (int) row["dismissal_id"]
-                };
-                if (themOrUs == ThemOrUs.Them)
+                    BattingAt = row.GetInt("batting at") + 1,
+                    MatchID = row.GetInt("match_id"),
+                    Score = row.GetInt("score"),
+                    ModeOfDismissal = row.GetInt("dismissal_id"),
+                    BowlerName = row.GetString("bowler_name"),
+                    FielderName = row.GetString("fielder_name"),
+                    Fours = row.GetInt("4s"),
+                    Sixes = row.GetInt("6s"),
+                    PlayerID = row.GetInt("player_id")
+                });
+            }
+            else
+            {
+                return db.ExecuteSqlAndReturnAllRows(sql, row => new BattingCardLineData
                 {
-                    scData.BowlerID = (int) row["bowler_id"];
-                    scData.FielderID = (int) row["fielder_id"];
-                    scData.PlayerName = row["player_name"].ToString();
-                }
-                if (themOrUs == ThemOrUs.Us)
-                {
-                    scData.BowlerName = row["bowler_name"].ToString();
-                    scData.FielderName = row["fielder_name"].ToString();
-                    scData.Fours = (int) row["4s"];
-                    scData.Sixes = (int) row["6s"];
-                    scData.PlayerID = (int) row["player_id"];
-                }
-
-
-                yield return scData;
+                    BattingAt = row.GetInt("batting at") + 1,
+                    MatchID = row.GetInt("match_id"),
+                    Score = row.GetInt("score"),
+                    ModeOfDismissal = row.GetInt("dismissal_id"),
+                    BowlerID = row.GetInt("bowler_id"),
+                    FielderID = row.GetInt("fielder_id"),
+                    PlayerName = row.GetString("player_name")
+                });
             }
         }
 
@@ -606,31 +607,32 @@ namespace CricketClubDAL
         public List<BowlingStatsEntryData> GetBowlingStats(int matchId, ThemOrUs who)
         {
             var tableName = who == ThemOrUs.Us ? "bowling_stats" : "oppo_bowling_stats";
-            var data = new List<BowlingStatsEntryData>();
             var sql = "select * from thevilla_admin." + tableName + " where match_id = " + matchId;
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-            foreach (DataRow row in ds.Tables[0].Rows)
+            
+            if (who == ThemOrUs.Us)
             {
-                var scData = new BowlingStatsEntryData
+                return db.ExecuteSqlAndReturnAllRows(sql, row => new BowlingStatsEntryData
                 {
-                    Overs = decimal.Parse(row["overs"].ToString()),
-                    Maidens = (int) row["maidens"],
-                    Runs = (int) row["runs"],
-                    Wickets = (int) row["wickets"]
-                };
-                if (who == ThemOrUs.Us)
-                {
-                    scData.PlayerID = (int) row["player_id"];
-                }
-                else
-                {
-                    scData.PlayerName = row["player_name"].ToString();
-                }
-                scData.MatchID = (int) row["match_id"];
-
-                data.Add(scData);
+                    Overs = row.GetDecimal("overs", 0),
+                    Maidens = row.GetInt("maidens"),
+                    Runs = row.GetInt("runs"),
+                    Wickets = row.GetInt("wickets"),
+                    PlayerID = row.GetInt("player_id"),
+                    MatchID = row.GetInt("match_id")
+                }).ToList();
             }
-            return data;
+            else
+            {
+                return db.ExecuteSqlAndReturnAllRows(sql, row => new BowlingStatsEntryData
+                {
+                    Overs = row.GetDecimal("overs", 0),
+                    Maidens = row.GetInt("maidens"),
+                    Runs = row.GetInt("runs"),
+                    Wickets = row.GetInt("wickets"),
+                    PlayerName = row.GetString("player_name"),
+                    MatchID = row.GetInt("match_id")
+                }).ToList();
+            }
         }
 
         public void UpdateBowlingStats(List<BowlingStatsEntryData> data, ThemOrUs who)
@@ -679,21 +681,20 @@ namespace CricketClubDAL
             }
 
             var sql = "select * from thevilla_admin." + table + " where match_id = " + matchId;
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
 
-            return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new FoWDataLine
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new FoWDataLine
             {
-                MatchID = (int) row["match_id"],
-                NotOutBatsman = (int) row["no_bat"],
-                NotOutBatsmanScore = (int) row["no_score"],
-                OutgoingBatsman = (int) row["outgoing_bat"],
-                OutgoingBatsmanScore = (int) row["outgoing_score"],
-                OverNumber = (int) row["over_no"],
-                Partnership = (int) row["partnership"],
-                Score = (int) row["score"],
-                Wicket = (int) row["wicket"],
+                MatchID = row.GetInt("match_id"),
+                NotOutBatsman = row.GetInt("no_bat"),
+                NotOutBatsmanScore = row.GetInt("no_score"),
+                OutgoingBatsman = row.GetInt("outgoing_bat"),
+                OutgoingBatsmanScore = row.GetInt("outgoing_score"),
+                OverNumber = row.GetInt("over_no"),
+                Partnership = row.GetInt("partnership"),
+                Score = row.GetInt("score"),
+                Wicket = row.GetInt("wicket"),
                 Who = who
-            })).ToList();
+            }).ToList();
         }
 
         public void UpdateFoWData(List<FoWDataLine> data, ThemOrUs who)
@@ -815,36 +816,25 @@ namespace CricketClubDAL
             }
         }
 
-        private DateTime DateTimeFromRow(object rowValue)
-        {
-            DateTime parsed;
-            if (DateTime.TryParse(rowValue.ToString(), out parsed))
-            {
-                return parsed;
-            }
-            else
-            {
-                throw new ArgumentException(rowValue + " does not look like a date time.");
-            }
-        }
-
         public List<NewsData> GetTopXStories(int x)
         {
             var sql = "select top " + x + " * from News order by item_date desc";
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
 
-            return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new NewsData
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new NewsData
             {
-                Date = DateTimeFromRow(row["item_date"]),
-                Headline = row["headline"].ToString(),
-                ShortHeadline = row["short_headline"].ToString(),
-                Teaser = row["teaser"].ToString(),
+                Date = row.GetDateTime("item_date"),
+                Headline = row.GetString("headline"),
+                ShortHeadline = row.GetString("short_headline"),
+                Teaser = row.GetString("teaser"),
                 Story =
-                    row["story"] + row["story2"].ToString() + row["story3"] + row["story4"] + row["story5"] +
-                    row["story6"] + row["story7"] + row["story8"] + row["story9"] + row["story10"] + row["story11"] +
-                    row["story12"] + row["story13"] + row["story14"] + row["story15"] + row["story16"] + row["story17"] +
-                    row["story18"] + row["story19"] + row["story20"]
-            })).ToList();
+                    row.GetString("story") + row.GetString("story2") + row.GetString("story3") + 
+                    row.GetString("story4") + row.GetString("story5") + row.GetString("story6") + 
+                    row.GetString("story7") + row.GetString("story8") + row.GetString("story9") + 
+                    row.GetString("story10") + row.GetString("story11") + row.GetString("story12") + 
+                    row.GetString("story13") + row.GetString("story14") + row.GetString("story15") + 
+                    row.GetString("story16") + row.GetString("story17") + row.GetString("story18") + 
+                    row.GetString("story19") + row.GetString("story20")
+            }).ToList();
         }
 
         #endregion
@@ -898,31 +888,38 @@ namespace CricketClubDAL
             var sql = "select * from chat where post_time between '" +
                       startDate.ToString(CultureInfo.CreateSpecificCulture("en-US")) + "' and '" +
                       endDate.ToString(CultureInfo.CreateSpecificCulture("en-US")) + "'";
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-            return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new ChatData
+            
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new ChatData
             {
-                Date = DateTimeFromRow(row["post_time"]),
-                Name = row["annon_user_name"].ToString(),
-                ImageUrl = row["image_url"].ToString(),
-                ID = int.Parse(row["ID"].ToString()),
+                Date = row.GetDateTime("post_time"),
+                Name = row.GetString("annon_user_name"),
+                ImageUrl = row.GetString("image_url"),
+                ID = row.GetInt("ID"),
                 Comment =
-                    row["comment1"] + row["comment2"].ToString() + row["comment3"] + row["comment4"] + row["comment5"] +
-                    row["comment6"] + row["comment7"] + row["comment8"] + row["comment9"] + row["comment10"]
-            })).ToList();
+                    row.GetString("comment1") + row.GetString("comment2") + row.GetString("comment3") + 
+                    row.GetString("comment4") + row.GetString("comment5") + row.GetString("comment6") + 
+                    row.GetString("comment7") + row.GetString("comment8") + row.GetString("comment9") + 
+                    row.GetString("comment10")
+            }).ToList();
         }
 
         public List<ChatData> GetChatAfter(int commentId)
         {
             var sql = "select * from chat where ID > " + commentId;
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-            return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new ChatData
+            
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new ChatData
             {
-                Date = DateTimeFromRow(row["post_time"]),
-                Name = row["annon_user_name"].ToString(),
-                ImageUrl = row["image_url"].ToString(),
-                ID = int.Parse(row["ID"].ToString()),
+                Date = row.GetDateTime("post_time"),
+                Name = row.GetString("annon_user_name"),
+                ImageUrl = row.GetString("image_url"),
+                ID = row.GetInt("ID"),
                 Comment =
-                    row["comment1"] + row["comment2"].ToString() + row["comment3"] + row["comment4"] + row["comment5"] +
+                    row.GetString("comment1") + row.GetString("comment2") + row.GetString("comment3") + 
+                    row.GetString("comment4") + row.GetString("comment5") + row.GetString("comment6") + 
+                    row.GetString("comment7") + row.GetString("comment8") + row.GetString("comment9") + 
+                    row.GetString("comment10")
+            }).ToList();
+        }
                     row["comment6"] + row["comment7"] + row["comment8"] + row["comment9"] + row["comment10"]
             })).ToList();
         }
@@ -969,35 +966,20 @@ namespace CricketClubDAL
 
         public List<AccountEntryData> GetAllAccountData()
         {
-            var accounts = new List<AccountEntryData>();
             var sql = "select * from accounts";
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-            foreach (DataRow data in ds.Tables[0].Rows)
+            
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new AccountEntryData
             {
-                var entry = new AccountEntryData
-                {
-                    ID = (int) data["id"],
-                    Amount = (double) data["amount"],
-                    CreditOrDebit = (int) data["debit_credit"]
-                };
-                try
-                {
-                    entry.Date = (DateTime) data["transaction_time"];
-                }
-                catch
-                {
-                    entry.Date = new DateTime(1970, 1, 1);
-                }
-                entry.Description = data["description"].ToString();
-                entry.MatchID = (int) data["match_id"];
-                entry.PlayerID = (int) data["player_id"];
-                entry.Status = (int) data["status"];
-                entry.Type = (int) data["payment_type"];
-
-                accounts.Add(entry);
-            }
-
-            return accounts;
+                ID = row.GetInt("id"),
+                Amount = row.GetDouble("amount"),
+                CreditOrDebit = row.GetInt("debit_credit"),
+                Date = row.GetDateTime("transaction_time", new DateTime(1970, 1, 1)),
+                Description = row.GetString("description"),
+                MatchID = row.GetInt("match_id"),
+                PlayerID = row.GetInt("player_id"),
+                Status = row.GetInt("status"),
+                Type = row.GetInt("payment_type")
+            }).ToList();
         }
 
         public void UpdateAccountEntry(AccountEntryData data)
@@ -1042,12 +1024,16 @@ namespace CricketClubDAL
         public List<UserData> GetAllUsers()
         {
             var sql = "select * from users";
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-            return (from DataRow dr in ds.Tables[0].Rows
-                select new UserData
-                {
-                    ID = (int) dr["user_id"], Name = dr["username"].ToString(), EmailAddress = dr["email_address"].ToString(), Password = dr["password"].ToString(), DisplayName = dr["display_name"].ToString(), Permissions = (int) dr["permissions"]
-                }).ToList();
+            
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new UserData
+            {
+                ID = row.GetInt("user_id"), 
+                Name = row.GetString("username"), 
+                EmailAddress = row.GetString("email_address"), 
+                Password = row.GetString("password"), 
+                DisplayName = row.GetString("display_name"), 
+                Permissions = row.GetInt("permissions")
+            }).ToList();
         }
 
         public int CreateNewUser(string name, string emailaddress, string password, string displayname)
@@ -1148,29 +1134,16 @@ namespace CricketClubDAL
         public List<PhotoData> GetAllPhotos()
         {
             var sql = "select * from Match_Photos";
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-            var photos = new List<PhotoData>();
-            foreach (DataRow dr in ds.Tables[0].Rows)
+            
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new PhotoData
             {
-                var newPhoto = new PhotoData
-                {
-                    ID = (int) dr["ImageID"],
-                    AuthorID = (int) dr["Author"],
-                    FileName = dr["ImageName"].ToString(),
-                    Title = dr["ImageTitle"].ToString()
-                };
-                try
-                {
-                    newPhoto.UploadDate = (DateTime) dr["dob"];
-                }
-                catch
-                {
-                    newPhoto.UploadDate = new DateTime(1, 1, 1);
-                }
-                newPhoto.MatchID = (int) dr["Match_ID"];
-                photos.Add(newPhoto);
-            }
-            return photos;
+                ID = row.GetInt("ImageID"),
+                AuthorID = row.GetInt("Author"),
+                FileName = row.GetString("ImageName"),
+                Title = row.GetString("ImageTitle"),
+                UploadDate = row.GetDateTime("dob", new DateTime(1, 1, 1)),
+                MatchID = row.GetInt("Match_ID")
+            }).ToList();
         }
 
         public int AddOrUpdatePhoto(PhotoData photo)
@@ -1210,33 +1183,19 @@ namespace CricketClubDAL
         public List<PhotoCommentData> GetAllPhotoComments()
         {
             var sql = "select * from Match_Image_Comments";
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-            var comments = new List<PhotoCommentData>();
-            foreach (DataRow dr in ds.Tables[0].Rows)
+            
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new PhotoCommentData
             {
-                var newComment = new PhotoCommentData
-                {
-                    ID = (int) dr["CommentID"],
-                    AuthorID = (int) dr["UserID"],
-                    PhotoID = (int) dr["ImageID"]
-                };
-                try
-                {
-                    newComment.CommentTime = (DateTime) dr["CommentTime"];
-                }
-                catch
-                {
-                    newComment.CommentTime = new DateTime(1, 1, 1);
-                }
-
-                newComment.Comment = dr["Comment1"] +
-                                     dr["Comment2"].ToString() +
-                                     dr["Comment3"] +
-                                     dr["Comment4"] +
-                                     dr["Comment5"];
-                comments.Add(newComment);
-            }
-            return comments;
+                ID = row.GetInt("CommentID"),
+                AuthorID = row.GetInt("UserID"),
+                PhotoID = row.GetInt("ImageID"),
+                CommentTime = row.GetDateTime("CommentTime", new DateTime(1, 1, 1)),
+                Comment = row.GetString("Comment1") +
+                         row.GetString("Comment2") +
+                         row.GetString("Comment3") +
+                         row.GetString("Comment4") +
+                         row.GetString("Comment5")
+            }).ToList();
         }
 
         public int SubmitPhotoComment(PhotoCommentData data)
@@ -1312,14 +1271,13 @@ namespace CricketClubDAL
         public List<SettingData> GetAllSettings()
         {
             var sql = "select * from Settings";
-            var data = db.ExecuteSqlAndReturnAllRows(sql);
 
-            return (data.Tables[0].Rows.Cast<DataRow>().Select(row => new SettingData
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new SettingData
             {
-                Name = row["key"].ToString(),
-                Value = row["value"].ToString(),
-                Description = row["description"].ToString()
-            })).ToList();
+                Name = row.GetString("key"),
+                Value = row.GetString("value"),
+                Description = row.GetString("description")
+            }).ToList();
         }
 
         #endregion
