@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using CricketClubDAL;
 using CricketClubDomain;
 using NUnit.Framework;
@@ -82,6 +83,32 @@ namespace CricketClub.Tests
             Assert.AreEqual(description, venue.Description);
             Assert.IsNull(venue.Coordinates.Item1);
             Assert.IsNull(venue.Coordinates.Item2);
+        }
+
+        [Test]
+        public void CanDeleteVenue()
+        {
+            // Create a venue
+            var name = "Delete Test Venue " + Guid.NewGuid();
+            var mapUrl = "http://test.com/map";
+            var description = "Test venue to be deleted";
+            var lat = 51.5074m;
+            var lng = -0.1278m;
+
+            var venueId = _dao.CreateNewVenue(name, mapUrl, description, lat, lng);
+            Assert.True(venueId > 0);
+
+            // Verify it exists
+            var venue = _dao.GetVenueData(venueId);
+            Assert.NotNull(venue);
+            Assert.AreEqual(name, venue.Name);
+
+            // Delete it
+            _dao.DeleteVenue(venueId);
+
+            // Verify it's deleted by checking it doesn't appear in GetAllVenueData
+            var allVenues = _dao.GetAllVenueData();
+            Assert.False(allVenues.Any(v => v.ID == venueId));
         }
     }
 }
