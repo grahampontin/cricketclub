@@ -489,7 +489,7 @@ namespace CricketClubDAL
                 new OleDbParameter("@batted", Convert.ToInt16(data.Batted)),
                 new OleDbParameter("@wasDeclaration", Convert.ToInt16(data.WasDeclarationGame)),
                 new OleDbParameter("@captainId", data.CaptainID),
-                new OleDbParameter("@wicketkeeeperId", data.WicketKeeperID),
+                new OleDbParameter("@wicketkeeperId", data.WicketKeeperID),
                 new OleDbParameter("@matchOvers", data.Overs),
                 new OleDbParameter("@theirInningsDeclared", Convert.ToInt16(data.TheyDeclared)),
                 new OleDbParameter("@ourInningsDeclared", Convert.ToInt16(data.WeDeclared)),
@@ -497,11 +497,6 @@ namespace CricketClubDAL
                 new OleDbParameter("@ourInningsLength", data.OurInningsLength),
                 new OleDbParameter("@abandoned", Convert.ToInt16(data.Abandoned)),
                 new OleDbParameter("@matchId", data.ID));
-        }
-
-        private string SurroundInSingleQuotes(string item)
-        {
-            return "'" + item + "'";
         }
 
         public int GetNextMatch(DateTime date)
