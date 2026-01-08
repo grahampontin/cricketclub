@@ -338,8 +338,11 @@ namespace CricketClubDAL
                                                        r.GetDecimal("longitude"))
             });
         }
-        
-        
+
+        public void DeleteVenue(int venueId)
+        {
+            db.ExecuteInsertOrUpdate("delete from thevilla_admin.venues where venue_id = " + venueId);
+        }
 
         #endregion
 

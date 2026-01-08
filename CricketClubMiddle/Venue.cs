@@ -56,6 +56,12 @@ namespace CricketClubMiddle
             myDAO.UpdateVenue(_data);
         }
 
+        public void Delete()
+        {
+            myDAO.DeleteVenue(_data.ID);
+            venueCache.Remove("venue" + _data.ID);
+        }
+
         public static List<Venue> GetAll()
         {
             var data = new Dao().GetAllVenueData();
