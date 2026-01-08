@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.OleDb;
 using System.Globalization;
 using System.Linq;
 using CricketClubDomain;
@@ -28,10 +29,9 @@ namespace CricketClubDAL
 
         public PlayerData GetPlayerData(int playerId)
         {
-            var sql = "select * from thevilla_admin.Players where player_id = " + playerId;
-
-            return db.ExecuteSQLAndReturnFirstRow(sql, PlayerDataFromRow, null);
-
+            var sql = "select * from thevilla_admin.Players where player_id = ?";
+            return db.ExecuteSQLAndReturnFirstRow(sql, PlayerDataFromRow, null, 
+                new OleDbParameter("@playerId", playerId));
         }
 
         public List<PlayerData> GetAllPlayers()
@@ -64,8 +64,9 @@ namespace CricketClubDAL
         {
             var newPlayerId = (int) db.ExecuteSqlAndReturnSingleResult("select max(player_id) from players") + 1;
             var rowsAffected =
-                db.ExecuteInsertOrUpdate("insert into thevilla_admin.players(player_id, player_name) select " + newPlayerId +
-                                                ", '" + SafeForSql(name) + "'");
+                db.ExecuteInsertOrUpdate("insert into thevilla_admin.players(player_id, player_name) values (?, ?)",
+                    new OleDbParameter("@playerId", newPlayerId),
+                    new OleDbParameter("@playerName", name));
             if (rowsAffected == 1)
             {
                 return newPlayerId;
@@ -75,27 +76,48 @@ namespace CricketClubDAL
 
         public void UpdatePlayer(PlayerData playerData)
         {
-            var sql = "update thevilla_admin.players set {0} = {1} where player_id = " + playerData.ID;
-            db.ExecuteInsertOrUpdate(string.Format(sql, "player_name", "'" + SafeForSql(playerData.Name) + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "full_name", "'" + SafeForSql(playerData.FullName) + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "nickname", "'" + SafeForSql(playerData.NickName) + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "batting_style", "'" + playerData.BattingStyle + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "bowling_style", "'" + playerData.BowlingStyle + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "first_name", "'" + SafeForSql(playerData.FirstName) + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "last_name", "'" + SafeForSql(playerData.Surname) + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "middle_initials", "'" + playerData.MiddleInitials + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "active", Convert.ToInt16(playerData.IsActive)));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "ringer_of", playerData.RingerOf));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "is_rhb", Convert.ToInt16(playerData.IsRightHandBat)));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set player_name = ? where player_id = ?",
+                new OleDbParameter("@playerName", playerData.Name),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set full_name = ? where player_id = ?",
+                new OleDbParameter("@fullName", playerData.FullName),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set nickname = ? where player_id = ?",
+                new OleDbParameter("@nickname", playerData.NickName),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set batting_style = ? where player_id = ?",
+                new OleDbParameter("@battingStyle", playerData.BattingStyle),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set bowling_style = ? where player_id = ?",
+                new OleDbParameter("@bowlingStyle", playerData.BowlingStyle),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set first_name = ? where player_id = ?",
+                new OleDbParameter("@firstName", playerData.FirstName),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set last_name = ? where player_id = ?",
+                new OleDbParameter("@lastName", playerData.Surname),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set middle_initials = ? where player_id = ?",
+                new OleDbParameter("@middleInitials", playerData.MiddleInitials),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set active = ? where player_id = ?",
+                new OleDbParameter("@active", Convert.ToInt16(playerData.IsActive)),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set ringer_of = ? where player_id = ?",
+                new OleDbParameter("@ringerOf", playerData.RingerOf),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set is_rhb = ? where player_id = ?",
+                new OleDbParameter("@isRhb", Convert.ToInt16(playerData.IsRightHandBat)),
+                new OleDbParameter("@playerId", playerData.ID));
         }
 
         public List<BattingCardLineData> GetPlayerBattingStatsData(int playerId)
         {
             var sql =
-                "select * from thevilla_admin.batting_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id and player_id = " +
-                playerId;
+                "select * from thevilla_admin.batting_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id and player_id = ?";
 
-            return db.ExecuteSqlAndReturnAllRows(sql, BattingCardLineDataFromRow).ToList();
+            return db.ExecuteSqlAndReturnAllRows(sql, BattingCardLineDataFromRow, 
+                new OleDbParameter("@playerId", playerId)).ToList();
         }
         
         public ILookup<int, BattingCardLineData> GetAllBattingStatsData()
