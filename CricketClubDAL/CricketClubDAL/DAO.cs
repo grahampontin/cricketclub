@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.OleDb;
 using System.Globalization;
 using System.Linq;
 using CricketClubDomain;
@@ -28,10 +29,9 @@ namespace CricketClubDAL
 
         public PlayerData GetPlayerData(int playerId)
         {
-            var sql = "select * from thevilla_admin.Players where player_id = " + playerId;
-
-            return db.ExecuteSQLAndReturnFirstRow(sql, PlayerDataFromRow, null);
-
+            var sql = "select * from thevilla_admin.Players where player_id = ?";
+            return db.ExecuteSQLAndReturnFirstRow(sql, PlayerDataFromRow, null, 
+                new OleDbParameter("@playerId", playerId));
         }
 
         public List<PlayerData> GetAllPlayers()
@@ -62,10 +62,11 @@ namespace CricketClubDAL
 
         public int CreateNewPlayer(string name)
         {
-            var newPlayerId = (int) db.ExecuteSqlAndReturnSingleResult("select max(player_id) from players") + 1;
+            var newPlayerId = (int) db.ExecuteSqlAndReturnSingleResult("select max(player_id) from thevilla_admin.players") + 1;
             var rowsAffected =
-                db.ExecuteInsertOrUpdate("insert into thevilla_admin.players(player_id, player_name) select " + newPlayerId +
-                                                ", '" + SafeForSql(name) + "'");
+                db.ExecuteInsertOrUpdate("insert into thevilla_admin.players(player_id, player_name) values (?, ?)",
+                    new OleDbParameter("@playerId", newPlayerId),
+                    new OleDbParameter("@playerName", name));
             if (rowsAffected == 1)
             {
                 return newPlayerId;
@@ -75,57 +76,74 @@ namespace CricketClubDAL
 
         public void UpdatePlayer(PlayerData playerData)
         {
-            var sql = "update thevilla_admin.players set {0} = {1} where player_id = " + playerData.ID;
-            db.ExecuteInsertOrUpdate(string.Format(sql, "player_name", "'" + SafeForSql(playerData.Name) + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "full_name", "'" + SafeForSql(playerData.FullName) + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "nickname", "'" + SafeForSql(playerData.NickName) + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "batting_style", "'" + playerData.BattingStyle + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "bowling_style", "'" + playerData.BowlingStyle + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "first_name", "'" + SafeForSql(playerData.FirstName) + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "last_name", "'" + SafeForSql(playerData.Surname) + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "middle_initials", "'" + playerData.MiddleInitials + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "active", Convert.ToInt16(playerData.IsActive)));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "ringer_of", playerData.RingerOf));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "is_rhb", Convert.ToInt16(playerData.IsRightHandBat)));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set player_name = ? where player_id = ?",
+                new OleDbParameter("@playerName", playerData.Name),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set full_name = ? where player_id = ?",
+                new OleDbParameter("@fullName", playerData.FullName),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set nickname = ? where player_id = ?",
+                new OleDbParameter("@nickname", playerData.NickName),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set batting_style = ? where player_id = ?",
+                new OleDbParameter("@battingStyle", playerData.BattingStyle),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set bowling_style = ? where player_id = ?",
+                new OleDbParameter("@bowlingStyle", playerData.BowlingStyle),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set first_name = ? where player_id = ?",
+                new OleDbParameter("@firstName", playerData.FirstName),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set last_name = ? where player_id = ?",
+                new OleDbParameter("@lastName", playerData.Surname),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set middle_initials = ? where player_id = ?",
+                new OleDbParameter("@middleInitials", playerData.MiddleInitials),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set active = ? where player_id = ?",
+                new OleDbParameter("@active", Convert.ToInt16(playerData.IsActive)),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set ringer_of = ? where player_id = ?",
+                new OleDbParameter("@ringerOf", playerData.RingerOf),
+                new OleDbParameter("@playerId", playerData.ID));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set is_rhb = ? where player_id = ?",
+                new OleDbParameter("@isRhb", Convert.ToInt16(playerData.IsRightHandBat)),
+                new OleDbParameter("@playerId", playerData.ID));
         }
 
         public List<BattingCardLineData> GetPlayerBattingStatsData(int playerId)
         {
             var sql =
-                "select * from thevilla_admin.batting_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id and player_id = " +
-                playerId;
+                "select * from thevilla_admin.batting_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id and player_id = ?";
 
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-
-            return (ds.Tables[0].Rows.Cast<DataRow>().Select(RowToBattingCardLineData)).ToList();
+            return db.ExecuteSqlAndReturnAllRows(sql, BattingCardLineDataFromRow, 
+                new OleDbParameter("@playerId", playerId)).ToList();
         }
         
         public ILookup<int, BattingCardLineData> GetAllBattingStatsData()
         {
             var sql = "select * from thevilla_admin.batting_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id";
 
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-
-            return (ds.Tables[0].Rows.Cast<DataRow>().Select(RowToBattingCardLineData)).ToLookup(r=>r.PlayerID);
+            return db.ExecuteSqlAndReturnAllRows(sql, BattingCardLineDataFromRow).ToLookup(r=>r.PlayerID);
         }
 
-        private BattingCardLineData RowToBattingCardLineData(DataRow row)
+        private BattingCardLineData BattingCardLineDataFromRow(Row row)
         {
             return new BattingCardLineData
             {
-                BattingAt = (int)row["batting at"],
-                BowlerName = row["bowler_name"].ToString(),
-                FielderName = row["fielder_name"].ToString(),
-                Fours = (int)row["4s"],
-                Sixes = (int)row["6s"],
-                ModeOfDismissal = (int)row["dismissal_id"],
-                PlayerID = (int)row["player_id"],
-                MatchID = (int)row["match_id"],
-                Score = (int)row["score"],
-                MatchTypeID = (int)row["comp_id"],
-                MatchDate = DateTimeFromRow(row["match_date"]),
-                VenueID = (int)row["venue_id"],
-                BallsFaced = (int)row["balls_faced"]
+                BattingAt = row.GetInt("batting at"),
+                BowlerName = row.GetString("bowler_name"),
+                FielderName = row.GetString("fielder_name"),
+                Fours = row.GetInt("4s"),
+                Sixes = row.GetInt("6s"),
+                ModeOfDismissal = row.GetInt("dismissal_id"),
+                PlayerID = row.GetInt("player_id"),
+                MatchID = row.GetInt("match_id"),
+                Score = row.GetInt("score"),
+                MatchTypeID = row.GetInt("comp_id"),
+                MatchDate = row.GetDateTime("match_date"),
+                VenueID = row.GetInt("venue_id"),
+                BallsFaced = row.GetInt("balls_faced")
             };
         }
 
@@ -133,12 +151,11 @@ namespace CricketClubDAL
         public List<BattingCardLineData> GetPlayerFieldingStatsData(int playerId)
         {
             var sql =
-                "select * from thevilla_admin.bowling_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id and (fielder_id = " +
-                playerId + " or bowler_id = " + playerId + ")";
+                "select * from thevilla_admin.bowling_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id and (fielder_id = ? or bowler_id = ?)";
 
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-
-            return (ds.Tables[0].Rows.Cast<DataRow>().Select(FieldingStatsDataFromRow)).ToList();
+            return db.ExecuteSqlAndReturnAllRows(sql, FieldingStatsDataFromRow,
+                new OleDbParameter("@playerId1", playerId),
+                new OleDbParameter("@playerId2", playerId)).ToList();
         }
         
         public Dictionary<int, List<BattingCardLineData>> GetAllFieldingStatsData()
@@ -146,9 +163,7 @@ namespace CricketClubDAL
             var sql =
                 "select * from thevilla_admin.bowling_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id";
 
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-
-            var allFieldingStatsData = (ds.Tables[0].Rows.Cast<DataRow>().Select(FieldingStatsDataFromRow)).ToList();
+            var allFieldingStatsData = db.ExecuteSqlAndReturnAllRows(sql, FieldingStatsDataFromRow).ToList();
             var fielders = allFieldingStatsData.Select(f => f.BowlerID).Union(allFieldingStatsData.Select(f => f.FielderID))
                 .Distinct();
             
@@ -158,56 +173,52 @@ namespace CricketClubDAL
             
         }
 
-        private BattingCardLineData FieldingStatsDataFromRow(DataRow row)
+        private BattingCardLineData FieldingStatsDataFromRow(Row row)
         {
             return new BattingCardLineData
             {
-                BattingAt = (int)row["batting at"],
-                BowlerID = (int)row["bowler_id"],
-                FielderID = (int)row["fielder_id"],
-                ModeOfDismissal = (int)row["dismissal_id"],
-                PlayerName = row["player_name"].ToString(),
-                MatchID = (int)row["match_id"],
-                Score = (int)row["score"],
-                MatchTypeID = (int)row["comp_id"],
-                MatchDate = DateTimeFromRow(row["match_date"]),
-                VenueID = (int)row["venue_id"]
+                BattingAt = row.GetInt("batting at"),
+                BowlerID = row.GetInt("bowler_id"),
+                FielderID = row.GetInt("fielder_id"),
+                ModeOfDismissal = row.GetInt("dismissal_id"),
+                PlayerName = row.GetString("player_name"),
+                MatchID = row.GetInt("match_id"),
+                Score = row.GetInt("score"),
+                MatchTypeID = row.GetInt("comp_id"),
+                MatchDate = row.GetDateTime("match_date"),
+                VenueID = row.GetInt("venue_id")
             };
         }
 
 
         public List<BowlingStatsEntryData> GetPlayerBowlingStatsData(int playerId)
         {
-            var sql = "select * from thevilla_admin.bowling_stats a, thevilla_admin.matches b where a.match_id = b.match_id and player_id = " +
-                      playerId;
+            var sql = "select * from thevilla_admin.bowling_stats a, thevilla_admin.matches b where a.match_id = b.match_id and player_id = ?";
 
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-
-            return (ds.Tables[0].Rows.Cast<DataRow>().Select(BowlingStatsDataFromRow)).ToList();
+            return db.ExecuteSqlAndReturnAllRows(sql, BowlingStatsDataFromRow,
+                new OleDbParameter("@playerId", playerId)).ToList();
         }
         public ILookup<int, BowlingStatsEntryData> GetAllBowlingStatsData()
         {
             var sql = "select * from thevilla_admin.bowling_stats a, thevilla_admin.matches b where a.match_id = b.match_id";
 
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-
-            return (ds.Tables[0].Rows.Cast<DataRow>().Select(BowlingStatsDataFromRow))
+            return db.ExecuteSqlAndReturnAllRows(sql, BowlingStatsDataFromRow)
                 .ToLookup(b =>b.PlayerID, b=>b);
         }
 
-        private BowlingStatsEntryData BowlingStatsDataFromRow(DataRow row)
+        private BowlingStatsEntryData BowlingStatsDataFromRow(Row row)
         {
             return new BowlingStatsEntryData
             {
-                Overs = decimal.Parse(row["overs"].ToString()),
-                Maidens = (int) row["maidens"],
-                Runs = (int) row["runs"],
-                Wickets = (int) row["wickets"],
-                PlayerID = (int) row["player_id"],
-                MatchID = (int) row["match_id"],
-                MatchTypeID = (int) row["comp_id"],
-                MatchDate = DateTimeFromRow(row["match_date"]),
-                VenueID = (int) row["venue_id"]
+                Overs = row.GetDecimal("overs", 0),
+                Maidens = row.GetInt("maidens"),
+                Runs = row.GetInt("runs"),
+                Wickets = row.GetInt("wickets"),
+                PlayerID = row.GetInt("player_id"),
+                MatchID = row.GetInt("match_id"),
+                MatchTypeID = row.GetInt("comp_id"),
+                MatchDate = row.GetDateTime("match_date"),
+                VenueID = row.GetInt("venue_id")
             };
         }
 
@@ -215,30 +226,35 @@ namespace CricketClubDAL
 
         #region Teams
 
+        private static TeamData TeamDataFromRow(Row row)
+        {
+            return new TeamData
+            {
+                ID = row.GetInt("team_id"),
+                Name = row.GetString("team")
+            };
+        }
+
         public TeamData GetTeamData(int teamId)
         {
-            var sql = "select * from thevilla_admin.Teams where team_id = " + teamId;
-
-            var dr = db.ExecuteSQLAndReturnFirstRow(sql);
-            var data = new TeamData
-            {
-                ID = (int) dr["team_id"],
-                Name = dr["team"].ToString()
-            };
-            return data;
+            var sql = "select * from thevilla_admin.Teams where team_id = ?";
+            return db.ExecuteSQLAndReturnFirstRow(sql, TeamDataFromRow, null,
+                new OleDbParameter("@teamId", teamId));
         }
 
         public int CreateNewTeam(string teamName)
         {
-            var dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.teams where team ='" + teamName + "'");
+            var dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.teams where team = ?",
+                new OleDbParameter("@teamName", teamName));
             if (dr != null)
             {
                 return (int) dr["team_id"];
             }
-            var newTeamId = (int) db.ExecuteSqlAndReturnSingleResult("select max(team_id) from teams") + 1;
+            var newTeamId = (int) db.ExecuteSqlAndReturnSingleResult("select max(team_id) from thevilla_admin.teams") + 1;
             var rowsAffected =
-                db.ExecuteInsertOrUpdate("insert into thevilla_admin.teams(team_id, team) select " + newTeamId +
-                                                ", '" + teamName + "'");
+                db.ExecuteInsertOrUpdate("insert into thevilla_admin.teams(team_id, team) values (?, ?)",
+                    new OleDbParameter("@teamId", newTeamId),
+                    new OleDbParameter("@teamName", teamName));
             if (rowsAffected == 1)
             {
                 return newTeamId;
@@ -248,63 +264,58 @@ namespace CricketClubDAL
 
         public void UpdateTeam(TeamData data)
         {
-            var sql = "update thevilla_admin.teams set {0} = {1} where team_id = " + data.ID;
-            db.ExecuteInsertOrUpdate(string.Format(sql, "team", "'" + data.Name + "'"));
+            db.ExecuteInsertOrUpdate("update thevilla_admin.teams set team = ? where team_id = ?",
+                new OleDbParameter("@team", data.Name),
+                new OleDbParameter("@teamId", data.ID));
         }
 
         public IEnumerable<TeamData> GetAllTeamData()
         {
             var sql = "select * from thevilla_admin.teams";
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-
-            return (ds.Tables[0].Rows.Cast<DataRow>().Select(data => new TeamData
-            {
-                ID = (int) data["team_id"],
-                Name = data["team"].ToString()
-            })).ToList();
+            return db.ExecuteSqlAndReturnAllRows(sql, TeamDataFromRow);
         }
 
         #endregion
 
         #region Venues
 
+        private static VenueData VenueDataFromRow(Row r)
+        {
+            return new VenueData
+            {
+                ID = r.GetInt("venue_id"),
+                Name = r.GetString("venue"),
+                MapUrl = r.GetString("map_url"),
+                Description = r.GetString("description"),
+                Coordinates = new Tuple<decimal?, decimal?>(r.GetDecimal("latitude"),
+                                                       r.GetDecimal("longitude"))
+            };
+        }
+
         public VenueData GetVenueData(int venueId)
         {
-            var sql = "select * from thevilla_admin.venues where venue_id = " + venueId;
-
-            var venue = new VenueData();
-            var data = db.ExecuteSQLAndReturnFirstRow(sql);
-            venue.ID = (int) data["venue_id"];
-            venue.Name = data["venue"].ToString();
-            //TODO: Add map url
-            venue.MapUrl = data["map_url"].ToString();
-            venue.Description = data["description"].ToString();
-            try
-            {
-                venue.Coordinates = new Tuple<decimal?, decimal?>(
-                    decimal.Parse(data["latitude"].ToString()),
-                    decimal.Parse(data["longitude"].ToString()));
-            }
-            catch
-            {
-                venue.Coordinates = new Tuple<decimal?, decimal?>(null, null);
-            }
-
-            return venue;
+            var sql = "select * from thevilla_admin.venues where venue_id = ?";
+            return db.ExecuteSQLAndReturnFirstRow(sql, VenueDataFromRow, null,
+                new OleDbParameter("@venueId", venueId));
         }
 
         public int CreateNewVenue(string venueName, string mapsUrl, string description, decimal? latitude, decimal? longitude)
         {
-            var dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.venues where venue ='" + venueName + "'");
+            var dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.venues where venue = ?",
+                new OleDbParameter("@venueName", venueName));
             if (dr != null)
             {
                 return (int) dr["venue_id"];
             }
             var newVenueId = (int) db.ExecuteSqlAndReturnSingleResult("select max(venue_id) from thevilla_admin.venues") + 1;
-            var latitude1 = latitude?.ToString(CultureInfo.InvariantCulture) ?? "null";
-            var longitude1 = longitude?.ToString(CultureInfo.InvariantCulture) ?? "null";
             var rowsAffected =
-                db.ExecuteInsertOrUpdate($"insert into thevilla_admin.venues(venue_id, venue, map_url, description, latitude, longitude) select {newVenueId}, '{venueName}', '{mapsUrl}', '{description}', {latitude1}, {longitude1}");
+                db.ExecuteInsertOrUpdate("insert into thevilla_admin.venues(venue_id, venue, map_url, description, latitude, longitude) values (?, ?, ?, ?, ?, ?)",
+                    new OleDbParameter("@venueId", newVenueId),
+                    new OleDbParameter("@venueName", venueName),
+                    new OleDbParameter("@mapsUrl", mapsUrl),
+                    new OleDbParameter("@description", description),
+                    new OleDbParameter("@latitude", (object)latitude ?? DBNull.Value),
+                    new OleDbParameter("@longitude", (object)longitude ?? DBNull.Value));
             if (rowsAffected == 1)
             {
                 return newVenueId;
@@ -314,34 +325,25 @@ namespace CricketClubDAL
 
         public void UpdateVenue(VenueData data)
         {
-            var sql = "update thevilla_admin.venues set {0} = {1} where venue_id = " + data.ID;
-            db.ExecuteInsertOrUpdate(string.Format(sql, "venue", "'" + data.Name + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "map_url", "'" + data.MapUrl + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "description", "'" + data.Description + "'"));
-            var latitude = data.Coordinates.Item1?.ToString(CultureInfo.InvariantCulture) ?? "null";
-            db.ExecuteInsertOrUpdate(string.Format(sql, "latitude", latitude));
-            var longitude = data.Coordinates.Item2?.ToString(CultureInfo.InvariantCulture) ?? "null";
-            db.ExecuteInsertOrUpdate(string.Format(sql, "longitude", longitude));
-            
+            db.ExecuteInsertOrUpdate("update thevilla_admin.venues set venue = ?, map_url = ?, description = ?, latitude = ?, longitude = ? where venue_id = ?",
+                new OleDbParameter("@venue", data.Name),
+                new OleDbParameter("@mapUrl", data.MapUrl),
+                new OleDbParameter("@description", data.Description),
+                new OleDbParameter("@latitude", (object)data.Coordinates.Item1 ?? DBNull.Value),
+                new OleDbParameter("@longitude", (object)data.Coordinates.Item2 ?? DBNull.Value),
+                new OleDbParameter("@venueId", data.ID));
         }
 
         public IEnumerable<VenueData> GetAllVenueData()
         {
             var sql = "select * from thevilla_admin.venues";
-            return db.ExecuteSqlAndReturnAllRows(sql, r => new VenueData
-            {
-                ID = r.GetInt("venue_id"),
-                Name = r.GetString("venue"),
-                MapUrl = r.GetString("map_url"),
-                Description = r.GetString("description"),
-                Coordinates = new Tuple<decimal?, decimal?>(r.GetDecimal("latitude"),
-                                                       r.GetDecimal("longitude"))
-            });
+            return db.ExecuteSqlAndReturnAllRows(sql, VenueDataFromRow);
         }
 
         public void DeleteVenue(int venueId)
         {
-            db.ExecuteInsertOrUpdate("delete from thevilla_admin.venues where venue_id = " + venueId);
+            db.ExecuteInsertOrUpdate("delete from thevilla_admin.venues where venue_id = ?",
+                new OleDbParameter("@venueId", venueId));
         }
 
         #endregion
@@ -420,118 +422,49 @@ namespace CricketClubDAL
         
         #region Matches
 
+        private static MatchData MatchDataFromRow(Row row)
+        {
+            var match = new MatchData
+            {
+                ID = row.GetInt("match_id"),
+                MatchType = row.GetInt("comp_id"),
+                HomeOrAway = row.GetString("Home_Away"),
+                OppositionID = row.GetInt("oppo_id"),
+                Date = row.GetDateTime("match_date"),
+                VenueID = row.GetInt("venue_id"),
+                Overs = row.GetInt("match_overs", 0),
+                TheyDeclared = row.GetBool("their_innings_was_declared", false),
+                WeDeclared = row.GetBool("our_innings_was_declared", false),
+                OurInningsLength = row.GetDouble("our_innings_length", 0.0),
+                TheirInningsLength = row.GetDouble("their_innings_length", 0.0),
+                Abandoned = row.GetBool("abandoned", false),
+                Batted = row.GetBool("batted", false),
+                WonToss = row.GetBool("won_toss", false),
+                WasDeclarationGame = row.GetBool("was_declaration", false),
+                CaptainID = row.GetInt("captain_id", 0),
+                WicketKeeperID = row.GetInt("wicketkeeper_id", 0)
+            };
+            return match;
+        }
+
         public MatchData GetMatchData(int matchId)
         {
-            var sql = "select * from thevilla_admin.Matches where match_id = " + matchId;
-
-            var match = new MatchData();
-            var dr = db.ExecuteSQLAndReturnFirstRow(sql);
-
-            match.ID = (int) dr["match_id"];
-            match.MatchType = (int) dr["comp_id"];
-            match.HomeOrAway = dr["Home_Away"].ToString();
-            match.OppositionID = (int) dr["oppo_id"];
-            match.Date = DateTime.Parse(dr["match_date"].ToString());
-            match.VenueID = (int) dr["venue_id"];
-            try
-            {
-                match.Overs = (int) dr["match_overs"];
-            }
-            catch
-            {
-                //
-            }
-            try
-            {
-                match.TheyDeclared = Convert.ToBoolean((int) dr["their_innings_was_declared"]);
-            }
-            catch
-            {
-                match.TheyDeclared = false;
-            }
-            try
-            {
-                match.WeDeclared = Convert.ToBoolean((int) dr["our_innings_was_declared"]);
-            }
-            catch
-            {
-                match.WeDeclared = false;
-            }
-            try
-            {
-                match.OurInningsLength = (double.Parse(dr["our_innings_length"].ToString()));
-            }
-            catch
-            {
-                match.OurInningsLength = 0.0;
-            }
-            try
-            {
-                match.TheirInningsLength = (double.Parse(dr["their_innings_length"].ToString()));
-            }
-            catch
-            {
-                match.TheirInningsLength = 0.0;
-            }
-
-
-            match.Abandoned = Convert.ToBoolean((int) dr["abandoned"]);
-            try
-            {
-                match.Batted = Convert.ToBoolean((int) dr["batted"]);
-            }
-            catch
-            {
-                match.Batted = false;
-            }
-            try
-            {
-                match.WonToss = Convert.ToBoolean((int) dr["won_toss"]);
-            }
-            catch
-            {
-                match.WonToss = false;
-            }
-            try
-            {
-                match.WasDeclarationGame = Convert.ToBoolean((int) dr["was_declaration"]);
-            }
-            catch
-            {
-                match.WasDeclarationGame = false;
-            }
-            try
-            {
-                match.CaptainID = ((int) dr["captain_id"]);
-            }
-            catch
-            {
-                match.CaptainID = 0;
-            }
-            try
-            {
-                match.WicketKeeperID = ((int) dr["wicketkeeper_id"]);
-            }
-            catch
-            {
-                match.WicketKeeperID = 0;
-            }
-
-            return match;
+            var sql = "select * from thevilla_admin.Matches where match_id = ?";
+            return db.ExecuteSQLAndReturnFirstRow(sql, MatchDataFromRow, null,
+                new OleDbParameter("@matchId", matchId));
         }
 
         public int CreateNewMatch(int opponentId, DateTime matchDate, int venueId, int matchTypeId, HomeOrAway homeAway)
         {
             var newMatchId = (int) db.ExecuteSqlAndReturnSingleResult("select max(match_id) from thevilla_admin.matches") + 1;
             var rowsAffected =
-                db.ExecuteInsertOrUpdate("insert into thevilla_admin.matches(match_id, match_date, oppo_id, comp_id, venue_id, home_away) select "
-                                                + newMatchId + ", '"
-                                                + matchDate.ToString("dd MMMM yyyy") + "' , "
-                                                + opponentId + ", "
-                                                + matchTypeId + ", "
-                                                + venueId + ", '"
-                                                + homeAway.ToString().Substring(0, 1).ToUpper() + "'"
-                    );
+                db.ExecuteInsertOrUpdate("insert into thevilla_admin.matches(match_id, match_date, oppo_id, comp_id, venue_id, home_away) values (?, ?, ?, ?, ?, ?)",
+                    new OleDbParameter("@matchId", newMatchId),
+                    new OleDbParameter("@matchDate", matchDate.ToString("dd MMMM yyyy")),
+                    new OleDbParameter("@oppoId", opponentId),
+                    new OleDbParameter("@compId", matchTypeId),
+                    new OleDbParameter("@venueId", venueId),
+                    new OleDbParameter("@homeAway", homeAway.ToString().Substring(0, 1).ToUpper()));
             if (rowsAffected == 1)
             {
                 return newMatchId;
@@ -541,38 +474,36 @@ namespace CricketClubDAL
 
         public void UpdateMatch(MatchData data)
         {
-            var sql = "update thevilla_admin.matches set {0} = {1} where match_id = " + data.ID;
-            db.ExecuteInsertOrUpdate(string.Format(sql, "match_date", "'" + data.Date.ToString("dd MMMM yyyy") + "'"));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "oppo_id", data.OppositionID));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "comp_id", data.MatchType));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "venue_id", data.VenueID));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "home_away", SurroundInSingleQuotes(data.HomeOrAway)));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "won_toss", (Convert.ToInt16(data.WonToss))));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "batted", (Convert.ToInt16(data.Batted))));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "was_declaration",
-                                                          (Convert.ToInt16(data.WasDeclarationGame))));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "captain_id", data.CaptainID));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "wicketkeeper_id", data.WicketKeeperID));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "match_overs", data.Overs));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "their_innings_was_declared",
-                                                          (Convert.ToInt16(data.TheyDeclared))));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "our_innings_was_declared",
-                                                          (Convert.ToInt16(data.WeDeclared))));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "their_innings_length", data.TheirInningsLength));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "our_innings_length", data.OurInningsLength));
-            db.ExecuteInsertOrUpdate(string.Format(sql, "abandoned", (Convert.ToInt16(data.Abandoned))));
-        }
-
-        private string SurroundInSingleQuotes(string item)
-        {
-            return "'" + item + "'";
+            db.ExecuteInsertOrUpdate(@"update thevilla_admin.matches set 
+                match_date = ?, oppo_id = ?, comp_id = ?, venue_id = ?, home_away = ?, 
+                won_toss = ?, batted = ?, was_declaration = ?, captain_id = ?, wicketkeeper_id = ?, 
+                match_overs = ?, their_innings_was_declared = ?, our_innings_was_declared = ?, 
+                their_innings_length = ?, our_innings_length = ?, abandoned = ? 
+                where match_id = ?",
+                new OleDbParameter("@matchDate", data.Date.ToString("dd MMMM yyyy")),
+                new OleDbParameter("@oppoId", data.OppositionID),
+                new OleDbParameter("@compId", data.MatchType),
+                new OleDbParameter("@venueId", data.VenueID),
+                new OleDbParameter("@homeAway", data.HomeOrAway),
+                new OleDbParameter("@wonToss", Convert.ToInt16(data.WonToss)),
+                new OleDbParameter("@batted", Convert.ToInt16(data.Batted)),
+                new OleDbParameter("@wasDeclaration", Convert.ToInt16(data.WasDeclarationGame)),
+                new OleDbParameter("@captainId", data.CaptainID),
+                new OleDbParameter("@wicketkeeperId", data.WicketKeeperID),
+                new OleDbParameter("@matchOvers", data.Overs),
+                new OleDbParameter("@theirInningsDeclared", Convert.ToInt16(data.TheyDeclared)),
+                new OleDbParameter("@ourInningsDeclared", Convert.ToInt16(data.WeDeclared)),
+                new OleDbParameter("@theirInningsLength", data.TheirInningsLength),
+                new OleDbParameter("@ourInningsLength", data.OurInningsLength),
+                new OleDbParameter("@abandoned", Convert.ToInt16(data.Abandoned)),
+                new OleDbParameter("@matchId", data.ID));
         }
 
         public int GetNextMatch(DateTime date)
         {
-            var sql = "select * from matches where match_date >= '" + date.ToString("dd MMMM yyyy") +
-                      "' order by match_date asc";
-            var dr = db.ExecuteSQLAndReturnFirstRow(sql);
+            var sql = "select * from thevilla_admin.matches where match_date >= ? order by match_date asc";
+            var dr = db.ExecuteSQLAndReturnFirstRow(sql, 
+                new OleDbParameter("@date", date.ToString("dd MMMM yyyy")));
             try
             {
                 return (int) dr["match_id"];
@@ -585,9 +516,9 @@ namespace CricketClubDAL
 
         public int GetPreviousMatch(DateTime date)
         {
-            var sql = "select * from matches where match_date <= '" + date.ToUniversalTime().ToString("dd MMMM yyyy") +
-                      "' order by match_date desc";
-            var dr = db.ExecuteSQLAndReturnFirstRow(sql);
+            var sql = "select * from thevilla_admin.matches where match_date <= ? order by match_date desc";
+            var dr = db.ExecuteSQLAndReturnFirstRow(sql,
+                new OleDbParameter("@date", date.ToUniversalTime().ToString("dd MMMM yyyy")));
             try
             {
                 return (int) dr["match_id"];
@@ -600,106 +531,8 @@ namespace CricketClubDAL
 
         public List<MatchData> GetAllMatches()
         {
-            var sql = "select * from matches";
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-            var matches = new List<MatchData>();
-            foreach (DataRow dr in ds.Tables[0].Rows)
-            {
-                var match = new MatchData
-                {
-                    ID = (int) dr["match_id"],
-                    MatchType = (int) dr["comp_id"],
-                    HomeOrAway = dr["Home_Away"].ToString(),
-                    OppositionID = (int) dr["oppo_id"],
-                    Date = DateTime.Parse(dr["match_date"].ToString()),
-                    VenueID = (int) dr["venue_id"]
-                };
-                try
-                {
-                    match.Overs = (int) dr["match_overs"];
-                }
-                catch
-                {
-                    //
-                }
-                try
-                {
-                    match.TheyDeclared = Convert.ToBoolean((int) dr["their_innings_was_declared"]);
-                }
-                catch
-                {
-                    match.TheyDeclared = false;
-                }
-                try
-                {
-                    match.WeDeclared = Convert.ToBoolean((int) dr["our_innings_was_declared"]);
-                }
-                catch
-                {
-                    match.WeDeclared = false;
-                }
-                try
-                {
-                    match.OurInningsLength = (double.Parse(dr["our_innings_length"].ToString()));
-                }
-                catch
-                {
-                    match.OurInningsLength = 0.0;
-                }
-                try
-                {
-                    match.TheirInningsLength = (double.Parse(dr["their_innings_length"].ToString()));
-                }
-                catch
-                {
-                    match.TheirInningsLength = 0.0;
-                }
-
-
-                match.Abandoned = Convert.ToBoolean((int) dr["abandoned"]);
-                try
-                {
-                    match.Batted = Convert.ToBoolean((int) dr["batted"]);
-                }
-                catch
-                {
-                    match.Batted = false;
-                }
-                try
-                {
-                    match.WonToss = Convert.ToBoolean((int) dr["won_toss"]);
-                }
-                catch
-                {
-                    match.WonToss = false;
-                }
-                try
-                {
-                    match.WasDeclarationGame = Convert.ToBoolean((int) dr["was_declaration"]);
-                }
-                catch
-                {
-                    match.WasDeclarationGame = false;
-                }
-                try
-                {
-                    match.CaptainID = ((int) dr["captain_id"]);
-                }
-                catch
-                {
-                    match.CaptainID = 0;
-                }
-                try
-                {
-                    match.WicketKeeperID = ((int) dr["wicketkeeper_id"]);
-                }
-                catch
-                {
-                    match.WicketKeeperID = 0;
-                }
-                matches.Add(match);
-            }
-            return matches;
+            var sql = "select * from thevilla_admin.matches";
+            return db.ExecuteSqlAndReturnAllRows(sql, MatchDataFromRow).ToList();
         }
 
         #endregion
@@ -709,34 +542,35 @@ namespace CricketClubDAL
         public IEnumerable<BattingCardLineData> GetBattingCard(int matchId, ThemOrUs themOrUs)
         {
             var tableName = themOrUs == ThemOrUs.Us ? "batting_scorecards" : "bowling_scorecards";
-            var sql = "select * from thevilla_admin." + tableName + " where match_id = " + matchId;
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-            foreach (DataRow row in ds.Tables[0].Rows)
+            var sql = "select * from thevilla_admin." + tableName + " where match_id = ?";
+            
+            if (themOrUs == ThemOrUs.Us)
             {
-                var scData = new BattingCardLineData
+                return db.ExecuteSqlAndReturnAllRows(sql, row => new BattingCardLineData
                 {
-                    BattingAt = ((int) row["batting at"]) + 1,
-                    MatchID = (int) row["match_id"],
-                    Score = (int) row["score"],
-                    ModeOfDismissal = (int) row["dismissal_id"]
-                };
-                if (themOrUs == ThemOrUs.Them)
+                    BattingAt = row.GetInt("batting at") + 1,
+                    MatchID = row.GetInt("match_id"),
+                    Score = row.GetInt("score"),
+                    ModeOfDismissal = row.GetInt("dismissal_id"),
+                    BowlerName = row.GetString("bowler_name"),
+                    FielderName = row.GetString("fielder_name"),
+                    Fours = row.GetInt("4s"),
+                    Sixes = row.GetInt("6s"),
+                    PlayerID = row.GetInt("player_id")
+                }, new OleDbParameter("@matchId", matchId));
+            }
+            else
+            {
+                return db.ExecuteSqlAndReturnAllRows(sql, row => new BattingCardLineData
                 {
-                    scData.BowlerID = (int) row["bowler_id"];
-                    scData.FielderID = (int) row["fielder_id"];
-                    scData.PlayerName = row["player_name"].ToString();
-                }
-                if (themOrUs == ThemOrUs.Us)
-                {
-                    scData.BowlerName = row["bowler_name"].ToString();
-                    scData.FielderName = row["fielder_name"].ToString();
-                    scData.Fours = (int) row["4s"];
-                    scData.Sixes = (int) row["6s"];
-                    scData.PlayerID = (int) row["player_id"];
-                }
-
-
-                yield return scData;
+                    BattingAt = row.GetInt("batting at") + 1,
+                    MatchID = row.GetInt("match_id"),
+                    Score = row.GetInt("score"),
+                    ModeOfDismissal = row.GetInt("dismissal_id"),
+                    BowlerID = row.GetInt("bowler_id"),
+                    FielderID = row.GetInt("fielder_id"),
+                    PlayerName = row.GetString("player_name")
+                }, new OleDbParameter("@matchId", matchId));
             }
         }
 
@@ -803,31 +637,32 @@ namespace CricketClubDAL
         public List<BowlingStatsEntryData> GetBowlingStats(int matchId, ThemOrUs who)
         {
             var tableName = who == ThemOrUs.Us ? "bowling_stats" : "oppo_bowling_stats";
-            var data = new List<BowlingStatsEntryData>();
-            var sql = "select * from thevilla_admin." + tableName + " where match_id = " + matchId;
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-            foreach (DataRow row in ds.Tables[0].Rows)
+            var sql = "select * from thevilla_admin." + tableName + " where match_id = ?";
+            
+            if (who == ThemOrUs.Us)
             {
-                var scData = new BowlingStatsEntryData
+                return db.ExecuteSqlAndReturnAllRows(sql, row => new BowlingStatsEntryData
                 {
-                    Overs = decimal.Parse(row["overs"].ToString()),
-                    Maidens = (int) row["maidens"],
-                    Runs = (int) row["runs"],
-                    Wickets = (int) row["wickets"]
-                };
-                if (who == ThemOrUs.Us)
-                {
-                    scData.PlayerID = (int) row["player_id"];
-                }
-                else
-                {
-                    scData.PlayerName = row["player_name"].ToString();
-                }
-                scData.MatchID = (int) row["match_id"];
-
-                data.Add(scData);
+                    Overs = row.GetDecimal("overs", 0),
+                    Maidens = row.GetInt("maidens"),
+                    Runs = row.GetInt("runs"),
+                    Wickets = row.GetInt("wickets"),
+                    PlayerID = row.GetInt("player_id"),
+                    MatchID = row.GetInt("match_id")
+                }, new OleDbParameter("@matchId", matchId)).ToList();
             }
-            return data;
+            else
+            {
+                return db.ExecuteSqlAndReturnAllRows(sql, row => new BowlingStatsEntryData
+                {
+                    Overs = row.GetDecimal("overs", 0),
+                    Maidens = row.GetInt("maidens"),
+                    Runs = row.GetInt("runs"),
+                    Wickets = row.GetInt("wickets"),
+                    PlayerName = row.GetString("player_name"),
+                    MatchID = row.GetInt("match_id")
+                }, new OleDbParameter("@matchId", matchId)).ToList();
+            }
         }
 
         public void UpdateBowlingStats(List<BowlingStatsEntryData> data, ThemOrUs who)
@@ -875,22 +710,21 @@ namespace CricketClubDAL
                 table = "oppo_fow";
             }
 
-            var sql = "select * from thevilla_admin." + table + " where match_id = " + matchId;
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
+            var sql = "select * from thevilla_admin." + table + " where match_id = ?";
 
-            return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new FoWDataLine
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new FoWDataLine
             {
-                MatchID = (int) row["match_id"],
-                NotOutBatsman = (int) row["no_bat"],
-                NotOutBatsmanScore = (int) row["no_score"],
-                OutgoingBatsman = (int) row["outgoing_bat"],
-                OutgoingBatsmanScore = (int) row["outgoing_score"],
-                OverNumber = (int) row["over_no"],
-                Partnership = (int) row["partnership"],
-                Score = (int) row["score"],
-                Wicket = (int) row["wicket"],
+                MatchID = row.GetInt("match_id"),
+                NotOutBatsman = row.GetInt("no_bat"),
+                NotOutBatsmanScore = row.GetInt("no_score"),
+                OutgoingBatsman = row.GetInt("outgoing_bat"),
+                OutgoingBatsmanScore = row.GetInt("outgoing_score"),
+                OverNumber = row.GetInt("over_no"),
+                Partnership = row.GetInt("partnership"),
+                Score = row.GetInt("score"),
+                Wicket = row.GetInt("wicket"),
                 Who = who
-            })).ToList();
+            }, new OleDbParameter("@matchId", matchId)).ToList();
         }
 
         public void UpdateFoWData(List<FoWDataLine> data, ThemOrUs who)
@@ -1012,36 +846,25 @@ namespace CricketClubDAL
             }
         }
 
-        private DateTime DateTimeFromRow(object rowValue)
-        {
-            DateTime parsed;
-            if (DateTime.TryParse(rowValue.ToString(), out parsed))
-            {
-                return parsed;
-            }
-            else
-            {
-                throw new ArgumentException(rowValue + " does not look like a date time.");
-            }
-        }
-
         public List<NewsData> GetTopXStories(int x)
         {
             var sql = "select top " + x + " * from News order by item_date desc";
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
 
-            return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new NewsData
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new NewsData
             {
-                Date = DateTimeFromRow(row["item_date"]),
-                Headline = row["headline"].ToString(),
-                ShortHeadline = row["short_headline"].ToString(),
-                Teaser = row["teaser"].ToString(),
+                Date = row.GetDateTime("item_date"),
+                Headline = row.GetString("headline"),
+                ShortHeadline = row.GetString("short_headline"),
+                Teaser = row.GetString("teaser"),
                 Story =
-                    row["story"] + row["story2"].ToString() + row["story3"] + row["story4"] + row["story5"] +
-                    row["story6"] + row["story7"] + row["story8"] + row["story9"] + row["story10"] + row["story11"] +
-                    row["story12"] + row["story13"] + row["story14"] + row["story15"] + row["story16"] + row["story17"] +
-                    row["story18"] + row["story19"] + row["story20"]
-            })).ToList();
+                    row.GetString("story") + row.GetString("story2") + row.GetString("story3") + 
+                    row.GetString("story4") + row.GetString("story5") + row.GetString("story6") + 
+                    row.GetString("story7") + row.GetString("story8") + row.GetString("story9") + 
+                    row.GetString("story10") + row.GetString("story11") + row.GetString("story12") + 
+                    row.GetString("story13") + row.GetString("story14") + row.GetString("story15") + 
+                    row.GetString("story16") + row.GetString("story17") + row.GetString("story18") + 
+                    row.GetString("story19") + row.GetString("story20")
+            }).ToList();
         }
 
         #endregion
@@ -1092,36 +915,40 @@ namespace CricketClubDAL
 
         public List<ChatData> GetChatBetween(DateTime startDate, DateTime endDate)
         {
-            var sql = "select * from chat where post_time between '" +
-                      startDate.ToString(CultureInfo.CreateSpecificCulture("en-US")) + "' and '" +
-                      endDate.ToString(CultureInfo.CreateSpecificCulture("en-US")) + "'";
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-            return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new ChatData
+            var sql = "select * from chat where post_time between ? and ?";
+            
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new ChatData
             {
-                Date = DateTimeFromRow(row["post_time"]),
-                Name = row["annon_user_name"].ToString(),
-                ImageUrl = row["image_url"].ToString(),
-                ID = int.Parse(row["ID"].ToString()),
+                Date = row.GetDateTime("post_time"),
+                Name = row.GetString("annon_user_name"),
+                ImageUrl = row.GetString("image_url"),
+                ID = row.GetInt("ID"),
                 Comment =
-                    row["comment1"] + row["comment2"].ToString() + row["comment3"] + row["comment4"] + row["comment5"] +
-                    row["comment6"] + row["comment7"] + row["comment8"] + row["comment9"] + row["comment10"]
-            })).ToList();
+                    row.GetString("comment1") + row.GetString("comment2") + row.GetString("comment3") + 
+                    row.GetString("comment4") + row.GetString("comment5") + row.GetString("comment6") + 
+                    row.GetString("comment7") + row.GetString("comment8") + row.GetString("comment9") + 
+                    row.GetString("comment10")
+            },
+            new OleDbParameter("@startDate", startDate.ToString(CultureInfo.CreateSpecificCulture("en-US"))),
+            new OleDbParameter("@endDate", endDate.ToString(CultureInfo.CreateSpecificCulture("en-US")))).ToList();
         }
 
         public List<ChatData> GetChatAfter(int commentId)
         {
-            var sql = "select * from chat where ID > " + commentId;
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-            return (ds.Tables[0].Rows.Cast<DataRow>().Select(row => new ChatData
+            var sql = "select * from chat where ID > ?";
+            
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new ChatData
             {
-                Date = DateTimeFromRow(row["post_time"]),
-                Name = row["annon_user_name"].ToString(),
-                ImageUrl = row["image_url"].ToString(),
-                ID = int.Parse(row["ID"].ToString()),
+                Date = row.GetDateTime("post_time"),
+                Name = row.GetString("annon_user_name"),
+                ImageUrl = row.GetString("image_url"),
+                ID = row.GetInt("ID"),
                 Comment =
-                    row["comment1"] + row["comment2"].ToString() + row["comment3"] + row["comment4"] + row["comment5"] +
-                    row["comment6"] + row["comment7"] + row["comment8"] + row["comment9"] + row["comment10"]
-            })).ToList();
+                    row.GetString("comment1") + row.GetString("comment2") + row.GetString("comment3") + 
+                    row.GetString("comment4") + row.GetString("comment5") + row.GetString("comment6") + 
+                    row.GetString("comment7") + row.GetString("comment8") + row.GetString("comment9") + 
+                    row.GetString("comment10")
+            }, new OleDbParameter("@commentId", commentId)).ToList();
         }
 
         public MatchReportData GetMatchReportData(int matchId)
@@ -1166,35 +993,20 @@ namespace CricketClubDAL
 
         public List<AccountEntryData> GetAllAccountData()
         {
-            var accounts = new List<AccountEntryData>();
             var sql = "select * from accounts";
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-            foreach (DataRow data in ds.Tables[0].Rows)
+            
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new AccountEntryData
             {
-                var entry = new AccountEntryData
-                {
-                    ID = (int) data["id"],
-                    Amount = (double) data["amount"],
-                    CreditOrDebit = (int) data["debit_credit"]
-                };
-                try
-                {
-                    entry.Date = (DateTime) data["transaction_time"];
-                }
-                catch
-                {
-                    entry.Date = new DateTime(1970, 1, 1);
-                }
-                entry.Description = data["description"].ToString();
-                entry.MatchID = (int) data["match_id"];
-                entry.PlayerID = (int) data["player_id"];
-                entry.Status = (int) data["status"];
-                entry.Type = (int) data["payment_type"];
-
-                accounts.Add(entry);
-            }
-
-            return accounts;
+                ID = row.GetInt("id"),
+                Amount = row.GetDouble("amount"),
+                CreditOrDebit = row.GetInt("debit_credit"),
+                Date = row.GetDateTime("transaction_time", new DateTime(1970, 1, 1)),
+                Description = row.GetString("description"),
+                MatchID = row.GetInt("match_id"),
+                PlayerID = row.GetInt("player_id"),
+                Status = row.GetInt("status"),
+                Type = row.GetInt("payment_type")
+            }).ToList();
         }
 
         public void UpdateAccountEntry(AccountEntryData data)
@@ -1239,12 +1051,16 @@ namespace CricketClubDAL
         public List<UserData> GetAllUsers()
         {
             var sql = "select * from users";
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-            return (from DataRow dr in ds.Tables[0].Rows
-                select new UserData
-                {
-                    ID = (int) dr["user_id"], Name = dr["username"].ToString(), EmailAddress = dr["email_address"].ToString(), Password = dr["password"].ToString(), DisplayName = dr["display_name"].ToString(), Permissions = (int) dr["permissions"]
-                }).ToList();
+            
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new UserData
+            {
+                ID = row.GetInt("user_id"), 
+                Name = row.GetString("username"), 
+                EmailAddress = row.GetString("email_address"), 
+                Password = row.GetString("password"), 
+                DisplayName = row.GetString("display_name"), 
+                Permissions = row.GetInt("permissions")
+            }).ToList();
         }
 
         public int CreateNewUser(string name, string emailaddress, string password, string displayname)
@@ -1345,29 +1161,16 @@ namespace CricketClubDAL
         public List<PhotoData> GetAllPhotos()
         {
             var sql = "select * from Match_Photos";
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-            var photos = new List<PhotoData>();
-            foreach (DataRow dr in ds.Tables[0].Rows)
+            
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new PhotoData
             {
-                var newPhoto = new PhotoData
-                {
-                    ID = (int) dr["ImageID"],
-                    AuthorID = (int) dr["Author"],
-                    FileName = dr["ImageName"].ToString(),
-                    Title = dr["ImageTitle"].ToString()
-                };
-                try
-                {
-                    newPhoto.UploadDate = (DateTime) dr["dob"];
-                }
-                catch
-                {
-                    newPhoto.UploadDate = new DateTime(1, 1, 1);
-                }
-                newPhoto.MatchID = (int) dr["Match_ID"];
-                photos.Add(newPhoto);
-            }
-            return photos;
+                ID = row.GetInt("ImageID"),
+                AuthorID = row.GetInt("Author"),
+                FileName = row.GetString("ImageName"),
+                Title = row.GetString("ImageTitle"),
+                UploadDate = row.GetDateTime("dob", new DateTime(1, 1, 1)),
+                MatchID = row.GetInt("Match_ID")
+            }).ToList();
         }
 
         public int AddOrUpdatePhoto(PhotoData photo)
@@ -1407,33 +1210,19 @@ namespace CricketClubDAL
         public List<PhotoCommentData> GetAllPhotoComments()
         {
             var sql = "select * from Match_Image_Comments";
-            var ds = db.ExecuteSqlAndReturnAllRows(sql);
-            var comments = new List<PhotoCommentData>();
-            foreach (DataRow dr in ds.Tables[0].Rows)
+            
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new PhotoCommentData
             {
-                var newComment = new PhotoCommentData
-                {
-                    ID = (int) dr["CommentID"],
-                    AuthorID = (int) dr["UserID"],
-                    PhotoID = (int) dr["ImageID"]
-                };
-                try
-                {
-                    newComment.CommentTime = (DateTime) dr["CommentTime"];
-                }
-                catch
-                {
-                    newComment.CommentTime = new DateTime(1, 1, 1);
-                }
-
-                newComment.Comment = dr["Comment1"] +
-                                     dr["Comment2"].ToString() +
-                                     dr["Comment3"] +
-                                     dr["Comment4"] +
-                                     dr["Comment5"];
-                comments.Add(newComment);
-            }
-            return comments;
+                ID = row.GetInt("CommentID"),
+                AuthorID = row.GetInt("UserID"),
+                PhotoID = row.GetInt("ImageID"),
+                CommentTime = row.GetDateTime("CommentTime", new DateTime(1, 1, 1)),
+                Comment = row.GetString("Comment1") +
+                         row.GetString("Comment2") +
+                         row.GetString("Comment3") +
+                         row.GetString("Comment4") +
+                         row.GetString("Comment5")
+            }).ToList();
         }
 
         public int SubmitPhotoComment(PhotoCommentData data)
@@ -1509,14 +1298,13 @@ namespace CricketClubDAL
         public List<SettingData> GetAllSettings()
         {
             var sql = "select * from Settings";
-            var data = db.ExecuteSqlAndReturnAllRows(sql);
 
-            return (data.Tables[0].Rows.Cast<DataRow>().Select(row => new SettingData
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new SettingData
             {
-                Name = row["key"].ToString(),
-                Value = row["value"].ToString(),
-                Description = row["description"].ToString()
-            })).ToList();
+                Name = row.GetString("key"),
+                Value = row.GetString("value"),
+                Description = row.GetString("description")
+            }).ToList();
         }
 
         #endregion
