@@ -907,9 +907,7 @@ namespace CricketClubDAL
 
         public List<ChatData> GetChatBetween(DateTime startDate, DateTime endDate)
         {
-            var sql = "select * from chat where post_time between '" +
-                      startDate.ToString(CultureInfo.CreateSpecificCulture("en-US")) + "' and '" +
-                      endDate.ToString(CultureInfo.CreateSpecificCulture("en-US")) + "'";
+            var sql = "select * from chat where post_time between ? and ?";
             
             return db.ExecuteSqlAndReturnAllRows(sql, row => new ChatData
             {
@@ -922,12 +920,14 @@ namespace CricketClubDAL
                     row.GetString("comment4") + row.GetString("comment5") + row.GetString("comment6") + 
                     row.GetString("comment7") + row.GetString("comment8") + row.GetString("comment9") + 
                     row.GetString("comment10")
-            }).ToList();
+            },
+            new OleDbParameter("@startDate", startDate.ToString(CultureInfo.CreateSpecificCulture("en-US"))),
+            new OleDbParameter("@endDate", endDate.ToString(CultureInfo.CreateSpecificCulture("en-US")))).ToList();
         }
 
         public List<ChatData> GetChatAfter(int commentId)
         {
-            var sql = "select * from chat where ID > " + commentId;
+            var sql = "select * from chat where ID > ?";
             
             return db.ExecuteSqlAndReturnAllRows(sql, row => new ChatData
             {
@@ -940,10 +940,16 @@ namespace CricketClubDAL
                     row.GetString("comment4") + row.GetString("comment5") + row.GetString("comment6") + 
                     row.GetString("comment7") + row.GetString("comment8") + row.GetString("comment9") + 
                     row.GetString("comment10")
-            }).ToList();
+            }, new OleDbParameter("@commentId", commentId)).ToList();
         }
-                    row["comment6"] + row["comment7"] + row["comment8"] + row["comment9"] + row["comment10"]
-            })).ToList();
+                ImageUrl = row.GetString("image_url"),
+                ID = row.GetInt("ID"),
+                Comment =
+                    row.GetString("comment1") + row.GetString("comment2") + row.GetString("comment3") + 
+                    row.GetString("comment4") + row.GetString("comment5") + row.GetString("comment6") + 
+                    row.GetString("comment7") + row.GetString("comment8") + row.GetString("comment9") + 
+                    row.GetString("comment10")
+            }).ToList();
         }
 
         public MatchReportData GetMatchReportData(int matchId)
