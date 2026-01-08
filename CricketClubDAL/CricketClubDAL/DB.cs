@@ -89,6 +89,13 @@ namespace CricketClubDAL
             return first ?? defaultIfNone;
         }
 
+        public T ExecuteSQLAndReturnFirstRow<T>(string sql, Func<Row, T> rowExtractorFunc, T defaultIfNone, params OleDbParameter[] parameters) where T : class
+        {
+            var allRows = ExecuteSqlAndReturnAllRows(sql, rowExtractorFunc, parameters).ToList();
+            var first = allRows.FirstOrDefault();
+            return first ?? defaultIfNone;
+        }
+
         public DataRow ExecuteSQLAndReturnFirstRow(string sql)
         {
             try
@@ -116,6 +123,40 @@ namespace CricketClubDAL
             }
         }
 
+        public DataRow ExecuteSQLAndReturnFirstRow(string sql, params OleDbParameter[] parameters)
+        {
+            try
+            {
+                using (var connection = OpenConnection())
+                {
+                    Log.Info("Executing SQL with parameters: " + sql);
+                    using (var command = new OleDbCommand(sql, connection))
+                    {
+                        if (parameters != null)
+                        {
+                            command.Parameters.AddRange(parameters);
+                        }
+                        var data = new DataSet();
+                        var adaptor = new OleDbDataAdapter(command);
+                        adaptor.Fill(data);
+                        if (data.Tables[0] != null && data.Tables[0].Rows.Count > 0)
+                        {
+                            Log.Info("Found " + data.Tables[0].Rows.Count + " rows.");
+                            var firstRow = data.Tables[0].Rows[0];
+                            Log.Debug("Result: " + firstRow.ItemArray.Aggregate("", (current, item) => current + (item + ", ")));
+                            return firstRow;
+                        }
+                        Log.Debug("Result: null");
+                        return null;
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                throw new Exception("Error executing: " + sql, exception);
+            }
+        }
+
         public object ExecuteSqlAndReturnSingleResult(string sql)
         {
             try
@@ -125,6 +166,34 @@ namespace CricketClubDAL
                     using (var command = new OleDbCommand(sql, conn))
                     {
                         Log.Debug("Executing SQL: " + sql);
+                        var executeSqlAndReturnSingleResult = command.ExecuteScalar();
+                        var returnedValue = executeSqlAndReturnSingleResult is DBNull
+                            ? "null"
+                            : (executeSqlAndReturnSingleResult?.ToString() ?? "null");
+                        Log.Debug("Result: " + returnedValue);
+                        return executeSqlAndReturnSingleResult;
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                throw new Exception("Error executing: " + sql, exception);
+            }
+        }
+
+        public object ExecuteSqlAndReturnSingleResult(string sql, params OleDbParameter[] parameters)
+        {
+            try
+            {
+                using (var conn = OpenConnection())
+                {
+                    using (var command = new OleDbCommand(sql, conn))
+                    {
+                        if (parameters != null)
+                        {
+                            command.Parameters.AddRange(parameters);
+                        }
+                        Log.Debug("Executing SQL with parameters: " + sql);
                         var executeSqlAndReturnSingleResult = command.ExecuteScalar();
                         var returnedValue = executeSqlAndReturnSingleResult is DBNull
                             ? "null"
@@ -160,9 +229,40 @@ namespace CricketClubDAL
             }
         }
 
+        public int ExecuteInsertOrUpdate(string sql, params OleDbParameter[] parameters)
+        {
+            try
+            {
+                Log.Debug("Executing SQL with parameters: " + sql);
+                using (var conn = OpenConnection())
+                {
+                    using (var command = new OleDbCommand(sql, conn))
+                    {
+                        if (parameters != null)
+                        {
+                            command.Parameters.AddRange(parameters);
+                        }
+                        return command.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error executing SQL: " + sql, exception);
+                throw new Exception("Error executing: " + sql, exception);
+            }
+        }
+
         public IEnumerable<T> ExecuteSqlAndReturnAllRows<T>(string sql, Func<Row, T> rowConverter)
         {
             var dataSet = ExecuteSqlAndReturnAllRows(sql);
+            
+            return dataSet.Tables[0].Rows.Cast<DataRow>().Select(r=>new Row(r)).Select(rowConverter);
+        }
+
+        public IEnumerable<T> ExecuteSqlAndReturnAllRows<T>(string sql, Func<Row, T> rowConverter, params OleDbParameter[] parameters)
+        {
+            var dataSet = ExecuteSqlAndReturnAllRows(sql, parameters);
             
             return dataSet.Tables[0].Rows.Cast<DataRow>().Select(r=>new Row(r)).Select(rowConverter);
         }
@@ -185,6 +285,39 @@ namespace CricketClubDAL
                         Log.Debug("Row: " + rowData);
                     });
                     return dataSet;
+                }
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error executing SQL: " + sql, exception);
+                throw new Exception("Error executing: " + sql, exception);
+            }
+        }
+
+        public DataSet ExecuteSqlAndReturnAllRows(string sql, params OleDbParameter[] parameters)
+        {
+            try
+            {
+                Log.Info("Executing SQL with parameters: " + sql);
+                using (var conn = OpenConnection())
+                {
+                    using (var command = new OleDbCommand(sql, conn))
+                    {
+                        if (parameters != null)
+                        {
+                            command.Parameters.AddRange(parameters);
+                        }
+                        var dataSet = new DataSet();
+                        var adaptor = new OleDbDataAdapter(command);
+                        adaptor.Fill(dataSet);
+                        Log.Info("Found " + dataSet.Tables[0].Rows.Count + " rows.");
+                        dataSet.Tables[0].Rows.Cast<DataRow>().ToList().ForEach(r =>
+                        {
+                            var rowData = r.ItemArray.Aggregate("", (current, item) => current + (item + ", "));
+                            Log.Debug("Row: " + rowData);
+                        });
+                        return dataSet;
+                    }
                 }
             }
             catch (Exception exception)
