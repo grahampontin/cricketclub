@@ -942,15 +942,6 @@ namespace CricketClubDAL
                     row.GetString("comment10")
             }, new OleDbParameter("@commentId", commentId)).ToList();
         }
-                ImageUrl = row.GetString("image_url"),
-                ID = row.GetInt("ID"),
-                Comment =
-                    row.GetString("comment1") + row.GetString("comment2") + row.GetString("comment3") + 
-                    row.GetString("comment4") + row.GetString("comment5") + row.GetString("comment6") + 
-                    row.GetString("comment7") + row.GetString("comment8") + row.GetString("comment9") + 
-                    row.GetString("comment10")
-            }).ToList();
-        }
 
         public MatchReportData GetMatchReportData(int matchId)
         {
