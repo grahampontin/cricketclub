@@ -14,10 +14,10 @@ namespace CricketClub.Tests
         public void CanCreateQueryAndUpdateMatch()
         {
             // Setup - create prerequisite data
-            var opponentName = "Test Opponent " + Guid.NewGuid();
+            var opponentName = "Opp_" + Guid.NewGuid().ToString().Substring(0, 8);
             var opponentId = _dao.CreateNewTeam(opponentName);
             
-            var venueName = "Test Venue " + Guid.NewGuid();
+            var venueName = "Ven_" + Guid.NewGuid().ToString().Substring(0, 8);
             var venueId = _dao.CreateNewVenue(venueName, "http://test.com", "Test venue", null, null);
 
             // Create match
@@ -57,10 +57,10 @@ namespace CricketClub.Tests
         public void CanGetAllMatches()
         {
             // Create a match to ensure we have at least one
-            var opponentName = "Test Opponent GetAll " + Guid.NewGuid();
+            var opponentName = "OppAll_" + Guid.NewGuid().ToString().Substring(0, 8);
             var opponentId = _dao.CreateNewTeam(opponentName);
             
-            var venueName = "Test Venue GetAll " + Guid.NewGuid();
+            var venueName = "VenAll_" + Guid.NewGuid().ToString().Substring(0, 8);
             var venueId = _dao.CreateNewVenue(venueName, "http://test.com", "Test venue", null, null);
 
             var matchDate = DateTime.Now.Date;
@@ -79,8 +79,8 @@ namespace CricketClub.Tests
         public void GetMatchDataHandlesAllBooleanFields()
         {
             // Setup
-            var opponentId = _dao.CreateNewTeam("Bool Test Opponent " + Guid.NewGuid());
-            var venueId = _dao.CreateNewVenue("Bool Test Venue " + Guid.NewGuid(), "http://test.com", "Test", null, null);
+            var opponentId = _dao.CreateNewTeam("Bool_" + Guid.NewGuid().ToString().Substring(0, 8));
+            var venueId = _dao.CreateNewVenue("BoolV_" + Guid.NewGuid().ToString().Substring(0, 8), "http://test.com", "Test", null, null);
             var matchId = _dao.CreateNewMatch(opponentId, DateTime.Now.Date, venueId, 1, HomeOrAway.Home);
 
             // Set various boolean fields

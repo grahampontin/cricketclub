@@ -14,7 +14,7 @@ namespace CricketClub.Tests
         public void CanCreateQueryAndUpdateTeam()
         {
             // Create
-            var teamName = "Test Team " + Guid.NewGuid();
+            var teamName = "Test_" + Guid.NewGuid().ToString().Substring(0, 8);
             var teamId = _dao.CreateNewTeam(teamName);
             Assert.True(teamId > 0);
 
@@ -25,7 +25,7 @@ namespace CricketClub.Tests
             Assert.AreEqual(teamId, team.ID);
 
             // Update
-            var newName = teamName + " Updated";
+            var newName = teamName + "_Upd";
             team.Name = newName;
             _dao.UpdateTeam(team);
 
@@ -39,7 +39,7 @@ namespace CricketClub.Tests
         public void CanGetAllTeams()
         {
             // Create a team to ensure we have at least one
-            var teamName = "Test Team GetAll " + Guid.NewGuid();
+            var teamName = "GetAll_" + Guid.NewGuid().ToString().Substring(0, 8);
             var teamId = _dao.CreateNewTeam(teamName);
             Assert.True(teamId > 0);
 
@@ -54,7 +54,7 @@ namespace CricketClub.Tests
         public void CreateNewTeamReturnsSameIdIfTeamAlreadyExists()
         {
             // Create first time
-            var teamName = "Duplicate Test Team " + Guid.NewGuid();
+            var teamName = "Dup_" + Guid.NewGuid().ToString().Substring(0, 8);
             var firstId = _dao.CreateNewTeam(teamName);
             Assert.True(firstId > 0);
 
