@@ -62,7 +62,7 @@ namespace CricketClubDAL
 
         public int CreateNewPlayer(string name)
         {
-            var newPlayerId = (int) db.ExecuteSqlAndReturnSingleResult("select max(player_id) from players") + 1;
+            var newPlayerId = (int) db.ExecuteSqlAndReturnSingleResult("select max(player_id) from thevilla_admin.players") + 1;
             var rowsAffected =
                 db.ExecuteInsertOrUpdate("insert into thevilla_admin.players(player_id, player_name) values (?, ?)",
                     new OleDbParameter("@playerId", newPlayerId),
@@ -250,7 +250,7 @@ namespace CricketClubDAL
             {
                 return (int) dr["team_id"];
             }
-            var newTeamId = (int) db.ExecuteSqlAndReturnSingleResult("select max(team_id) from teams") + 1;
+            var newTeamId = (int) db.ExecuteSqlAndReturnSingleResult("select max(team_id) from thevilla_admin.teams") + 1;
             var rowsAffected =
                 db.ExecuteInsertOrUpdate("insert into thevilla_admin.teams(team_id, team) values (?, ?)",
                     new OleDbParameter("@teamId", newTeamId),
@@ -501,7 +501,7 @@ namespace CricketClubDAL
 
         public int GetNextMatch(DateTime date)
         {
-            var sql = "select * from matches where match_date >= '" + date.ToString("dd MMMM yyyy") +
+            var sql = "select * from thevilla_admin.matches where match_date >= '" + date.ToString("dd MMMM yyyy") +
                       "' order by match_date asc";
             var dr = db.ExecuteSQLAndReturnFirstRow(sql);
             try
@@ -516,7 +516,7 @@ namespace CricketClubDAL
 
         public int GetPreviousMatch(DateTime date)
         {
-            var sql = "select * from matches where match_date <= '" + date.ToUniversalTime().ToString("dd MMMM yyyy") +
+            var sql = "select * from thevilla_admin.matches where match_date <= '" + date.ToUniversalTime().ToString("dd MMMM yyyy") +
                       "' order by match_date desc";
             var dr = db.ExecuteSQLAndReturnFirstRow(sql);
             try
@@ -531,7 +531,7 @@ namespace CricketClubDAL
 
         public List<MatchData> GetAllMatches()
         {
-            var sql = "select * from matches";
+            var sql = "select * from thevilla_admin.matches";
             return db.ExecuteSqlAndReturnAllRows(sql, MatchDataFromRow).ToList();
         }
 
