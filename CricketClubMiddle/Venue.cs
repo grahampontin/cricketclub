@@ -101,8 +101,9 @@ namespace CricketClubMiddle
             return venue;
         }
 
-        private Venue(VenueData data) : this(data, null)
+        private Venue(VenueData data)
         {
+            _data = data;
         }
 
         private Venue(VenueData data, IDao dao)

@@ -99,12 +99,13 @@ namespace CricketClubMiddle
         ///     Used by GetAll();
         /// </summary>
         /// <param name="data"></param>
-        private Player(PlayerData data) : this(data, null)
+        private Player(PlayerData data)
         {
+            playerData = data;
         }
 
         /// <summary>
-        ///     Used by GetAll();
+        ///     Used by GetAll() with dependency injection;
         /// </summary>
         /// <param name="data"></param>
         /// <param name="dao"></param>
@@ -118,8 +119,10 @@ namespace CricketClubMiddle
         ///     A special constructor for use for representing opposition players - returns an object with only the name set.
         /// </summary>
         /// <param name="playerName"></param>
-        public Player(string playerName) : this(playerName, null)
+        public Player(string playerName)
         {
+            var pd = new PlayerData { Name = playerName };
+            playerData = pd;
         }
 
         /// <summary>
