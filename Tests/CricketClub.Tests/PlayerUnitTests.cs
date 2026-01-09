@@ -25,8 +25,8 @@ namespace CricketClub.Tests
                 {
                     ID = 1,
                     Name = "Test Player",
-                    FirstName = "Test",
-                    Surname = "Player",
+                    FirstName = "",
+                    Surname = "",
                     IsActive = true
                 });
             
@@ -48,8 +48,8 @@ namespace CricketClub.Tests
             mockDao.Setup(dao => dao.GetAllPlayers())
                 .Returns(new List<PlayerData>
                 {
-                    new PlayerData { ID = 1, Name = "Player 1", FirstName = "Player", Surname = "One" },
-                    new PlayerData { ID = 2, Name = "Player 2", FirstName = "Player", Surname = "Two" }
+                    new PlayerData { ID = 1, Name = "Player 1", FirstName = "", Surname = "" },
+                    new PlayerData { ID = 2, Name = "Player 2", FirstName = "", Surname = "" }
                 });
             
             // Act
@@ -73,8 +73,8 @@ namespace CricketClub.Tests
                 {
                     ID = 99,
                     Name = "New Player",
-                    FirstName = "New",
-                    Surname = "Player",
+                    FirstName = "",
+                    Surname = "",
                     IsActive = true
                 });
             
