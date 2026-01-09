@@ -74,7 +74,8 @@ namespace CricketClubMiddle
 
         public Dictionary<Match, List<BattingCardLineData>> GetDismissedBatsmenData()
         {
-            var playerFieldingStatsData = dao.GetPlayerFieldingStatsData(Id);
+            var myDao = dao ?? new Dao();
+            var playerFieldingStatsData = myDao.GetPlayerFieldingStatsData(Id);
             return
                 playerFieldingStatsData.Where(d => d.BowlerID == Id)
                     .GroupBy(d => d.MatchID)
@@ -83,10 +84,14 @@ namespace CricketClubMiddle
 
         #region Constructors
 
-        public Player(int playerId)
+        public Player(int playerId) : this(playerId, new Dao())
+        {
+        }
+
+        public Player(int playerId, IDao dao)
         {
             //Get the player specified by this ID
-            dao = new Dao();
+            this.dao = dao;
             playerData = dao.GetPlayerData(playerId);
         }
 
@@ -94,34 +99,63 @@ namespace CricketClubMiddle
         ///     Used by GetAll();
         /// </summary>
         /// <param name="data"></param>
-        private Player(PlayerData data)
+        private Player(PlayerData data) : this(data, null)
+        {
+        }
+
+        /// <summary>
+        ///     Used by GetAll();
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="dao"></param>
+        private Player(PlayerData data, IDao dao)
         {
             playerData = data;
+            this.dao = dao;
         }
 
         /// <summary>
         ///     A special constructor for use for representing opposition players - returns an object with only the name set.
         /// </summary>
         /// <param name="playerName"></param>
-        public Player(string playerName)
+        public Player(string playerName) : this(playerName, null)
+        {
+        }
+
+        /// <summary>
+        ///     A special constructor for use for representing opposition players - returns an object with only the name set.
+        /// </summary>
+        /// <param name="playerName"></param>
+        /// <param name="dao"></param>
+        public Player(string playerName, IDao dao)
         {
             var pd = new PlayerData { Name = playerName };
             playerData = pd;
+            this.dao = dao;
         }
 
         public static Player CreateNewPlayer(string name)
         {
+            return CreateNewPlayer(name, new Dao());
+        }
+
+        public static Player CreateNewPlayer(string name, IDao dao)
+        {
             //Creates a new player.
-            var newPlayerId = new Dao().CreateNewPlayer(name);
-            return new Player(newPlayerId);
+            var newPlayerId = dao.CreateNewPlayer(name);
+            return new Player(newPlayerId, dao);
         }
 
         public static List<Player> GetAll(bool fullyHydrated = false)
         {
-            var db = new Dao();
+            return GetAll(fullyHydrated, new Dao());
+        }
+
+        public static List<Player> GetAll(bool fullyHydrated, IDao db)
+        {
             var data = db.GetAllPlayers();
 
-            var players = data.Select(a => new Player(a)).OrderBy(a => a.FormalName).ToList();
+            var players = data.Select(a => new Player(a, db)).OrderBy(a => a.FormalName).ToList();
             if (!fullyHydrated) return players;
 
             var allBattingStatsData = db.GetAllBattingStatsData();
@@ -263,7 +297,8 @@ namespace CricketClubMiddle
             {
                 if (ringerOf != null) return ringerOf;
                 if (playerData.RingerOf <= 0) return null;
-                ringerOf = new Player(playerData.RingerOf);
+                var myDao = dao ?? new Dao();
+                ringerOf = new Player(playerData.RingerOf, myDao);
 
                 return ringerOf;
             }
@@ -359,7 +394,7 @@ namespace CricketClubMiddle
         {
             if (playerData.ID != 0)
             {
-                var myDao = new Dao();
+                var myDao = dao ?? new Dao();
                 myDao.UpdatePlayer(playerData);
             }
             else
@@ -403,7 +438,7 @@ namespace CricketClubMiddle
             {
                 if (battingStatsDataCache == null)
                 {
-                    var myDao = new Dao();
+                    var myDao = dao ?? new Dao();
                     battingStatsDataCache = myDao
                         .GetPlayerBattingStatsData(Id)
                         .Where(d => d.MatchTypeID != (int)MatchType.Informal).ToList();
@@ -721,7 +756,7 @@ namespace CricketClubMiddle
             {
                 if (bowlingStatsDataCache == null)
                 {
-                    var myDao = new Dao();
+                    var myDao = dao ?? new Dao();
                     bowlingStatsDataCache = myDao.GetPlayerBowlingStatsData(Id)
                         .Where(d => d.MatchTypeID != (int)MatchType.Informal).ToList();
                 }
@@ -1001,7 +1036,7 @@ namespace CricketClubMiddle
         #region Fielding Stats
 
         private List<BattingCardLineData> fieldingStatsDataCache;
-        private readonly Dao dao;
+        private readonly IDao dao;
         private Player ringerOf;
 
         public IEnumerable<BattingCardLineData> FieldingStatsData
@@ -1010,7 +1045,7 @@ namespace CricketClubMiddle
             {
                 if (fieldingStatsDataCache == null)
                 {
-                    var myDao = new Dao();
+                    var myDao = dao ?? new Dao();
                     fieldingStatsDataCache = myDao.GetPlayerFieldingStatsData(Id);
                 }
 

@@ -8,7 +8,7 @@ using CricketClubDomain;
 
 namespace CricketClubDAL
 {
-    public class Dao
+    public class Dao : IDao
     {
         // Default constructor
         public Dao()

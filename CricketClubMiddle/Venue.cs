@@ -14,10 +14,15 @@ namespace CricketClubMiddle
     {
         private InternalCache venueCache = InternalCache.GetInstance();
         private VenueData _data;
-        private Dao myDAO = new Dao();
+        private IDao myDAO;
 
-        public Venue(int VenueID)
+        public Venue(int VenueID) : this(VenueID, new Dao())
         {
+        }
+
+        public Venue(int VenueID, IDao dao)
+        {
+            myDAO = dao;
             if (venueCache.Get("venue" + VenueID) == null)
             {
                 _data = myDAO.GetVenueData(VenueID);
@@ -32,9 +37,14 @@ namespace CricketClubMiddle
         public static Venue CreateNewVenue(string venueName, string mapUrl, string description, decimal? lat,
             decimal? lng)
         {
-            var myDAO = new Dao();
-            var newVenueId = myDAO.CreateNewVenue(venueName, mapUrl, description, lat, lng);
-            return new Venue(newVenueId);
+            return CreateNewVenue(venueName, mapUrl, description, lat, lng, new Dao());
+        }
+
+        public static Venue CreateNewVenue(string venueName, string mapUrl, string description, decimal? lat,
+            decimal? lng, IDao dao)
+        {
+            var newVenueId = dao.CreateNewVenue(venueName, mapUrl, description, lat, lng);
+            return new Venue(newVenueId, dao);
         }
 
         public string GoogleMapsLocationURL
@@ -64,11 +74,16 @@ namespace CricketClubMiddle
 
         public static List<Venue> GetAll()
         {
-            var data = new Dao().GetAllVenueData();
+            return GetAll(new Dao());
+        }
+
+        public static List<Venue> GetAll(IDao dao)
+        {
+            var data = dao.GetAllVenueData();
             var venues = new List<Venue>();
             foreach (var item in data)
             {
-                venues.Add(new Venue(item));
+                venues.Add(new Venue(item, dao));
 
             }
 
@@ -77,13 +92,23 @@ namespace CricketClubMiddle
 
         public static Venue GetByName(string Name)
         {
-            var venue = (from a in Venue.GetAll() where a.Name == Name select a).FirstOrDefault();
+            return GetByName(Name, new Dao());
+        }
+
+        public static Venue GetByName(string Name, IDao dao)
+        {
+            var venue = (from a in Venue.GetAll(dao) where a.Name == Name select a).FirstOrDefault();
             return venue;
         }
 
-        private Venue(VenueData data)
+        private Venue(VenueData data) : this(data, null)
+        {
+        }
+
+        private Venue(VenueData data, IDao dao)
         {
             _data = data;
+            myDAO = dao;
         }
 
         public override string ToString()
