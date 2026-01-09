@@ -9,6 +9,7 @@
         CorridorOfUncertainty,
         ClubmanOfTheYear,
         MostImprovedPlayer,
-        CaptainsPlayerOfTheYear
+        CaptainsPlayerOfTheYear,
+        PlayersPlayerOfTheYear
     }
 }
