@@ -101,11 +101,6 @@ namespace CricketClubMiddle
             return team;
         }
 
-        private Team(TeamData data)
-        {
-            _teamData = data;
-        }
-
         private Team(TeamData data, IDao dao)
         {
             _teamData = data;

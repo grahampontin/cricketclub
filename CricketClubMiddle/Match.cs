@@ -26,11 +26,6 @@ namespace CricketClubMiddle
             data = dao.GetMatchData(MatchID);
         }
 
-        private Match(MatchData data)
-        {
-            this.data = data;
-        }
-
         private Match(MatchData data, IDao dao)
         {
             this.data = data;
@@ -655,15 +650,15 @@ namespace CricketClubMiddle
             {
                 throw new InvalidOperationException("Can't add a new over with no balls in it, noone counts that badly");
             }
+            
+            var myDao = dao ?? new Dao();
             if (inningsStatus.OurInningsStatus != InningsStatus.InProgress)
             {
                 inningsStatus.OurInningsStatus = InningsStatus.InProgress;
-                var myDao = dao ?? new Dao();
                 myDao.UpdateInningsStatus(inningsStatus);
             }
 
-            var myDao2 = dao ?? new Dao();
-            myDao2.UpdateCurrentBallByBallState(stateFromClient, ID);
+            myDao.UpdateCurrentBallByBallState(stateFromClient, ID);
         }
 
         public static IEnumerable<Match> GetInProgressGames()
