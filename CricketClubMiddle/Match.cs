@@ -650,7 +650,6 @@ namespace CricketClubMiddle
             {
                 throw new InvalidOperationException("Can't add a new over with no balls in it, noone counts that badly");
             }
-            
             var myDao = dao ?? new Dao();
             if (inningsStatus.OurInningsStatus != InningsStatus.InProgress)
             {
