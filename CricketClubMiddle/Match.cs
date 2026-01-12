@@ -9,21 +9,32 @@ namespace CricketClubMiddle
 {
     public class Match
     {
-        private readonly Dao dao = new Dao();
+        private readonly IDao dao;
         private readonly MatchData data;
         private BattingCard ourBatting;
         private BowlingStats ourBowling;
         private BattingCard theirBatting;
         private BowlingStats theirBowling;
 
-        public Match(int MatchID)
+        public Match(int MatchID) : this(MatchID, new Dao())
         {
+        }
+
+        public Match(int MatchID, IDao dao)
+        {
+            this.dao = dao;
             data = dao.GetMatchData(MatchID);
         }
 
         private Match(MatchData data)
         {
             this.data = data;
+        }
+
+        private Match(MatchData data, IDao dao)
+        {
+            this.data = data;
+            this.dao = dao;
         }
 
         public int ID => data.ID;
@@ -373,36 +384,49 @@ namespace CricketClubMiddle
         public static Match CreateNewMatch(Team opposition, DateTime matchDay, Venue venue, MatchType type,
             HomeOrAway homeAway)
         {
-            var myDao = new Dao();
-            var id = myDao.CreateNewMatch(opposition.ID, matchDay, venue.ID, (int) type,
+            return CreateNewMatch(opposition, matchDay, venue, type, homeAway, new Dao());
+        }
+
+        public static Match CreateNewMatch(Team opposition, DateTime matchDay, Venue venue, MatchType type,
+            HomeOrAway homeAway, IDao dao)
+        {
+            var id = dao.CreateNewMatch(opposition.ID, matchDay, venue.ID, (int) type,
                 homeAway);
-            return new Match(id);
+            return new Match(id, dao);
         }
 
         public static Match GetNextMatch()
         {
-            var myDao = new Dao();
-            var matchID = myDao.GetNextMatch(DateTime.Today);
+            return GetNextMatch(new Dao());
+        }
+
+        public static Match GetNextMatch(IDao dao)
+        {
+            var matchID = dao.GetNextMatch(DateTime.Today);
             if (matchID >= 0)
-                return new Match(matchID);
+                return new Match(matchID, dao);
             return null;
         }
 
         public static Match GetLastMatch()
         {
-            var myDao = new Dao();
-            var matchID = myDao.GetPreviousMatch(DateTime.Today);
-            if (matchID >= 0) return new Match(matchID);
+            return GetLastMatch(new Dao());
+        }
+
+        public static Match GetLastMatch(IDao dao)
+        {
+            var matchID = dao.GetPreviousMatch(DateTime.Today);
+            if (matchID >= 0) return new Match(matchID, dao);
 
             return null;
         }
 
         public Match GetPreviousMatch()
         {
-            var myDao = new Dao();
+            var myDao = dao ?? new Dao();
             var matchID = myDao.GetPreviousMatch(MatchDate);
             if (matchID >= 0)
-                return new Match(matchID);
+                return new Match(matchID, myDao);
             return null;
         }
 
@@ -433,9 +457,13 @@ namespace CricketClubMiddle
 
         private static IList<Match> GetAll()
         {
-            var dao = new Dao();
+            return GetAll(new Dao());
+        }
+
+        private static IList<Match> GetAll(IDao dao)
+        {
             var data = dao.GetAllMatches();
-            return (from a in data select new Match(a)).ToList();
+            return (from a in data select new Match(a, dao)).ToList();
         }
 
         public void Save()
@@ -443,8 +471,8 @@ namespace CricketClubMiddle
             ClearCache();
             if (data.ID != 0)
             {
-                var dao = new Dao();
-                dao.UpdateMatch(data);
+                var myDao = dao ?? new Dao();
+                myDao.UpdateMatch(data);
             }
             else
             {
@@ -570,17 +598,20 @@ namespace CricketClubMiddle
 
         public void CreateOrUpdateMatchReport(string conditions, string report, string reportImage)
         {
-            dao.CreateOrUpdateMatchReport(ID, conditions, report, reportImage);
+            var myDao = dao ?? new Dao();
+            myDao.CreateOrUpdateMatchReport(ID, conditions, report, reportImage);
         }
 
         public MatchReportAndConditions GetMatchReport()
         {
-            return dao.GetMatchReport(ID);
+            var myDao = dao ?? new Dao();
+            return myDao.GetMatchReport(ID);
         }
 
         public void StartBallByBallCoverage(BallByBallMatchConditions ballByBallMatchConditions)
         {
-            if (!dao.IsBallByBallCoverageInProgress(ID))
+            var myDao = dao ?? new Dao();
+            if (!myDao.IsBallByBallCoverageInProgress(ID))
             {
                 data.CaptainID = ballByBallMatchConditions.Captain;
                 data.WicketKeeperID = ballByBallMatchConditions.Keeper;
@@ -589,14 +620,14 @@ namespace CricketClubMiddle
                 data.WasDeclarationGame = ballByBallMatchConditions.Declaration;
                 data.Overs = ballByBallMatchConditions.Overs;
 
-                dao.StartBallByBallCoverage(ID, ballByBallMatchConditions.PlayerIds, data);
+                myDao.StartBallByBallCoverage(ID, ballByBallMatchConditions.PlayerIds, data);
                 var inningsStatus = BallByBallInningsStatus.NotStarted(ID);
                 if (data.WonToss && data.Batted || !data.WonToss && !data.Batted)
                     inningsStatus.OurInningsStatus = InningsStatus.InProgress;
                 else
                     inningsStatus.TheirInningsStatus = InningsStatus.InProgress;
 
-                dao.UpdateInningsStatus(inningsStatus);
+                myDao.UpdateInningsStatus(inningsStatus);
             }
             else
             {
@@ -627,10 +658,12 @@ namespace CricketClubMiddle
             if (inningsStatus.OurInningsStatus != InningsStatus.InProgress)
             {
                 inningsStatus.OurInningsStatus = InningsStatus.InProgress;
-                dao.UpdateInningsStatus(inningsStatus);
+                var myDao = dao ?? new Dao();
+                myDao.UpdateInningsStatus(inningsStatus);
             }
 
-            dao.UpdateCurrentBallByBallState(stateFromClient, ID);
+            var myDao2 = dao ?? new Dao();
+            myDao2.UpdateCurrentBallByBallState(stateFromClient, ID);
         }
 
         public static IEnumerable<Match> GetInProgressGames()
@@ -645,7 +678,8 @@ namespace CricketClubMiddle
 
         public bool GetIsBallByBallInProgress()
         {
-            return dao.IsBallByBallCoverageInProgress(ID);
+            var myDao = dao ?? new Dao();
+            return myDao.IsBallByBallCoverageInProgress(ID);
         }
 
         public LiveScorecard GetLiveScorecard()
@@ -807,18 +841,20 @@ namespace CricketClubMiddle
                 throw new InvalidOperationException(
                     "Our innings is in progress, you can't add their scores until it's done.");
 
+            var myDao = dao ?? new Dao();
             if (inningsStatus.TheirInningsStatus != InningsStatus.InProgress)
             {
                 inningsStatus.TheirInningsStatus = InningsStatus.InProgress;
-                dao.UpdateInningsStatus(inningsStatus);
+                myDao.UpdateInningsStatus(inningsStatus);
             }
 
-            dao.CreateOrUpdateOppositionInningsDetails(oppositionInningsDetails, ID);
+            myDao.CreateOrUpdateOppositionInningsDetails(oppositionInningsDetails, ID);
         }
 
 
         public NextInnings EndInnings(InningsEndDetails inningsEndDetails)
         {
+            var myDao = dao ?? new Dao();
             if (inningsEndDetails.InningsType.Equals("Batting", StringComparison.InvariantCultureIgnoreCase))
             {
                 var currentBallByBallState = GetCurrentBallByBallState();
@@ -836,7 +872,7 @@ namespace CricketClubMiddle
                 if (inningsStatus.TheirInningsStatus == InningsStatus.NotStarted)
                     inningsStatus.TheirInningsStatus = InningsStatus.InProgress;
 
-                dao.UpdateInningsStatus(inningsStatus);
+                myDao.UpdateInningsStatus(inningsStatus);
             }
             else
             {
@@ -858,10 +894,10 @@ namespace CricketClubMiddle
                 if (inningsStatus.OurInningsStatus == InningsStatus.NotStarted)
                     inningsStatus.OurInningsStatus = InningsStatus.InProgress;
 
-                dao.UpdateInningsStatus(inningsStatus);
+                myDao.UpdateInningsStatus(inningsStatus);
             }
 
-            var status = dao.GetInningsStatus(ID);
+            var status = myDao.GetInningsStatus(ID);
             if (status.OurInningsStatus == InningsStatus.Completed &&
                 status.TheirInningsStatus == InningsStatus.Completed)
             {
@@ -913,12 +949,14 @@ namespace CricketClubMiddle
 
         public void DeleteLastBallByBallOver()
         {
-            dao.DeleteBallByBallOver(ID, GetCurrentBallByBallState().LastCompletedOver);
+            var myDao = dao ?? new Dao();
+            myDao.DeleteBallByBallOver(ID, GetCurrentBallByBallState().LastCompletedOver);
         }
 
         public void ResetBallByBallData()
         {
-            dao.ResetBallByBallCoverage(ID);
+            var myDao = dao ?? new Dao();
+            myDao.ResetBallByBallCoverage(ID);
         }
 
         public FoWStats GetOurFoWData()
