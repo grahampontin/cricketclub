@@ -44,6 +44,11 @@ namespace CricketClubMiddle
         {
             thisCache.Remove(key);
         }
+        
+        public void Clear()
+        {
+            thisCache.Clear();
+        }
 
     }
 

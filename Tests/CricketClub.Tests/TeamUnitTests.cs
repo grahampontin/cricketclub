@@ -14,6 +14,12 @@ namespace CricketClub.Tests
     [TestFixture]
     public class TeamUnitTests
     {
+        [SetUp]
+        public void Setup()
+        {
+            InternalCache.GetInstance().Clear();
+        }
+        
         [Test]
         public void Team_CanBeConstructedWithMockDao()
         {
