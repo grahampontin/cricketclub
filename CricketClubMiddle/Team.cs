@@ -11,15 +11,20 @@ namespace CricketClubMiddle
 {
     public class Team
     {
-        private Dao myDAO = new Dao();
+        private readonly IDao dao;
         private InternalCache teamCache = InternalCache.GetInstance();
         private TeamData _teamData;
 
-        public Team(int TeamID)
+        public Team(int TeamID) : this(TeamID, new Dao())
         {
+        }
+
+        public Team(int TeamID, IDao dao)
+        {
+            this.dao = dao;
             if (teamCache.Get("team" + TeamID) == null)
             {
-                _teamData = myDAO.GetTeamData(TeamID);
+                _teamData = dao.GetTeamData(TeamID);
                 teamCache.Insert("team" + TeamID, _teamData, new TimeSpan(24, 0, 0));
             }
             else
@@ -35,9 +40,13 @@ namespace CricketClubMiddle
 
         public static Team CreateNewTeam(string TeamName)
         {
-            var myDAO = new Dao();
-            var newTeamid = myDAO.CreateNewTeam(TeamName);
-            return new Team(newTeamid);
+            return CreateNewTeam(TeamName, new Dao());
+        }
+
+        public static Team CreateNewTeam(string TeamName, IDao dao)
+        {
+            var newTeamid = dao.CreateNewTeam(TeamName);
+            return new Team(newTeamid, dao);
         }
 
         public string Name
@@ -64,17 +73,23 @@ namespace CricketClubMiddle
 
         public void Save()
         {
-            myDAO.UpdateTeam(_teamData);
+            var myDao = dao ?? new Dao();
+            myDao.UpdateTeam(_teamData);
         }
 
 
         public static List<Team> GetAll()
         {
-            var data = new Dao().GetAllTeamData();
+            return GetAll(new Dao());
+        }
+
+        public static List<Team> GetAll(IDao dao)
+        {
+            var data = dao.GetAllTeamData();
             var teams = new List<Team>();
             foreach (var item in data)
             {
-                teams.Add(new Team(item));
+                teams.Add(new Team(item, dao));
 
             }
             return teams;
@@ -86,9 +101,10 @@ namespace CricketClubMiddle
             return team;
         }
 
-        private Team(TeamData data)
+        private Team(TeamData data, IDao dao)
         {
             _teamData = data;
+            this.dao = dao;
         }
 
 

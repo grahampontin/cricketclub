@@ -141,10 +141,12 @@
     <Compile Include="CommitteeIntegrationTests.cs" />
     <Compile Include="IntegrationTestSupport.cs" />
     <Compile Include="MatchIntegrationTests.cs" />
+    <Compile Include="MatchUnitTests.cs" />
     <Compile Include="PlayerUnitTests.cs" />
     <Compile Include="PlayersIntegrationTest.cs" />
     <Compile Include="PlayerTests.cs" />
     <Compile Include="TeamIntegrationTests.cs" />
+    <Compile Include="TeamUnitTests.cs" />
     <Compile Include="VenueUnitTests.cs" />
     <Compile Include="VenueIntegratonTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
