@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using CricketClubDAL;
 using CricketClubDomain;
-using CricketClubMiddle;
 using CricketClubMiddle.Stats;
 using NUnit.Framework;
-using Match = System.Text.RegularExpressions.Match;
 
 namespace CricketClub.Tests
 {

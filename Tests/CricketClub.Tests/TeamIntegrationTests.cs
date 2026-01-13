@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using CricketClubDAL;
-using CricketClubDomain;
 using NUnit.Framework;
 
 namespace CricketClub.Tests

@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using CricketClubDAL;
 using CricketClubDomain;
-using CricketClubMiddle;
 using Moq;
 using NUnit.Framework;
 
@@ -36,7 +33,7 @@ namespace CricketClub.Tests
                 });
             
             // Act - Create a match with the mock DAO
-            var match = new Match(1, mockDao.Object);
+            var match = new CricketClubMiddle.Match(1, mockDao.Object);
             
             // Assert - Verify the match was created and the DAO was called
             Assert.IsNotNull(match);
@@ -68,7 +65,7 @@ namespace CricketClub.Tests
                 });
             
             // Act
-            var nextMatch = Match.GetNextMatch(mockDao.Object);
+            var nextMatch = CricketClubMiddle.Match.GetNextMatch(mockDao.Object);
             
             // Assert
             Assert.IsNotNull(nextMatch);
@@ -95,7 +92,7 @@ namespace CricketClub.Tests
                 });
             
             // Act
-            var lastMatch = Match.GetLastMatch(mockDao.Object);
+            var lastMatch = CricketClubMiddle.Match.GetLastMatch(mockDao.Object);
             
             // Assert
             Assert.IsNotNull(lastMatch);
@@ -125,7 +122,7 @@ namespace CricketClub.Tests
             mockDao.Setup(dao => dao.UpdateMatch(It.IsAny<MatchData>()));
             
             // Act
-            var match = new Match(1, mockDao.Object);
+            var match = new CricketClubMiddle.Match(1, mockDao.Object);
             match.Overs = 40;
             match.Save();
             
@@ -150,14 +147,14 @@ namespace CricketClub.Tests
             mockDao.Setup(dao => dao.GetMatchData(1))
                 .Returns(matchData);
             mockDao.Setup(dao => dao.GetMatchReport(1))
-                .Returns(new MatchReportAndConditions
-                {
-                    Conditions = "Test conditions",
-                    Report = "Test report"
-                });
+                .Returns(new MatchReportAndConditions(
+                    "Test conditions",
+                    "Test report",
+                    "")
+                );
             
             // Act
-            var match = new Match(1, mockDao.Object);
+            var match = new CricketClubMiddle.Match(1, mockDao.Object);
             var report = match.GetMatchReport();
             
             // Assert
