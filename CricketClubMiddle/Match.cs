@@ -427,38 +427,73 @@ namespace CricketClubMiddle
 
         public static IList<Match> GetFixtures()
         {
-            return GetAll().Where(a => a.MatchDate >= DateTime.Today).OrderBy(a => a.MatchDate).ToList();
+            return GetFixtures(new Dao());
+        }
+
+        // Added overload for testing - allow injection of a DAO
+        public static IList<Match> GetFixtures(IDao dao)
+        {
+            // inline BuildFixturesQuery: preserve original semantics (inclusive today's fixtures)
+            return BuildMatchQuery(dao)
+                .Where(a => a.MatchDate >= DateTime.Today)
+                .OrderBy(a => a.MatchDate)
+                .ToList();
         }
 
         public static IList<Match> GetResults()
         {
-            return GetAll().Where(a => a.MatchDate <= DateTime.Today).OrderBy(a => a.MatchDate).ToList();
+            return GetResults(new Dao());
+        }
+
+        // Overload for testing / DAO injection
+        public static IList<Match> GetResults(IDao dao)
+        {
+            // inline BuildResultsQuery: preserve original semantics (inclusive today's results)
+            return BuildMatchQuery(dao)
+                .Where(a => a.MatchDate <= DateTime.Today)
+                .OrderBy(a => a.MatchDate)
+                .ToList();
         }
 
         public static IList<Match> GetResults(DateTime startDate, DateTime endDate)
         {
-            return GetResults().Where(a => a.MatchDate > startDate && a.MatchDate < endDate).ToList();
+            return GetResults(new Dao()).Where(a => a.MatchDate > startDate && a.MatchDate < endDate).ToList();
+        }
+
+        // Refactored: central query builder to allow reuse of filters between overloads
+        private static IEnumerable<Match> BuildMatchQuery(IDao dao)
+        {
+            var data = dao.GetAllMatches();
+            return data.Select(a => new Match(a, dao));
+        }
+
+        public static IList<Match> GetAll(DateTime fromDate, DateTime toDate, List<MatchType> matchTypes, Venue venue, IDao dao)
+        {
+            var q = BuildMatchQuery(dao);
+            if (fromDate != DateTime.MinValue)
+                q = q.Where(m => m.MatchDate > fromDate);
+
+            if (toDate != DateTime.MinValue)
+                q = q.Where(m => m.MatchDate < toDate);
+
+            if (!matchTypes.IsNullOrEmpty())
+                q = q.Where(m => matchTypes.Contains(m.Type));
+
+            if (venue != null)
+                q = q.Where(m => m.Venue == venue);
+
+            return q.ToList();
         }
 
         public static IList<Match> GetAll(DateTime fromDate, DateTime toDate, List<MatchType> matchTypes, Venue venue)
         {
-            return GetAll()
-                .Where(m => fromDate == DateTime.MinValue || m.MatchDate > fromDate)
-                .Where(m => toDate == DateTime.MinValue || m.MatchDate < toDate)
-                .Where(m => matchTypes.IsNullOrEmpty() || matchTypes.Contains(m.Type))
-                .Where(m => venue == null || m.Venue == venue)
-                .ToList();
+            return GetAll(fromDate, toDate, matchTypes, venue, new Dao());
         }
 
-        private static IList<Match> GetAll()
+        // Make this overload public so tests can pass a mocked Dao
+        public static IList<Match> GetAll(IDao dao)
         {
-            return GetAll(new Dao());
-        }
-
-        private static IList<Match> GetAll(IDao dao)
-        {
-            var data = dao.GetAllMatches();
-            return (from a in data select new Match(a, dao)).ToList();
+            return BuildMatchQuery(dao).ToList();
         }
 
         public void Save()
@@ -537,22 +572,24 @@ namespace CricketClubMiddle
         public int GetTeamScore(Team team)
         {
             var sc = GetScoreCardForTeam(team);
-
-            var score = sc.ScorecardData.Select(a => a.Score).Sum();
-            score = score + sc.Extras;
-            return score;
+            var score = 0;
+            if (sc != null && sc.ScorecardData != null)
+                score = sc.ScorecardData.Select(a => a.Score).Sum();
+            // guard extras in case sc is null (defensive)
+            var extras = sc != null ? sc.Extras : 0;
+            return score + extras;
         }
 
         public int GetTeamWicketsDown(Team team)
         {
             var sc = GetScoreCardForTeam(team);
-
-            var wickets = sc.ScorecardData.Where(a => a.Dismissal != ModesOfDismissal.NotOut).Where(
-                    a => a.Dismissal != ModesOfDismissal.DidNotBat)
+            if (sc == null || sc.ScorecardData == null) return 0;
+            return sc.ScorecardData
+                .Where(a => a.Dismissal != ModesOfDismissal.NotOut)
+                .Where(a => a.Dismissal != ModesOfDismissal.DidNotBat)
                 .Where(a => a.Dismissal != ModesOfDismissal.RetiredHurt)
-                .Where(a => a.BattingAt != 12).Count();
-
-            return wickets;
+                .Where(a => a.BattingAt != 12)
+                .Count();
         }
 
         private BattingCard GetScoreCardForTeam(Team team)
@@ -662,8 +699,15 @@ namespace CricketClubMiddle
 
         public static IEnumerable<Match> GetInProgressGames()
         {
-            return GetAll().Where(m => m.GetIsBallByBallInProgress() && !m.BallByBallComplete());
+            return GetInProgressGames(new Dao());
         }
+
+        // Added overload for testing - allow injection of a DAO
+         public static IEnumerable<Match> GetInProgressGames(IDao dao)
+         {
+            // inline BuildInProgressQuery: reuse central builder and apply in-progress filter
+            return BuildMatchQuery(dao).Where(m => m.GetIsBallByBallInProgress() && !m.BallByBallComplete());
+         }
 
         private bool BallByBallComplete()
         {
@@ -787,24 +831,24 @@ namespace CricketClubMiddle
 
         private static LiveBattingCard GetLiveBattingCard(BallByBallMatch currentBallByBallState,
             List<FallOfWicket> fallOfWickets)
-        {
-            var liveBattingCard = new LiveBattingCard();
-            var liveBattingCardEntries =
-                currentBallByBallState.GetMatchState()
-                    .Players.Where(ps => ps.State != PlayerState.Waiting)
-                    .ToDictionary(playerState => playerState.Position.ToString(),
-                        playerState => new LiveBattingCardEntry
-                        {
-                            BatsmanInningsDetails =
-                                currentBallByBallState.GetBatsmanInningsDetails(playerState.PlayerId),
-                            Wicket =
-                                fallOfWickets.FirstOrDefault(f => f.OutGoingPlayerId == playerState.PlayerId)?
-                                    .Wicket
-                        });
-            liveBattingCard.Players = liveBattingCardEntries;
-            liveBattingCard.Extras = currentBallByBallState.GetExtras();
-            return liveBattingCard;
-        }
+         {
+             var liveBattingCard = new LiveBattingCard();
+             var liveBattingCardEntries =
+                 currentBallByBallState.GetMatchState()
+                     .Players.Where(ps => ps.State != PlayerState.Waiting)
+                     .ToDictionary(playerState => playerState.Position.ToString(),
+                         playerState => new LiveBattingCardEntry
+                         {
+                             BatsmanInningsDetails =
+                                 currentBallByBallState.GetBatsmanInningsDetails(playerState.PlayerId),
+                             Wicket =
+                                 fallOfWickets.FirstOrDefault(f => f.OutGoingPlayerId == playerState.PlayerId)?
+                                     .Wicket
+                         });
+             liveBattingCard.Players = liveBattingCardEntries;
+             liveBattingCard.Extras = currentBallByBallState.GetExtras();
+             return liveBattingCard;
+         }
 
 
         public void UpdateOppositionScore(OppositionInningsDetails oppositionInningsDetails)
@@ -913,7 +957,7 @@ namespace CricketClubMiddle
             var liveScorecard = GetLiveScorecard();
             var ourBattingCard = new BattingCard(this.ID, ThemOrUs.Us);
             ourBattingCard.ScorecardData.Clear();
-            ourBattingCard.ScorecardData.AddRange(liveScorecard.LiveBattingCard.Players.Select(p=>BattingCardLine.From(p, this)));
+            ourBattingCard.ScorecardData.AddRange(liveScorecard.LiveBattingCard.Players.Select(p => BattingCardLine.From(p, this)));
             var liveExtras = liveScorecard.LiveBattingCard.Extras;
             ourBattingCard.Save(BattingOrBowling.Batting);
 
@@ -931,12 +975,12 @@ namespace CricketClubMiddle
 
             var fallOfWicketStats = new FoWStats(ID, ThemOrUs.Us);
             fallOfWicketStats.Data.Clear();
-            fallOfWicketStats.Data.AddRange(liveScorecard.FallOfWickets.Select(f=>FoWStatsLine.From(f, this, ThemOrUs.Us, playerIdToPosition)));
+            fallOfWicketStats.Data.AddRange(liveScorecard.FallOfWickets.Select(f => FoWStatsLine.From(f, this, ThemOrUs.Us, playerIdToPosition)));
             fallOfWicketStats.Save();
 
             var theirBowlingStats = new BowlingStats(ID, ThemOrUs.Them);
             theirBowlingStats.BowlingStatsData.Clear();
-            theirBowlingStats.BowlingStatsData.AddRange(liveScorecard.LiveBowlingCard.Select(b=>BowlingStatsLine.From(b, this))); 
+            theirBowlingStats.BowlingStatsData.AddRange(liveScorecard.LiveBowlingCard.Select(b => BowlingStatsLine.From(b, this)));
             theirBowlingStats.Save();
 
         }
@@ -964,3 +1008,18 @@ namespace CricketClubMiddle
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
