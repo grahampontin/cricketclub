@@ -9,14 +9,26 @@ namespace CricketClubMiddle.Stats
 {
     public class BattingCard
     {
+        private readonly IDao dao;
+
         /// <summary>
         /// Get a batting scorecard for a game
         /// </summary>
         /// <param name="matchId">The id of the match to fetch the scorecard for</param>
         /// <param name="themOrUs">Do you want the website team's batting or the opposition's</param>
-        public BattingCard(int matchId, ThemOrUs themOrUs)
+        public BattingCard(int matchId, ThemOrUs themOrUs) : this(matchId, themOrUs, new Dao())
         {
-            var dao = new Dao();
+        }
+
+        /// <summary>
+        /// Get a batting scorecard for a game (with DAO injection for testing)
+        /// </summary>
+        /// <param name="matchId">The id of the match to fetch the scorecard for</param>
+        /// <param name="themOrUs">Do you want the website team's batting or the opposition's</param>
+        /// <param name="dao">The DAO to use for data access</param>
+        public BattingCard(int matchId, ThemOrUs themOrUs, IDao dao)
+        {
+            this.dao = dao;
             ScorecardData = (dao.GetBattingCard(matchId, themOrUs).Where(a => a.PlayerID != -1).Where(
                 a => a.PlayerName != "(Frank) Extras").Select(a => new BattingCardLine(a))).OrderBy(b=>b.BattingAt).ToList();
             MatchId = matchId;
@@ -74,7 +86,7 @@ namespace CricketClubMiddle.Stats
 
         public void Save(BattingOrBowling batOrBowl)
         {
-            var dao = new Dao();
+            var myDao = dao ?? new Dao();
             var data = new List<BattingCardLineData>();
             foreach (var line in ScorecardData)
             {
@@ -97,7 +109,7 @@ namespace CricketClubMiddle.Stats
                                                };
                 data.Add(item);
             }
-            dao.UpdateScoreCard(data, Extras, batOrBowl);
+            myDao.UpdateScoreCard(data, Extras, batOrBowl);
         }
 
 

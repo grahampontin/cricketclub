@@ -15,6 +15,11 @@ namespace CricketClubMiddle
         private BowlingStats ourBowling;
         private BattingCard theirBatting;
         private BowlingStats theirBowling;
+        private Team us;
+        private Team opposition;
+        private Player captain;
+        private Player wicketKeeper;
+        private Venue venue;
 
         public Match(int MatchID) : this(MatchID, new Dao())
         {
@@ -40,7 +45,15 @@ namespace CricketClubMiddle
             set => data.VenueID = value;
         }
 
-        public Venue Venue => new Venue(VenueID);
+        public Venue Venue
+        {
+            get
+            {
+                if (venue != null) return venue;
+                venue = new Venue(VenueID, dao);
+                return venue;
+            }
+        }
 
         public string VenueName => Venue.Name;
 
@@ -69,9 +82,25 @@ namespace CricketClubMiddle
             set => data.OppositionID = value;
         }
 
-        public Team Opposition => new Team(OppositionID);
+        public Team Opposition
+        {
+            get
+            {
+                if (opposition != null) return opposition;
+                opposition = new Team(OppositionID, dao);
+                return opposition;
+            }
+        }
 
-        public Team Us => new Team(0);
+        public Team Us
+        {
+            get
+            {
+                if (us != null) return us;
+                us = new Team(0, dao);
+                return us;
+            }
+        }
 
         public bool Abandoned
         {
@@ -80,15 +109,7 @@ namespace CricketClubMiddle
             set => data.Abandoned = value;
         }
 
-        public Team TossWinner
-        {
-            get
-            {
-                if (data.WonToss)
-                    return new Team(0);
-                return new Team(OppositionID);
-            }
-        }
+        public Team TossWinner => data.WonToss ? Us : Opposition;
 
         /// <summary>
         ///     Did the special case team (The Village) win the toss - try not to use - prefer TossWinner
@@ -299,14 +320,32 @@ namespace CricketClubMiddle
 
         public Player Captain
         {
-            get => new Player(data.CaptainID);
-            set => data.CaptainID = value.Id;
+            get
+            {
+                if (captain != null) return captain;
+                captain = new Player(data.CaptainID, dao);
+                return captain;
+            }
+            set
+            {
+                captain = null;
+                data.CaptainID = value.Id;
+            }
         }
 
         public Player WicketKeeper
         {
-            get => new Player(data.WicketKeeperID);
-            set => data.WicketKeeperID = value.Id;
+            get
+            {
+                if (wicketKeeper != null) return wicketKeeper;
+                wicketKeeper = new Player(data.WicketKeeperID, dao);
+                return wicketKeeper;
+            }
+            set
+            {
+                wicketKeeper = null;
+                data.WicketKeeperID = value.Id;
+            }
         }
 
         public int Overs
@@ -522,7 +561,7 @@ namespace CricketClubMiddle
                 if (0 == TossWinner.ID)
                     teamBattingFirst = Opposition;
                 else
-                    teamBattingFirst = new Team(0);
+                    teamBattingFirst = Us;
             }
 
             return teamBattingFirst;
@@ -532,33 +571,33 @@ namespace CricketClubMiddle
         {
             if (TeamBattingFirst().ID == 0) return Opposition;
 
-            return new Team(0);
+            return Us;
         }
 
         public BattingCard GetOurBattingScoreCard()
         {
-            if (ourBatting == null) ourBatting = new BattingCard(ID, ThemOrUs.Us);
+            if (ourBatting == null) ourBatting = new BattingCard(ID, ThemOrUs.Us, dao);
 
             return ourBatting;
         }
 
         public BattingCard GetTheirBattingScoreCard()
         {
-            if (theirBatting == null) theirBatting = new BattingCard(ID, ThemOrUs.Them);
+            if (theirBatting == null) theirBatting = new BattingCard(ID, ThemOrUs.Them, dao);
 
             return theirBatting;
         }
 
         public BowlingStats GetOurBowlingStats()
         {
-            if (ourBowling == null) ourBowling = new BowlingStats(ID, ThemOrUs.Us);
+            if (ourBowling == null) ourBowling = new BowlingStats(ID, ThemOrUs.Us, dao);
 
             return ourBowling;
         }
 
         public BowlingStats GetThierBowlingStats()
         {
-            if (theirBowling == null) theirBowling = new BowlingStats(ID, ThemOrUs.Them);
+            if (theirBowling == null) theirBowling = new BowlingStats(ID, ThemOrUs.Them, dao);
 
             return theirBowling;
         }
@@ -955,7 +994,7 @@ namespace CricketClubMiddle
         public void PopulateScorecardFromBallByBallData()
         {
             var liveScorecard = GetLiveScorecard();
-            var ourBattingCard = new BattingCard(this.ID, ThemOrUs.Us);
+            var ourBattingCard = new BattingCard(this.ID, ThemOrUs.Us, dao);
             ourBattingCard.ScorecardData.Clear();
             ourBattingCard.ScorecardData.AddRange(liveScorecard.LiveBattingCard.Players.Select(p => BattingCardLine.From(p, this)));
             var liveExtras = liveScorecard.LiveBattingCard.Extras;
@@ -978,7 +1017,7 @@ namespace CricketClubMiddle
             fallOfWicketStats.Data.AddRange(liveScorecard.FallOfWickets.Select(f => FoWStatsLine.From(f, this, ThemOrUs.Us, playerIdToPosition)));
             fallOfWicketStats.Save();
 
-            var theirBowlingStats = new BowlingStats(ID, ThemOrUs.Them);
+            var theirBowlingStats = new BowlingStats(ID, ThemOrUs.Them, dao);
             theirBowlingStats.BowlingStatsData.Clear();
             theirBowlingStats.BowlingStatsData.AddRange(liveScorecard.LiveBowlingCard.Select(b => BowlingStatsLine.From(b, this)));
             theirBowlingStats.Save();
