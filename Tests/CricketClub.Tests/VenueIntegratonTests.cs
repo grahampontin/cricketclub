@@ -8,7 +8,7 @@ namespace CricketClub.Tests
     public class VenueIntegrationTests : IntegrationTestSupport
     {
     
-        private readonly Dao _dao = new Dao();
+        private readonly Dao dao = new Dao();
 
         [Test]
         public void CanCreateQueryAndUpdateVenue()
@@ -20,11 +20,11 @@ namespace CricketClub.Tests
             var lat = 51.5074m;
             var lng = -0.1278m;
 
-            var venueId = _dao.CreateNewVenue(name, mapUrl, description, lat, lng);
+            var venueId = dao.CreateNewVenue(name, mapUrl, description, lat, lng);
             Assert.True(venueId > 0);
 
             // Query
-            var venue = _dao.GetVenueData(venueId);
+            var venue = dao.GetVenueData(venueId);
             Assert.AreEqual(name, venue.Name);
             Assert.AreEqual(mapUrl, venue.MapUrl);
             Assert.AreEqual(description, venue.Description);
@@ -43,10 +43,10 @@ namespace CricketClub.Tests
             venue.Description = newDescription;
             venue.Coordinates = new Tuple<decimal?, decimal?>(newLat, newLng);
 
-            _dao.UpdateVenue(venue);
+            dao.UpdateVenue(venue);
 
             // Query again
-            var updatedVenue = _dao.GetVenueData(venueId);
+            var updatedVenue = dao.GetVenueData(venueId);
             Assert.AreEqual(newName, updatedVenue.Name);
             Assert.AreEqual(newMapUrl, updatedVenue.MapUrl);
             Assert.AreEqual(newDescription, updatedVenue.Description);
@@ -54,10 +54,10 @@ namespace CricketClub.Tests
             Assert.AreEqual(newLng, updatedVenue.Coordinates.Item2);
 
             venue.Coordinates = new Tuple<decimal?, decimal?>(null, null);
-            _dao.UpdateVenue(venue);
+            dao.UpdateVenue(venue);
             
             // Query again to check null coordinates
-            var nullCoordsVenue = _dao.GetVenueData(venueId);
+            var nullCoordsVenue = dao.GetVenueData(venueId);
             Assert.IsNull(nullCoordsVenue.Coordinates.Item1);
             Assert.IsNull(nullCoordsVenue.Coordinates.Item2);
         }
@@ -72,11 +72,11 @@ namespace CricketClub.Tests
             decimal? lat = null;
             decimal? lng = null;
 
-            var venueId = _dao.CreateNewVenue(name, mapUrl, description, lat, lng);
+            var venueId = dao.CreateNewVenue(name, mapUrl, description, lat, lng);
             Assert.True(venueId > 0);
 
             // Query
-            var venue = _dao.GetVenueData(venueId);
+            var venue = dao.GetVenueData(venueId);
             Assert.AreEqual(name, venue.Name);
             Assert.AreEqual(mapUrl, venue.MapUrl);
             Assert.AreEqual(description, venue.Description);
@@ -94,19 +94,19 @@ namespace CricketClub.Tests
             var lat = 51.5074m;
             var lng = -0.1278m;
 
-            var venueId = _dao.CreateNewVenue(name, mapUrl, description, lat, lng);
+            var venueId = dao.CreateNewVenue(name, mapUrl, description, lat, lng);
             Assert.True(venueId > 0);
 
             // Verify it exists
-            var venue = _dao.GetVenueData(venueId);
+            var venue = dao.GetVenueData(venueId);
             Assert.NotNull(venue);
             Assert.AreEqual(name, venue.Name);
 
             // Delete it
-            _dao.DeleteVenue(venueId);
+            dao.DeleteVenue(venueId);
 
             // Verify it's deleted by checking it doesn't appear in GetAllVenueData
-            var allVenues = _dao.GetAllVenueData();
+            var allVenues = dao.GetAllVenueData();
             Assert.False(allVenues.Any(v => v.ID == venueId));
         }
     }
