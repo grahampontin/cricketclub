@@ -19,7 +19,8 @@ namespace CricketClub.Tests
             // This is a workaround for .NET 8 where ConfigurationManager may not load App.config in test scenarios
             if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ConnectionStrings__TestDB")))
             {
-                var testConnectionString = "Server=thevillagecc.database.windows.net,1433;Database=thevilla_scorebook;User Id=thevillagecc_admin;Password=JVbB7ujECUxS2tm;Connect Timeout=120;Max Pool Size=50;TrustServerCertificate=True;";
+                // For Azure SQL with firewall restrictions, use proxy mode (no explicit port)
+                var testConnectionString = "Server=thevillagecc.database.windows.net;Database=thevilla_scorebook;User Id=thevillagecc_admin;Password=JVbB7ujECUxS2tm;Connect Timeout=120;Max Pool Size=50;Encrypt=True;TrustServerCertificate=True;";
                 Environment.SetEnvironmentVariable("ConnectionStrings__TestDB", testConnectionString);
                 Log.Info("Set TestDB connection string via environment variable for .NET 8 compatibility");
             }
