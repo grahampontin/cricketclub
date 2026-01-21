@@ -29,7 +29,7 @@ namespace CricketClubDAL
 
         public PlayerData GetPlayerData(int playerId)
         {
-            var sql = "select * from thevilla_admin.Players where player_id = ?";
+            var sql = "select * from thevilla_admin.Players where player_id = @playerId";
             return db.ExecuteSQLAndReturnFirstRow(sql, PlayerDataFromRow, null, 
                 new SqlParameter("@playerId", playerId));
         }
@@ -64,7 +64,7 @@ namespace CricketClubDAL
         {
             var newPlayerId = (int) db.ExecuteSqlAndReturnSingleResult("select max(player_id) from thevilla_admin.players") + 1;
             var rowsAffected =
-                db.ExecuteInsertOrUpdate("insert into thevilla_admin.players(player_id, player_name) values (?, ?)",
+                db.ExecuteInsertOrUpdate("insert into thevilla_admin.players(player_id, player_name) values (@playerId, @playerName)",
                     new SqlParameter("@playerId", newPlayerId),
                     new SqlParameter("@playerName", name));
             if (rowsAffected == 1)
@@ -76,37 +76,37 @@ namespace CricketClubDAL
 
         public void UpdatePlayer(PlayerData playerData)
         {
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set player_name = ? where player_id = ?",
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set player_name = @playerName where player_id = @playerId",
                 new SqlParameter("@playerName", playerData.Name),
                 new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set full_name = ? where player_id = ?",
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set full_name = @fullName where player_id = @playerId",
                 new SqlParameter("@fullName", playerData.FullName),
                 new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set nickname = ? where player_id = ?",
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set nickname = @nickname where player_id = @playerId",
                 new SqlParameter("@nickname", playerData.NickName),
                 new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set batting_style = ? where player_id = ?",
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set batting_style = @battingStyle where player_id = @playerId",
                 new SqlParameter("@battingStyle", playerData.BattingStyle),
                 new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set bowling_style = ? where player_id = ?",
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set bowling_style = @bowlingStyle where player_id = @playerId",
                 new SqlParameter("@bowlingStyle", playerData.BowlingStyle),
                 new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set first_name = ? where player_id = ?",
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set first_name = @firstName where player_id = @playerId",
                 new SqlParameter("@firstName", playerData.FirstName),
                 new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set last_name = ? where player_id = ?",
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set last_name = @lastName where player_id = @playerId",
                 new SqlParameter("@lastName", playerData.Surname),
                 new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set middle_initials = ? where player_id = ?",
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set middle_initials = @middleInitials where player_id = @playerId",
                 new SqlParameter("@middleInitials", playerData.MiddleInitials),
                 new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set active = ? where player_id = ?",
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set active = @active where player_id = @playerId",
                 new SqlParameter("@active", Convert.ToInt16(playerData.IsActive)),
                 new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set ringer_of = ? where player_id = ?",
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set ringer_of = @ringerOf where player_id = @playerId",
                 new SqlParameter("@ringerOf", playerData.RingerOf),
                 new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set is_rhb = ? where player_id = ?",
+            db.ExecuteInsertOrUpdate("update thevilla_admin.players set is_rhb = @isRhb where player_id = @playerId",
                 new SqlParameter("@isRhb", Convert.ToInt16(playerData.IsRightHandBat)),
                 new SqlParameter("@playerId", playerData.ID));
         }
@@ -114,7 +114,7 @@ namespace CricketClubDAL
         public List<BattingCardLineData> GetPlayerBattingStatsData(int playerId)
         {
             var sql =
-                "select * from thevilla_admin.batting_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id and player_id = ?";
+                "select * from thevilla_admin.batting_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id and player_id = @playerId";
 
             return db.ExecuteSqlAndReturnAllRows(sql, BattingCardLineDataFromRow, 
                 new SqlParameter("@playerId", playerId)).ToList();
@@ -151,7 +151,7 @@ namespace CricketClubDAL
         public List<BattingCardLineData> GetPlayerFieldingStatsData(int playerId)
         {
             var sql =
-                "select * from thevilla_admin.bowling_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id and (fielder_id = ? or bowler_id = ?)";
+                "select * from thevilla_admin.bowling_scorecards a, thevilla_admin.matches b where a.match_id = b.match_id and (fielder_id = @playerId1 or bowler_id = @playerId2)";
 
             return db.ExecuteSqlAndReturnAllRows(sql, FieldingStatsDataFromRow,
                 new SqlParameter("@playerId1", playerId),
@@ -193,7 +193,7 @@ namespace CricketClubDAL
 
         public List<BowlingStatsEntryData> GetPlayerBowlingStatsData(int playerId)
         {
-            var sql = "select * from thevilla_admin.bowling_stats a, thevilla_admin.matches b where a.match_id = b.match_id and player_id = ?";
+            var sql = "select * from thevilla_admin.bowling_stats a, thevilla_admin.matches b where a.match_id = b.match_id and player_id = @playerId";
 
             return db.ExecuteSqlAndReturnAllRows(sql, BowlingStatsDataFromRow,
                 new SqlParameter("@playerId", playerId)).ToList();
@@ -237,14 +237,14 @@ namespace CricketClubDAL
 
         public TeamData GetTeamData(int teamId)
         {
-            var sql = "select * from thevilla_admin.Teams where team_id = ?";
+            var sql = "select * from thevilla_admin.Teams where team_id = @teamId";
             return db.ExecuteSQLAndReturnFirstRow(sql, TeamDataFromRow, null,
                 new SqlParameter("@teamId", teamId));
         }
 
         public int CreateNewTeam(string teamName)
         {
-            var dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.teams where team = ?",
+            var dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.teams where team = @teamName",
                 new SqlParameter("@teamName", teamName));
             if (dr != null)
             {
@@ -252,7 +252,7 @@ namespace CricketClubDAL
             }
             var newTeamId = (int) db.ExecuteSqlAndReturnSingleResult("select max(team_id) from thevilla_admin.teams") + 1;
             var rowsAffected =
-                db.ExecuteInsertOrUpdate("insert into thevilla_admin.teams(team_id, team) values (?, ?)",
+                db.ExecuteInsertOrUpdate("insert into thevilla_admin.teams(team_id, team) values (@teamId, @teamName)",
                     new SqlParameter("@teamId", newTeamId),
                     new SqlParameter("@teamName", teamName));
             if (rowsAffected == 1)
@@ -264,7 +264,7 @@ namespace CricketClubDAL
 
         public void UpdateTeam(TeamData data)
         {
-            db.ExecuteInsertOrUpdate("update thevilla_admin.teams set team = ? where team_id = ?",
+            db.ExecuteInsertOrUpdate("update thevilla_admin.teams set team = @team where team_id = @teamId",
                 new SqlParameter("@team", data.Name),
                 new SqlParameter("@teamId", data.ID));
         }
@@ -294,14 +294,14 @@ namespace CricketClubDAL
 
         public VenueData GetVenueData(int venueId)
         {
-            var sql = "select * from thevilla_admin.venues where venue_id = ?";
+            var sql = "select * from thevilla_admin.venues where venue_id = @venueId";
             return db.ExecuteSQLAndReturnFirstRow(sql, VenueDataFromRow, null,
                 new SqlParameter("@venueId", venueId));
         }
 
         public int CreateNewVenue(string venueName, string mapsUrl, string description, decimal? latitude, decimal? longitude)
         {
-            var dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.venues where venue = ?",
+            var dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.venues where venue = @venueName",
                 new SqlParameter("@venueName", venueName));
             if (dr != null)
             {
@@ -309,7 +309,7 @@ namespace CricketClubDAL
             }
             var newVenueId = (int) db.ExecuteSqlAndReturnSingleResult("select max(venue_id) from thevilla_admin.venues") + 1;
             var rowsAffected =
-                db.ExecuteInsertOrUpdate("insert into thevilla_admin.venues(venue_id, venue, map_url, description, latitude, longitude) values (?, ?, ?, ?, ?, ?)",
+                db.ExecuteInsertOrUpdate("insert into thevilla_admin.venues(venue_id, venue, map_url, description, latitude, longitude) values (@venueId, @venueName, @mapsUrl, @description, @latitude, @longitude)",
                     new SqlParameter("@venueId", newVenueId),
                     new SqlParameter("@venueName", venueName),
                     new SqlParameter("@mapsUrl", mapsUrl),
@@ -325,7 +325,7 @@ namespace CricketClubDAL
 
         public void UpdateVenue(VenueData data)
         {
-            db.ExecuteInsertOrUpdate("update thevilla_admin.venues set venue = ?, map_url = ?, description = ?, latitude = ?, longitude = ? where venue_id = ?",
+            db.ExecuteInsertOrUpdate("update thevilla_admin.venues set venue = @venue, map_url = @mapUrl, description = @description, latitude = @latitude, longitude = @longitude where venue_id = @venueId",
                 new SqlParameter("@venue", data.Name),
                 new SqlParameter("@mapUrl", data.MapUrl),
                 new SqlParameter("@description", data.Description),
@@ -342,7 +342,7 @@ namespace CricketClubDAL
 
         public void DeleteVenue(int venueId)
         {
-            db.ExecuteInsertOrUpdate("delete from thevilla_admin.venues where venue_id = ?",
+            db.ExecuteInsertOrUpdate("delete from thevilla_admin.venues where venue_id = @venueId",
                 new SqlParameter("@venueId", venueId));
         }
 
@@ -449,7 +449,7 @@ namespace CricketClubDAL
 
         public MatchData GetMatchData(int matchId)
         {
-            var sql = "select * from thevilla_admin.Matches where match_id = ?";
+            var sql = "select * from thevilla_admin.Matches where match_id = @matchId";
             return db.ExecuteSQLAndReturnFirstRow(sql, MatchDataFromRow, null,
                 new SqlParameter("@matchId", matchId));
         }
@@ -458,7 +458,7 @@ namespace CricketClubDAL
         {
             var newMatchId = (int) db.ExecuteSqlAndReturnSingleResult("select max(match_id) from thevilla_admin.matches") + 1;
             var rowsAffected =
-                db.ExecuteInsertOrUpdate("insert into thevilla_admin.matches(match_id, match_date, oppo_id, comp_id, venue_id, home_away) values (?, ?, ?, ?, ?, ?)",
+                db.ExecuteInsertOrUpdate("insert into thevilla_admin.matches(match_id, match_date, oppo_id, comp_id, venue_id, home_away) values (@matchId, @matchDate, @oppoId, @compId, @venueId, @homeAway)",
                     new SqlParameter("@matchId", newMatchId),
                     new SqlParameter("@matchDate", matchDate.ToString("dd MMMM yyyy")),
                     new SqlParameter("@oppoId", opponentId),
@@ -475,11 +475,11 @@ namespace CricketClubDAL
         public void UpdateMatch(MatchData data)
         {
             db.ExecuteInsertOrUpdate(@"update thevilla_admin.matches set 
-                match_date = ?, oppo_id = ?, comp_id = ?, venue_id = ?, home_away = ?, 
-                won_toss = ?, batted = ?, was_declaration = ?, captain_id = ?, wicketkeeper_id = ?, 
-                match_overs = ?, their_innings_was_declared = ?, our_innings_was_declared = ?, 
-                their_innings_length = ?, our_innings_length = ?, abandoned = ? 
-                where match_id = ?",
+                match_date = @matchDate, oppo_id = @oppoId, comp_id = @compId, venue_id = @venueId, home_away = @homeAway, 
+                won_toss = @wonToss, batted = @batted, was_declaration = @wasDeclaration, captain_id = @captainId, wicketkeeper_id = @wicketkeeperId, 
+                match_overs = @matchOvers, their_innings_was_declared = @theirInningsDeclared, our_innings_was_declared = @ourInningsDeclared, 
+                their_innings_length = @theirInningsLength, our_innings_length = @ourInningsLength, abandoned = @abandoned 
+                where match_id = @matchId",
                 new SqlParameter("@matchDate", data.Date.ToString("dd MMMM yyyy")),
                 new SqlParameter("@oppoId", data.OppositionID),
                 new SqlParameter("@compId", data.MatchType),
@@ -542,7 +542,7 @@ namespace CricketClubDAL
         public IEnumerable<BattingCardLineData> GetBattingCard(int matchId, ThemOrUs themOrUs)
         {
             var tableName = themOrUs == ThemOrUs.Us ? "batting_scorecards" : "bowling_scorecards";
-            var sql = "select * from thevilla_admin." + tableName + " where match_id = ?";
+            var sql = "select * from thevilla_admin." + tableName + " where match_id = @matchId";
             
             if (themOrUs == ThemOrUs.Us)
             {
@@ -637,7 +637,7 @@ namespace CricketClubDAL
         public List<BowlingStatsEntryData> GetBowlingStats(int matchId, ThemOrUs who)
         {
             var tableName = who == ThemOrUs.Us ? "bowling_stats" : "oppo_bowling_stats";
-            var sql = "select * from thevilla_admin." + tableName + " where match_id = ?";
+            var sql = "select * from thevilla_admin." + tableName + " where match_id = @matchId";
             
             if (who == ThemOrUs.Us)
             {
@@ -710,7 +710,7 @@ namespace CricketClubDAL
                 table = "oppo_fow";
             }
 
-            var sql = "select * from thevilla_admin." + table + " where match_id = ?";
+            var sql = "select * from thevilla_admin." + table + " where match_id = @matchId";
 
             return db.ExecuteSqlAndReturnAllRows(sql, row => new FoWDataLine
             {
