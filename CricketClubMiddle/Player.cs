@@ -362,8 +362,12 @@ namespace CricketClubMiddle
             get
             {
                 var filename = FirstName + "_" + Surname + "_BIO.html";
-                var path = SettingsWrapper.GetSettingString("BioFolder", "/Players/bios/") + filename;
-                // In .NET 8, path mapping needs to be handled differently than HttpContext.Server.MapPath
+                var bioFolder = SettingsWrapper.GetSettingString("BioFolder", "/Players/bios/");
+                // Handle both absolute and relative paths
+                var path = Path.IsPathRooted(bioFolder) 
+                    ? Path.Combine(bioFolder, filename)
+                    : Path.Combine(Directory.GetCurrentDirectory(), bioFolder.TrimStart('/'), filename);
+                    
                 if (File.Exists(path))
                 {
                     var stream = new StreamReader(path);
@@ -377,8 +381,12 @@ namespace CricketClubMiddle
             set
             {
                 var filename = FirstName + "_" + Surname + "_BIO.html";
-                var path = SettingsWrapper.GetSettingString("BioFolder", "/Players/bios/") + filename;
-                // In .NET 8, path mapping needs to be handled differently than HttpContext.Server.MapPath
+                var bioFolder = SettingsWrapper.GetSettingString("BioFolder", "/Players/bios/");
+                // Handle both absolute and relative paths
+                var path = Path.IsPathRooted(bioFolder) 
+                    ? Path.Combine(bioFolder, filename)
+                    : Path.Combine(Directory.GetCurrentDirectory(), bioFolder.TrimStart('/'), filename);
+                    
                 if (File.Exists(path))
                 {
                     File.Move(path, path + File.GetLastWriteTime(path).ToString("ddMMyyyyHHmmss"));
