@@ -487,24 +487,24 @@ namespace CricketClubDAL
                 new SqlParameter("@oppoId", data.OppositionID),
                 new SqlParameter("@compId", data.MatchType),
                 new SqlParameter("@venueId", data.VenueID),
-                new SqlParameter("@homeAway", data.HomeOrAway),
+                new SqlParameter("@homeAway", string.IsNullOrEmpty(data.HomeOrAway) ? (object)DBNull.Value : data.HomeOrAway),
                 new SqlParameter("@wonToss", Convert.ToInt16(data.WonToss)),
                 new SqlParameter("@batted", Convert.ToInt16(data.Batted)),
                 new SqlParameter("@wasDeclaration", Convert.ToInt16(data.WasDeclarationGame)),
-                new SqlParameter("@captainId", data.CaptainID),
-                new SqlParameter("@wicketkeeperId", data.WicketKeeperID),
-                new SqlParameter("@matchOvers", data.Overs),
+                new SqlParameter("@captainId", (object)data.CaptainID ?? DBNull.Value),
+                new SqlParameter("@wicketkeeperId", (object)data.WicketKeeperID ?? DBNull.Value),
+                new SqlParameter("@matchOvers", (object)data.Overs ?? DBNull.Value),
                 new SqlParameter("@theirInningsDeclared", Convert.ToInt16(data.TheyDeclared)),
                 new SqlParameter("@ourInningsDeclared", Convert.ToInt16(data.WeDeclared)),
-                new SqlParameter("@theirInningsLength", data.TheirInningsLength),
-                new SqlParameter("@ourInningsLength", data.OurInningsLength),
+                new SqlParameter("@theirInningsLength", (object)data.TheirInningsLength ?? DBNull.Value),
+                new SqlParameter("@ourInningsLength", (object)data.OurInningsLength ?? DBNull.Value),
                 new SqlParameter("@abandoned", Convert.ToInt16(data.Abandoned)),
                 new SqlParameter("@matchId", data.ID));
         }
 
         public int GetNextMatch(DateTime date)
         {
-            var sql = "select * from thevilla_admin.matches where match_date >= ? order by match_date asc";
+            var sql = "select * from thevilla_admin.matches where match_date >= @date order by match_date asc";
             var dr = db.ExecuteSQLAndReturnFirstRow(sql, 
                 new SqlParameter("@date", date.ToString("dd MMMM yyyy")));
             try
@@ -519,7 +519,7 @@ namespace CricketClubDAL
 
         public int GetPreviousMatch(DateTime date)
         {
-            var sql = "select * from thevilla_admin.matches where match_date <= ? order by match_date desc";
+            var sql = "select * from thevilla_admin.matches where match_date <= @date order by match_date desc";
             var dr = db.ExecuteSQLAndReturnFirstRow(sql,
                 new SqlParameter("@date", date.ToUniversalTime().ToString("dd MMMM yyyy")));
             try
@@ -918,7 +918,7 @@ namespace CricketClubDAL
 
         public List<ChatData> GetChatBetween(DateTime startDate, DateTime endDate)
         {
-            var sql = "select * from chat where post_time between ? and ?";
+            var sql = "select * from chat where post_time between @startDate and @endDate";
             
             return db.ExecuteSqlAndReturnAllRows(sql, row => new ChatData
             {
@@ -938,7 +938,7 @@ namespace CricketClubDAL
 
         public List<ChatData> GetChatAfter(int commentId)
         {
-            var sql = "select * from chat where ID > ?";
+            var sql = "select * from chat where ID > @commentId";
             
             return db.ExecuteSqlAndReturnAllRows(sql, row => new ChatData
             {
