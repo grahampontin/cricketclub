@@ -81,29 +81,47 @@ namespace CricketClubMiddle.Stats
 
         public decimal GetCatchesPerMatch()
         {
+            var games = GetGames();
+            if (games == 0)
+            {
+                return 0;
+            }
+            
             var WicketsData = new List<BattingCardLine>();
             foreach (var m in FilteredMatchData)
             {
                 WicketsData.AddRange(m.GetOurBattingScoreCard().ScorecardData);
                 WicketsData.AddRange(m.GetTheirBattingScoreCard().ScorecardData);
             }
-            return Math.Round(WicketsData.Where(a => a.Dismissal == ModesOfDismissal.Caught && a.Fielder.Id == this.ID).Count() / (decimal)GetGames(),2);
+            return Math.Round(WicketsData.Where(a => a.Dismissal == ModesOfDismissal.Caught && a.Fielder.Id == this.ID).Count() / (decimal)games,2);
         }
 
         public decimal GetStumpingsPerMatch()
         {
+            var games = GetGames();
+            if (games == 0)
+            {
+                return 0;
+            }
+            
             var WicketsData = new List<BattingCardLine>();
             foreach (var m in FilteredMatchData)
             {
                 WicketsData.AddRange(m.GetOurBattingScoreCard().ScorecardData);
                 WicketsData.AddRange(m.GetTheirBattingScoreCard().ScorecardData);
             }
-            return Math.Round(WicketsData.Where(a => a.Dismissal == ModesOfDismissal.Stumped && a.Fielder.Id == this.ID).Count() / (decimal)GetGames(),2);
+            return Math.Round(WicketsData.Where(a => a.Dismissal == ModesOfDismissal.Stumped && a.Fielder.Id == this.ID).Count() / (decimal)games,2);
         }
 
         public decimal GetAverageByesPerMatch()
         {
-            return Math.Round((decimal)FilteredMatchData.Select(a => new Extras(a.ID, ThemOrUs.Us).Byes).Sum() / GetGames(), 2);
+            var games = GetGames();
+            if (games == 0)
+            {
+                return 0;
+            }
+            
+            return Math.Round((decimal)FilteredMatchData.Select(a => new Extras(a.ID, ThemOrUs.Us).Byes).Sum() / games, 2);
     
         }
 

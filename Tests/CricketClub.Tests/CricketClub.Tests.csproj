@@ -140,6 +140,7 @@
     <Compile Include="BallByBallTests.cs" />
     <Compile Include="CommitteeIntegrationTests.cs" />
     <Compile Include="IntegrationTestSupport.cs" />
+    <Compile Include="KeeperStatsUnitTests.cs" />
     <Compile Include="MatchIntegrationTests.cs" />
     <Compile Include="MatchUnitTests.cs" />
     <Compile Include="PlayerUnitTests.cs" />
