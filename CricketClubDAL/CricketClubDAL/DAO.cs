@@ -5,11 +5,14 @@ using Microsoft.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
 using CricketClubDomain;
+using log4net;
 
 namespace CricketClubDAL
 {
     public class Dao : IDao
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(Dao));
+        
         // Default constructor
         public Dao()
         {
@@ -1313,10 +1316,32 @@ namespace CricketClubDAL
 
         public void LogMessage(string message, string stack, string level, DateTime when, string innerExceptionText)
         {
-            var sql = "insert into log(Message, Stack, Severity, MessageTime, InnerException) select '" +
-                      SafeForSql(message) + "','" + SafeForSql(stack) + "','" + level + "','" + when.ToString("U") +
-                      "', '" + SafeForSql(innerExceptionText) + "'";
-            db.ExecuteInsertOrUpdate(sql);
+            // Use log4net instead of database logging
+            var logMessage = $"{message}\nStack: {stack}";
+            if (!string.IsNullOrEmpty(innerExceptionText))
+            {
+                logMessage += $"\nInner Exception: {innerExceptionText}";
+            }
+            
+            switch (level?.ToUpper())
+            {
+                case "ERROR":
+                    Log.Error(logMessage);
+                    break;
+                case "WARN":
+                case "WARNING":
+                    Log.Warn(logMessage);
+                    break;
+                case "INFO":
+                    Log.Info(logMessage);
+                    break;
+                case "DEBUG":
+                    Log.Debug(logMessage);
+                    break;
+                default:
+                    Log.Info(logMessage);
+                    break;
+            }
         }
 
         #endregion
@@ -1367,7 +1392,8 @@ namespace CricketClubDAL
 
         private void LogException(string message, Exception exception)
         {
-            LogMessage(message, exception.StackTrace, "ERROR", DateTime.Now, exception.InnerException?.StackTrace);
+            // Use log4net to log exceptions
+            Log.Error(message, exception);
         }
 
         public List<PlayerState> GetPlayerStates(int matchId)
