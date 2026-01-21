@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using CricketClubDAL;
 using CricketClubDomain;
 using CricketClubMiddle;
 using CricketClubMiddle.Stats;
@@ -19,11 +20,25 @@ namespace CricketClub.Tests
         private DateTime _fromDate;
         private DateTime _toDate;
         private List<MatchType> _matchTypes;
+        private Mock<IDao> _mockDao;
 
         [SetUp]
         public void Setup()
         {
-            _testPlayer = new Player(1);
+            // Create a mock DAO to avoid real database calls
+            _mockDao = new Mock<IDao>();
+            _mockDao.Setup(dao => dao.GetPlayerData(1))
+                .Returns(new PlayerData
+                {
+                    ID = 1,
+                    Name = "Test Keeper",
+                    FirstName = "Test",
+                    Surname = "Keeper",
+                    IsActive = true
+                });
+            
+            // Create player with mock DAO to avoid database calls
+            _testPlayer = new Player(1, _mockDao.Object);
             _fromDate = DateTime.Now.AddYears(-1);
             _toDate = DateTime.Now;
             _matchTypes = new List<MatchType> { MatchType.Friendly };
