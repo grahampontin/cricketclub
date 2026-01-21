@@ -111,8 +111,8 @@ namespace CricketClubMiddle.Stats
         {
             try
             {
-                decimal runs = FilteredMatchData.Where(a => a.GetOurBattingScoreCard().ScorecardData.Count > 0).Select(a => a.GetOurBattingScoreCard().ScorecardData.Where(b => b.Batsman.Id == this.ID).FirstOrDefault().Score).Sum();
-                decimal innings = FilteredMatchData.Where(a => a.GetOurBattingScoreCard().ScorecardData.Count > 0).Select(a => a.GetOurBattingScoreCard().ScorecardData.Where(b => b.Batsman.Id == this.ID).FirstOrDefault()).Where(a => a.Dismissal != ModesOfDismissal.NotOut && a.Dismissal != ModesOfDismissal.RetiredHurt).Count();
+                decimal runs = FilteredMatchData.Where(a => a.GetOurBattingScoreCard().ScorecardData.Count > 0).Select(a => a.GetOurBattingScoreCard().ScorecardData.Where(b => b.Batsman.Id == this.ID).Select(s => s.Score).DefaultIfEmpty(0).FirstOrDefault()).Sum();
+                decimal innings = FilteredMatchData.Where(a => a.GetOurBattingScoreCard().ScorecardData.Count > 0).Select(a => a.GetOurBattingScoreCard().ScorecardData.Where(b => b.Batsman.Id == this.ID).FirstOrDefault()).Where(a => a != null && a.Dismissal != ModesOfDismissal.NotOut && a.Dismissal != ModesOfDismissal.RetiredHurt).Count();
 
                 return Math.Round(runs / innings, 2);
             }
