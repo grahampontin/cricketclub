@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Web;
 using CricketClubDAL;
 using CricketClubDomain;
 using CricketClubMiddle.Interactive;
 using CricketClubMiddle.Utility;
+using MatchType = CricketClubDomain.MatchType;
 
 namespace CricketClubMiddle
 {
@@ -362,8 +362,12 @@ namespace CricketClubMiddle
             get
             {
                 var filename = FirstName + "_" + Surname + "_BIO.html";
-                var path = SettingsWrapper.GetSettingString("BioFolder", "/Players/bios/") + filename;
-                path = HttpContext.Current.Server.MapPath(path);
+                var bioFolder = SettingsWrapper.GetSettingString("BioFolder", "/Players/bios/");
+                // Handle both absolute and relative paths
+                var path = Path.IsPathRooted(bioFolder) 
+                    ? Path.Combine(bioFolder, filename)
+                    : Path.Combine(Directory.GetCurrentDirectory(), bioFolder.TrimStart('/'), filename);
+                    
                 if (File.Exists(path))
                 {
                     var stream = new StreamReader(path);
@@ -377,8 +381,12 @@ namespace CricketClubMiddle
             set
             {
                 var filename = FirstName + "_" + Surname + "_BIO.html";
-                var path = SettingsWrapper.GetSettingString("BioFolder", "/Players/bios/") + filename;
-                path = HttpContext.Current.Server.MapPath(path);
+                var bioFolder = SettingsWrapper.GetSettingString("BioFolder", "/Players/bios/");
+                // Handle both absolute and relative paths
+                var path = Path.IsPathRooted(bioFolder) 
+                    ? Path.Combine(bioFolder, filename)
+                    : Path.Combine(Directory.GetCurrentDirectory(), bioFolder.TrimStart('/'), filename);
+                    
                 if (File.Exists(path))
                 {
                     File.Move(path, path + File.GetLastWriteTime(path).ToString("ddMMyyyyHHmmss"));

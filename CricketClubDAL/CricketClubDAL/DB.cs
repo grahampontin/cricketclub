@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
-using System.Data.OleDb;
+using Microsoft.Data.SqlClient;
 using System.Linq;
 using System.Text.RegularExpressions;
 using CricketClubDomain;
@@ -27,10 +27,10 @@ namespace CricketClubDAL
         private static readonly ILog Log = LogManager.GetLogger(typeof(Db));
 
 
-        private static OleDbConnection OpenConnection()
+        private static SqlConnection OpenConnection()
         {
             var scorebookConnectionString = GetScorebookConnectionString();
-            var conn = new OleDbConnection(scorebookConnectionString);
+            var conn = new SqlConnection(scorebookConnectionString);
             conn.Open();
             return conn;
         }
@@ -69,8 +69,33 @@ namespace CricketClubDAL
                 {
                     key = "TestDB";
                 }
+
+                // Try to get from environment variable first (useful for .NET 8 testing)
+                var envConnectionString = Environment.GetEnvironmentVariable($"ConnectionStrings__{key}");
+                if (!string.IsNullOrEmpty(envConnectionString))
+                {
+                    connectionString = envConnectionString;
+                    Log.Info($"Using connection string from environment variable for {key}");
+                    Log.Info("Connection string: " + SanitizeConnectionString(connectionString));
+                    return connectionString;
+                }
                 
                 var cnxStr = ConfigurationManager.ConnectionStrings[key];
+                if (cnxStr == null)
+                {
+                    // Try to load from calling assembly's config (for .NET 8 test scenarios)
+                    try
+                    {
+                        var callingAssembly = System.Reflection.Assembly.GetCallingAssembly();
+                        var config = ConfigurationManager.OpenExeConfiguration(callingAssembly.Location);
+                        cnxStr = config.ConnectionStrings.ConnectionStrings[key];
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Warn("Failed to load config from calling assembly", ex);
+                    }
+                }
+                
                 if (cnxStr == null)
                     throw new ConfigurationErrorsException("ConnectionString '" + key +
                                                            "' was not found in the configuration file.");
@@ -89,7 +114,7 @@ namespace CricketClubDAL
             return first ?? defaultIfNone;
         }
 
-        public T ExecuteSQLAndReturnFirstRow<T>(string sql, Func<Row, T> rowExtractorFunc, T defaultIfNone, params OleDbParameter[] parameters) where T : class
+        public T ExecuteSQLAndReturnFirstRow<T>(string sql, Func<Row, T> rowExtractorFunc, T defaultIfNone, params SqlParameter[] parameters) where T : class
         {
             var allRows = ExecuteSqlAndReturnAllRows(sql, rowExtractorFunc, parameters).ToList();
             var first = allRows.FirstOrDefault();
@@ -104,7 +129,7 @@ namespace CricketClubDAL
                 {
                     Log.Info("Executing SQL: " + sql);
                     var data = new DataSet();
-                    var adaptor = new OleDbDataAdapter(sql, connection);
+                    var adaptor = new SqlDataAdapter(sql, connection);
                     adaptor.Fill(data);
                     if (data.Tables[0] != null && data.Tables[0].Rows.Count > 0)
                     {
@@ -123,21 +148,21 @@ namespace CricketClubDAL
             }
         }
 
-        public DataRow ExecuteSQLAndReturnFirstRow(string sql, params OleDbParameter[] parameters)
+        public DataRow ExecuteSQLAndReturnFirstRow(string sql, params SqlParameter[] parameters)
         {
             try
             {
                 using (var connection = OpenConnection())
                 {
                     Log.Info("Executing SQL with parameters: " + sql);
-                    using (var command = new OleDbCommand(sql, connection))
+                    using (var command = new SqlCommand(sql, connection))
                     {
                         if (parameters != null)
                         {
                             command.Parameters.AddRange(parameters);
                         }
                         var data = new DataSet();
-                        var adaptor = new OleDbDataAdapter(command);
+                        var adaptor = new SqlDataAdapter(command);
                         adaptor.Fill(data);
                         if (data.Tables[0] != null && data.Tables[0].Rows.Count > 0)
                         {
@@ -163,7 +188,7 @@ namespace CricketClubDAL
             {
                 using (var conn = OpenConnection())
                 {
-                    using (var command = new OleDbCommand(sql, conn))
+                    using (var command = new SqlCommand(sql, conn))
                     {
                         Log.Debug("Executing SQL: " + sql);
                         var executeSqlAndReturnSingleResult = command.ExecuteScalar();
@@ -181,13 +206,13 @@ namespace CricketClubDAL
             }
         }
 
-        public object ExecuteSqlAndReturnSingleResult(string sql, params OleDbParameter[] parameters)
+        public object ExecuteSqlAndReturnSingleResult(string sql, params SqlParameter[] parameters)
         {
             try
             {
                 using (var conn = OpenConnection())
                 {
-                    using (var command = new OleDbCommand(sql, conn))
+                    using (var command = new SqlCommand(sql, conn))
                     {
                         if (parameters != null)
                         {
@@ -216,7 +241,7 @@ namespace CricketClubDAL
                 Log.Debug("Executing SQL: " + sql);
                 using (var conn = OpenConnection())
                 {
-                    using (var command = new OleDbCommand(sql, conn))
+                    using (var command = new SqlCommand(sql, conn))
                     {
                         return command.ExecuteNonQuery();
                     }
@@ -229,14 +254,14 @@ namespace CricketClubDAL
             }
         }
 
-        public int ExecuteInsertOrUpdate(string sql, params OleDbParameter[] parameters)
+        public int ExecuteInsertOrUpdate(string sql, params SqlParameter[] parameters)
         {
             try
             {
                 Log.Debug("Executing SQL with parameters: " + sql);
                 using (var conn = OpenConnection())
                 {
-                    using (var command = new OleDbCommand(sql, conn))
+                    using (var command = new SqlCommand(sql, conn))
                     {
                         if (parameters != null)
                         {
@@ -260,7 +285,7 @@ namespace CricketClubDAL
             return dataSet.Tables[0].Rows.Cast<DataRow>().Select(r=>new Row(r)).Select(rowConverter);
         }
 
-        public IEnumerable<T> ExecuteSqlAndReturnAllRows<T>(string sql, Func<Row, T> rowConverter, params OleDbParameter[] parameters)
+        public IEnumerable<T> ExecuteSqlAndReturnAllRows<T>(string sql, Func<Row, T> rowConverter, params SqlParameter[] parameters)
         {
             var dataSet = ExecuteSqlAndReturnAllRows(sql, parameters);
             
@@ -276,7 +301,7 @@ namespace CricketClubDAL
                 using (var conn = OpenConnection())
                 {
                     var dataSet = new DataSet();
-                    var adaptor = new OleDbDataAdapter(sql, conn);
+                    var adaptor = new SqlDataAdapter(sql, conn);
                     adaptor.Fill(dataSet);
                     Log.Info("Found " + dataSet.Tables[0].Rows.Count + " rows.");
                     dataSet.Tables[0].Rows.Cast<DataRow>().ToList().ForEach(r =>
@@ -294,21 +319,21 @@ namespace CricketClubDAL
             }
         }
 
-        public DataSet ExecuteSqlAndReturnAllRows(string sql, params OleDbParameter[] parameters)
+        public DataSet ExecuteSqlAndReturnAllRows(string sql, params SqlParameter[] parameters)
         {
             try
             {
                 Log.Info("Executing SQL with parameters: " + sql);
                 using (var conn = OpenConnection())
                 {
-                    using (var command = new OleDbCommand(sql, conn))
+                    using (var command = new SqlCommand(sql, conn))
                     {
                         if (parameters != null)
                         {
                             command.Parameters.AddRange(parameters);
                         }
                         var dataSet = new DataSet();
-                        var adaptor = new OleDbDataAdapter(command);
+                        var adaptor = new SqlDataAdapter(command);
                         adaptor.Fill(dataSet);
                         Log.Info("Found " + dataSet.Tables[0].Rows.Count + " rows.");
                         dataSet.Tables[0].Rows.Cast<DataRow>().ToList().ForEach(r =>
