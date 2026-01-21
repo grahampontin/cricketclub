@@ -39,7 +39,7 @@ namespace CricketClubMiddle.Stats
 
         public static List<KeeperStats> GetAll(DateTime fromDate, DateTime toDate, List<MatchType> matchTypes, Venue venue, IDao dao)
         {
-            var keepers = Match.GetResults(fromDate,toDate).Where(a => a.WicketKeeper != null && a.WicketKeeper.Id>0).Select(a => a.WicketKeeper).Distinct(new PlayerComparer());
+            var keepers = Match.GetResults(dao).Where(a => a.MatchDate > fromDate && a.MatchDate < toDate).Where(a => a.WicketKeeper != null && a.WicketKeeper.Id>0).Select(a => a.WicketKeeper).Distinct(new PlayerComparer());
             var c = new List<KeeperStats>();
             foreach (var p in keepers)
             {
