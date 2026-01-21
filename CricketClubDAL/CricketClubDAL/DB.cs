@@ -69,8 +69,33 @@ namespace CricketClubDAL
                 {
                     key = "TestDB";
                 }
+
+                // Try to get from environment variable first (useful for .NET 8 testing)
+                var envConnectionString = Environment.GetEnvironmentVariable($"ConnectionStrings__{key}");
+                if (!string.IsNullOrEmpty(envConnectionString))
+                {
+                    connectionString = envConnectionString;
+                    Log.Info($"Using connection string from environment variable for {key}");
+                    Log.Info("Connection string: " + SanitizeConnectionString(connectionString));
+                    return connectionString;
+                }
                 
                 var cnxStr = ConfigurationManager.ConnectionStrings[key];
+                if (cnxStr == null)
+                {
+                    // Try to load from calling assembly's config (for .NET 8 test scenarios)
+                    try
+                    {
+                        var callingAssembly = System.Reflection.Assembly.GetCallingAssembly();
+                        var config = ConfigurationManager.OpenExeConfiguration(callingAssembly.Location);
+                        cnxStr = config.ConnectionStrings.ConnectionStrings[key];
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Warn("Failed to load config from calling assembly", ex);
+                    }
+                }
+                
                 if (cnxStr == null)
                     throw new ConfigurationErrorsException("ConnectionString '" + key +
                                                            "' was not found in the configuration file.");

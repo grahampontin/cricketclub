@@ -25,4 +25,12 @@
     <ProjectReference Include="..\..\CricketClubMiddle\CricketClubMiddle.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="App.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <TargetPath>$(AssemblyName).dll.config</TargetPath>
+    </None>
+  </ItemGroup>
+
 </Project>
