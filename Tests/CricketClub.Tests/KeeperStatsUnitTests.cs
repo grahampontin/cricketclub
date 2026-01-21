@@ -37,6 +37,10 @@ namespace CricketClub.Tests
                     IsActive = true
                 });
             
+            // Mock GetAllMatches to return an empty list to simulate no games scenario
+            _mockDao.Setup(dao => dao.GetAllMatches())
+                .Returns(new List<MatchData>());
+            
             // Create player with mock DAO to avoid database calls
             _testPlayer = new Player(1, _mockDao.Object);
             _fromDate = DateTime.Now.AddYears(-1);
@@ -48,7 +52,7 @@ namespace CricketClub.Tests
         public void GetCatchesPerMatch_WithNoGames_ReturnsZero()
         {
             // Arrange
-            var keeperStats = new KeeperStats(_testPlayer, _fromDate, _toDate, _matchTypes, null);
+            var keeperStats = new KeeperStats(_testPlayer, _fromDate, _toDate, _matchTypes, null, _mockDao.Object);
 
             // Act
             var result = keeperStats.GetCatchesPerMatch();
@@ -61,7 +65,7 @@ namespace CricketClub.Tests
         public void GetStumpingsPerMatch_WithNoGames_ReturnsZero()
         {
             // Arrange
-            var keeperStats = new KeeperStats(_testPlayer, _fromDate, _toDate, _matchTypes, null);
+            var keeperStats = new KeeperStats(_testPlayer, _fromDate, _toDate, _matchTypes, null, _mockDao.Object);
 
             // Act
             var result = keeperStats.GetStumpingsPerMatch();
@@ -74,7 +78,7 @@ namespace CricketClub.Tests
         public void GetAverageByesPerMatch_WithNoGames_ReturnsZero()
         {
             // Arrange
-            var keeperStats = new KeeperStats(_testPlayer, _fromDate, _toDate, _matchTypes, null);
+            var keeperStats = new KeeperStats(_testPlayer, _fromDate, _toDate, _matchTypes, null, _mockDao.Object);
 
             // Act
             var result = keeperStats.GetAverageByesPerMatch();
@@ -87,7 +91,7 @@ namespace CricketClub.Tests
         public void GetGames_WithNoMatchingGames_ReturnsZero()
         {
             // Arrange
-            var keeperStats = new KeeperStats(_testPlayer, _fromDate, _toDate, _matchTypes, null);
+            var keeperStats = new KeeperStats(_testPlayer, _fromDate, _toDate, _matchTypes, null, _mockDao.Object);
 
             // Act
             var result = keeperStats.GetGames();
