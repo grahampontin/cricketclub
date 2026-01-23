@@ -22,6 +22,7 @@ namespace CricketClub.WebApi.Tests.Controllers
         public void ProcessRequest_Get_ReturnsResults()
         {
             // Arrange
+            mockDao.Setup(d => d.GetAllMatches()).Returns(new List<CricketClubDomain.MatchData>());
             var context = TestControllerContextFactory.CreateHttpContext("GET", "http://test.com/api/results");
 
             // Act
@@ -36,6 +37,7 @@ namespace CricketClub.WebApi.Tests.Controllers
         public void ProcessRequest_GetWithSeasonFilter_ReturnsFilteredResults()
         {
             // Arrange
+            mockDao.Setup(d => d.GetAllMatches()).Returns(new List<CricketClubDomain.MatchData>());
             var context = TestControllerContextFactory.CreateHttpContext("GET", "http://test.com/api/results?season=2023");
 
             // Act
