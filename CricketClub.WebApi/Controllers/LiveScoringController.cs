@@ -109,7 +109,6 @@ namespace CricketClub.WebApi.Controllers
                 context.Response.StatusCode = 400;
                 context.Response.ContentType = "text/plain";
                 context.Response.Write(ex.Message);
-                context.Response.End();
             }
             catch (Exception ex)
             {
@@ -117,7 +116,6 @@ namespace CricketClub.WebApi.Controllers
                 context.Response.StatusCode = 500;
                 context.Response.ContentType = "text/plain";
                 context.Response.Write(ex.Message + Environment.NewLine + ex.StackTrace);
-                context.Response.End();
             }
         }
 

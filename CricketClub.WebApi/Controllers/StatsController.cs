@@ -77,10 +77,6 @@ namespace CricketClub.WebApi.Controllers
                 context.Response.ContentType = "text/plain";
                 context.Response.Write(ex.Message + Environment.NewLine + ex.StackTrace);
             }
-            finally
-            {
-                context.Response.End();
-            }
         }
 
         private void HandleStatsQuery(IHandlerContext context)

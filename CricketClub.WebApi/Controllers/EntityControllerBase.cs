@@ -47,7 +47,6 @@ namespace CricketClub.WebApi.Controllers
             context.Response.ContentType = "application/json";
             context.Response.Write(JsonSerializer.Serialize(updatedEntity));
             context.Response.StatusCode = 200;
-            context.Response.End();
         }
 
         protected abstract T UpdateEntity(T entity);
@@ -60,7 +59,6 @@ namespace CricketClub.WebApi.Controllers
                     context.Response.ContentType = "text/plain";
                     context.Response.Write("ID not specified for delete");
                     context.Response.StatusCode = 400;
-                    context.Response.End();
                 });
         }
 
@@ -68,7 +66,6 @@ namespace CricketClub.WebApi.Controllers
         {
             DeleteEntity(id);
             context.Response.StatusCode = 204;
-            context.Response.End();
         }
 
         protected abstract void DeleteEntity(int id);
@@ -79,7 +76,6 @@ namespace CricketClub.WebApi.Controllers
             context.Response.ContentType = "application/json";
             context.Response.Write(JsonSerializer.Serialize(entity));
             context.Response.StatusCode = 201;
-            context.Response.End();
         }
 
         protected abstract T CreateEntity(T deserializeRequestBody);
@@ -110,7 +106,6 @@ namespace CricketClub.WebApi.Controllers
             context.Response.ContentType = "application/json";
             context.Response.Write(JsonSerializer.Serialize(GetAllEntities(context.Request.QueryString)));
             context.Response.StatusCode = 200;
-            context.Response.End();
         }
 
         protected abstract List<T> GetAllEntities(NameValueCollection requestQueryString);
@@ -122,12 +117,10 @@ namespace CricketClub.WebApi.Controllers
             if (entity == null)
             {
                 context.Response.StatusCode = 404;
-                context.Response.End();
                 return;
             }
             context.Response.Write(JsonSerializer.Serialize(entity));
             context.Response.StatusCode = 200;
-            context.Response.End();
         }
 
         private T DeserializeRequestBody(IHandlerContext context)
