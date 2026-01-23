@@ -19,9 +19,9 @@ namespace CricketClub.WebApi.Controllers
         [HttpPost]
         [HttpPut]
         [HttpDelete("{id}")]
-        public IActionResult HandleRequest()
+        public async Task<IActionResult> HandleRequest()
         {
-            return ProcessRequest();
+            return await ProcessRequest();
         }
 
         protected override PlayerV1 UpdateEntity(PlayerV1 entity)

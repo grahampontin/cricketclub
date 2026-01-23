@@ -22,9 +22,9 @@ namespace CricketClub.WebApi.Controllers
         [HttpGet]
         [HttpGet("{id}")]
         [HttpPost("{id}")]
-        public IActionResult HandleRequest()
+        public async Task<IActionResult> HandleRequest()
         {
-            return ProcessRequest();
+            return await ProcessRequest();
         }
 
         public override void ProcessRequest(IHandlerContext context)

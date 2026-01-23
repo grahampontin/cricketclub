@@ -34,9 +34,9 @@ namespace CricketClub.WebApi.Controllers
         [HttpDelete("{matchId}/last-over")]
         [HttpDelete("{matchId}/reset")]
         [HttpPost("{matchId}/force-end")]
-        public IActionResult HandleRequest()
+        public async Task<IActionResult> HandleRequest()
         {
-            return ProcessRequest();
+            return await ProcessRequest();
         }
 
         public override void ProcessRequest(IHandlerContext context)
