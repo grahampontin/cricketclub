@@ -92,7 +92,8 @@ namespace CricketClub.WebApi.Controllers
             var content = writer.ToString();
             if (!string.IsNullOrEmpty(content))
             {
-                response.WriteAsync(content).GetAwaiter().GetResult();
+                // ConfigureAwait(false) to avoid potential deadlocks in synchronous contexts
+                response.WriteAsync(content).ConfigureAwait(false).GetAwaiter().GetResult();
             }
         }
     }
