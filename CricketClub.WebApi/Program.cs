@@ -10,6 +10,32 @@ var builder = WebApplication.CreateBuilder(args);
 var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
 XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
 
+// Bridge connection strings from appsettings.json to environment variables for legacy DAL
+var connectionStrings = builder.Configuration.GetSection("ConnectionStrings");
+foreach (var connectionString in connectionStrings.GetChildren())
+{
+    var envVarName = $"ConnectionStrings__{connectionString.Key}";
+    var connStr = connectionString.Value;
+    
+    // Remove Provider parameter if present (not supported by SqlClient, only by OleDb)
+    if (!string.IsNullOrEmpty(connStr) && connStr.Contains("Provider=", StringComparison.OrdinalIgnoreCase))
+    {
+        connStr = System.Text.RegularExpressions.Regex.Replace(
+            connStr, 
+            @"Provider\s*=\s*[^;]+;?", 
+            "", 
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    }
+    
+    // Add TrustServerCertificate=True if not already present (for development environments with self-signed certs)
+    if (!string.IsNullOrEmpty(connStr) && !connStr.Contains("TrustServerCertificate", StringComparison.OrdinalIgnoreCase))
+    {
+        connStr = connStr.TrimEnd(';') + ";TrustServerCertificate=True";
+    }
+    
+    Environment.SetEnvironmentVariable(envVarName, connStr);
+}
+
 // Add services to the container
 builder.Services.AddControllers();
 

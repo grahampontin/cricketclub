@@ -29,6 +29,7 @@ namespace CricketClub.WebApi.Controllers
             return await ProcessRequest();
         }
 
+        [NonAction]
         public override void ProcessRequest(IHandlerContext context)
         {
             var matchId = ExtractMatchIdFromUrl(context.Request.Url.ToString());

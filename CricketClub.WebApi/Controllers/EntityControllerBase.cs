@@ -17,6 +17,7 @@ namespace CricketClub.WebApi.Controllers
             this.database = database;
         }
 
+        [NonAction]
         public override void ProcessRequest(IHandlerContext context)
         {
             switch (context.Request.HttpMethod)
@@ -138,6 +139,7 @@ namespace CricketClub.WebApi.Controllers
 
         protected abstract T GetEntity(int id);
 
+        [NonAction]
         public abstract string GetTypeName();
     }
 }

@@ -33,6 +33,7 @@ namespace CricketClub.WebApi.Controllers
             return await ProcessRequest();
         }
 
+        [NonAction]
         public override void ProcessRequest(IHandlerContext context)
         {
             try
