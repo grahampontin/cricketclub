@@ -31,12 +31,18 @@ namespace CricketClub.WebApi.Controllers
         private readonly HttpRequest request;
         private readonly MemoryStream bodyStream;
 
-        public AspNetCoreRequestContext(HttpRequest request)
+        private AspNetCoreRequestContext(HttpRequest request, MemoryStream bodyStream)
         {
             this.request = request;
-            bodyStream = new MemoryStream();
-            request.Body.CopyTo(bodyStream);
+            this.bodyStream = bodyStream;
+        }
+
+        public static async Task<AspNetCoreRequestContext> CreateAsync(HttpRequest request)
+        {
+            var bodyStream = new MemoryStream();
+            await request.Body.CopyToAsync(bodyStream);
             bodyStream.Position = 0;
+            return new AspNetCoreRequestContext(request, bodyStream);
         }
 
         public string HttpMethod => request.Method;
@@ -86,17 +92,25 @@ namespace CricketClub.WebApi.Controllers
             var content = writer.ToString();
             if (!string.IsNullOrEmpty(content))
             {
-                response.WriteAsync(content).Wait();
+                // ConfigureAwait(false) to avoid potential deadlocks in synchronous contexts
+                response.WriteAsync(content).ConfigureAwait(false).GetAwaiter().GetResult();
             }
         }
     }
 
     public class AspNetCoreHandlerContext : IHandlerContext
     {
-        public AspNetCoreHandlerContext(HttpContext context)
+        private AspNetCoreHandlerContext(IRequestContext request, IResponseContext response)
         {
-            Request = new AspNetCoreRequestContext(context.Request);
-            Response = new AspNetCoreResponseContext(context.Response);
+            Request = request;
+            Response = response;
+        }
+
+        public static async Task<AspNetCoreHandlerContext> CreateAsync(HttpContext context)
+        {
+            var request = await AspNetCoreRequestContext.CreateAsync(context.Request);
+            var response = new AspNetCoreResponseContext(context.Response);
+            return new AspNetCoreHandlerContext(request, response);
         }
 
         public IRequestContext Request { get; }
@@ -106,9 +120,9 @@ namespace CricketClub.WebApi.Controllers
     [ApiController]
     public abstract class ControllerBase : Controller
     {
-        protected IActionResult ProcessRequest()
+        protected async Task<IActionResult> ProcessRequest()
         {
-            var wrapped = new AspNetCoreHandlerContext(HttpContext);
+            var wrapped = await AspNetCoreHandlerContext.CreateAsync(HttpContext);
             ProcessRequest(wrapped);
             wrapped.Response.End();
             return new EmptyResult();

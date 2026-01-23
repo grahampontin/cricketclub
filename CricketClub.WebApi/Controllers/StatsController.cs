@@ -28,9 +28,9 @@ namespace CricketClub.WebApi.Controllers
         [HttpGet("chart/{playerId}/{chartType}")]
         [HttpGet("playermatches/{playerId}")]
         [HttpGet("familytree")]
-        public IActionResult HandleRequest()
+        public async Task<IActionResult> HandleRequest()
         {
-            return ProcessRequest();
+            return await ProcessRequest();
         }
 
         public override void ProcessRequest(IHandlerContext context)
