@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.11" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
+    <PackageReference Include="log4net" Version="3.2.0" />
+    <PackageReference Include="System.Text.Json" Version="9.0.1" />
+    <!-- CricketClub packages - from Azure DevOps feed -->
+    <!-- NOTE: These packages require access to the private Azure DevOps feed -->
+    <!-- When building with network access, these will be resolved from the feed configured in nuget.config -->
+    <!-- Wildcard versions (*-*) are used intentionally to always get the latest .NET 9 compatible versions -->
+    <!-- TODO: Pin to specific versions once the package versions are stabilized -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="log4net.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CricketClubDAL\CricketClubDAL\CricketClubDAL.csproj" />
+    <ProjectReference Include="..\CricketClubDomain\CricketClubDomain.csproj" />
+    <ProjectReference Include="..\CricketClubMiddle\CricketClubMiddle.csproj" />
+  </ItemGroup>
+
+</Project>
