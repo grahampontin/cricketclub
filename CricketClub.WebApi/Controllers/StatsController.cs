@@ -124,19 +124,19 @@ namespace CricketClub.WebApi.Controllers
         {
             try
             {
-                var players = Player.GetAll(true, database).Where(a => a.Id > 0);
+                var players = Player.GetAll(true, database).Where(a => a.Id > 0).ToList();
+                
+                if (!players.Any())
+                {
+                    return Ok(new List<LeadingPlayerCategoryV1>());
+                }
                 
                 var categories = new List<LeadingPlayerCategoryV1>();
 
                 // Most Runs
                 var mostRuns = players.Max(a => a.GetRunsScored());
                 var topRunScorers = players.Where(a => a.GetRunsScored() == mostRuns)
-                    .Select(p => new LeadingPlayerEntryV1
-                    {
-                        PlayerId = p.Id,
-                        PlayerName = p.FirstName + " " + p.Surname,
-                        Value = p.GetRunsScored()
-                    }).ToList();
+                    .Select(p => CreateLeadingPlayerEntry(p, p.GetRunsScored())).ToList();
                 categories.Add(new LeadingPlayerCategoryV1
                 {
                     Category = "Most Runs",
@@ -146,12 +146,7 @@ namespace CricketClub.WebApi.Controllers
                 // Most Wickets
                 var mostWickets = players.Max(a => a.GetWicketsTaken());
                 var topWicketTakers = players.Where(a => a.GetWicketsTaken() == mostWickets)
-                    .Select(p => new LeadingPlayerEntryV1
-                    {
-                        PlayerId = p.Id,
-                        PlayerName = p.FirstName + " " + p.Surname,
-                        Value = p.GetWicketsTaken()
-                    }).ToList();
+                    .Select(p => CreateLeadingPlayerEntry(p, p.GetWicketsTaken())).ToList();
                 categories.Add(new LeadingPlayerCategoryV1
                 {
                     Category = "Most Wickets",
@@ -161,12 +156,7 @@ namespace CricketClub.WebApi.Controllers
                 // Most Catches
                 var mostCatches = players.Max(a => a.GetCatchesTaken());
                 var topCatchTakers = players.Where(a => a.GetCatchesTaken() == mostCatches)
-                    .Select(p => new LeadingPlayerEntryV1
-                    {
-                        PlayerId = p.Id,
-                        PlayerName = p.FirstName + " " + p.Surname,
-                        Value = p.GetCatchesTaken()
-                    }).ToList();
+                    .Select(p => CreateLeadingPlayerEntry(p, p.GetCatchesTaken())).ToList();
                 categories.Add(new LeadingPlayerCategoryV1
                 {
                     Category = "Most Catches",
@@ -176,12 +166,7 @@ namespace CricketClub.WebApi.Controllers
                 // Most Appearances
                 var mostAppearances = players.Max(a => a.Caps);
                 var topAppearances = players.Where(a => a.Caps == mostAppearances)
-                    .Select(p => new LeadingPlayerEntryV1
-                    {
-                        PlayerId = p.Id,
-                        PlayerName = p.FirstName + " " + p.Surname,
-                        Value = p.Caps
-                    }).ToList();
+                    .Select(p => CreateLeadingPlayerEntry(p, p.Caps)).ToList();
                 categories.Add(new LeadingPlayerCategoryV1
                 {
                     Category = "Most Appearances",
@@ -194,6 +179,16 @@ namespace CricketClub.WebApi.Controllers
             {
                 return StatusCode(500, ex.Message + Environment.NewLine + ex.StackTrace);
             }
+        }
+
+        private static LeadingPlayerEntryV1 CreateLeadingPlayerEntry(Player player, int value)
+        {
+            return new LeadingPlayerEntryV1
+            {
+                PlayerId = player.Id,
+                PlayerName = player.FirstName + " " + player.Surname,
+                Value = value
+            };
         }
     }
 
