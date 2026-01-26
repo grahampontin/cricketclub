@@ -118,6 +118,83 @@ namespace CricketClub.WebApi.Controllers
                 return StatusCode(500, ex.Message + Environment.NewLine + ex.StackTrace);
             }
         }
+
+        [HttpGet("leadingplayers")]
+        public IActionResult GetLeadingPlayers()
+        {
+            try
+            {
+                var players = Player.GetAll(true, database).Where(a => a.Id > 0);
+                
+                var categories = new List<LeadingPlayerCategoryV1>();
+
+                // Most Runs
+                var mostRuns = players.Max(a => a.GetRunsScored());
+                var topRunScorers = players.Where(a => a.GetRunsScored() == mostRuns)
+                    .Select(p => new LeadingPlayerEntryV1
+                    {
+                        PlayerId = p.Id,
+                        PlayerName = p.FirstName + " " + p.Surname,
+                        Value = p.GetRunsScored()
+                    }).ToList();
+                categories.Add(new LeadingPlayerCategoryV1
+                {
+                    Category = "Most Runs",
+                    Players = topRunScorers
+                });
+
+                // Most Wickets
+                var mostWickets = players.Max(a => a.GetWicketsTaken());
+                var topWicketTakers = players.Where(a => a.GetWicketsTaken() == mostWickets)
+                    .Select(p => new LeadingPlayerEntryV1
+                    {
+                        PlayerId = p.Id,
+                        PlayerName = p.FirstName + " " + p.Surname,
+                        Value = p.GetWicketsTaken()
+                    }).ToList();
+                categories.Add(new LeadingPlayerCategoryV1
+                {
+                    Category = "Most Wickets",
+                    Players = topWicketTakers
+                });
+
+                // Most Catches
+                var mostCatches = players.Max(a => a.GetCatchesTaken());
+                var topCatchTakers = players.Where(a => a.GetCatchesTaken() == mostCatches)
+                    .Select(p => new LeadingPlayerEntryV1
+                    {
+                        PlayerId = p.Id,
+                        PlayerName = p.FirstName + " " + p.Surname,
+                        Value = p.GetCatchesTaken()
+                    }).ToList();
+                categories.Add(new LeadingPlayerCategoryV1
+                {
+                    Category = "Most Catches",
+                    Players = topCatchTakers
+                });
+
+                // Most Appearances
+                var mostAppearances = players.Max(a => a.Caps);
+                var topAppearances = players.Where(a => a.Caps == mostAppearances)
+                    .Select(p => new LeadingPlayerEntryV1
+                    {
+                        PlayerId = p.Id,
+                        PlayerName = p.FirstName + " " + p.Surname,
+                        Value = p.Caps
+                    }).ToList();
+                categories.Add(new LeadingPlayerCategoryV1
+                {
+                    Category = "Most Appearances",
+                    Players = topAppearances
+                });
+
+                return Ok(categories);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message + Environment.NewLine + ex.StackTrace);
+            }
+        }
     }
 
     public class FamilyTreeNode
