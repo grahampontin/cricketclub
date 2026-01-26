@@ -28,9 +28,28 @@ namespace CricketClub.WebApi.Domain
         public bool IsTied { get; set; }
         public bool IsDrawn { get; set; }
         public bool IsAbandoned { get; set; }
+        
+        // New fields for match report
+        public string MatchReportConditions { get; set; }
+        public string MatchReportText { get; set; }
+        public string MatchReportImage { get; set; }
+        
+        // New field to indicate if primary team won
+        public bool? IsWinner { get; set; }
 
         public static ResultV1 FromInternal(Match match)
         {
+            return FromInternal(match, null);
+        }
+        
+        public static ResultV1 FromInternal(Match match, CricketClubDAL.MatchReportAndConditions matchReport)
+        {
+            bool? isWinner = null;
+            if (match.Winner != null)
+            {
+                isWinner = match.Winner.IsUs;
+            }
+            
             return new ResultV1()
             {
                 MatchId = match.ID,
@@ -52,7 +71,11 @@ namespace CricketClub.WebApi.Domain
                 TheirScore = match.GetTeamScore(match.Opposition),
                 TheirWickets = match.GetTeamWicketsDown(match.Opposition),
                 TheirOversFaced = match.GetOurBowlingStats().BowlingStatsData.Sum(b => b.Overs),
-                IsAbandoned = match.Abandoned
+                IsAbandoned = match.Abandoned,
+                IsWinner = isWinner,
+                MatchReportConditions = matchReport != null && matchReport != CricketClubDAL.MatchReportAndConditions.None ? matchReport.Conditions : null,
+                MatchReportText = matchReport != null && matchReport != CricketClubDAL.MatchReportAndConditions.None ? matchReport.Report : null,
+                MatchReportImage = matchReport != null && matchReport != CricketClubDAL.MatchReportAndConditions.None ? matchReport.ReportImage : null
             };
         }
     }

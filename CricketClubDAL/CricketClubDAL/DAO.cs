@@ -1686,6 +1686,20 @@ namespace CricketClubDAL
                 r => new MatchReportAndConditions(r.GetString("conditions"), r.GetString("report"), r.GetString("report_image")), MatchReportAndConditions.None);
         }
 
+        public Dictionary<int, MatchReportAndConditions> GetAllMatchReports()
+        {
+            var reports = db.QueryMany("select * from thevilla_admin.match_reports",
+                r => new
+                {
+                    MatchId = r.GetInt("match_id"),
+                    Report = new MatchReportAndConditions(
+                        r.GetString("conditions"),
+                        r.GetString("report"),
+                        r.GetString("report_image"))
+                });
+            return reports.ToDictionary(x => x.MatchId, x => x.Report);
+        }
+
     }
 
     public class MatchReportAndConditions
