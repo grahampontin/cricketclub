@@ -14,7 +14,6 @@ TheVillageCC.WebApi/
 │   ├── FixturesController.cs
 │   ├── LiveScoringController.cs
 │   ├── MatchesController.cs
-│   ├── MatchReportsController.cs
 │   ├── PlayersController.cs
 │   ├── ResultsController.cs
 │   ├── ScorecardsController.cs
@@ -70,8 +69,7 @@ All routes are prefixed with `/api/`.
 ### Specialized Endpoints
 
 - **Fixtures** - GET upcoming fixtures
-- **Results** - GET match results  
-- **Match Reports** - GET/POST match reports
+- **Results** - GET match results (includes match report data and winner flag)
 - **Scorecards** - GET/POST scorecards
 - **Stats** - Various statistical queries and player data
 - **Live Scoring** - Real-time match scoring endpoints

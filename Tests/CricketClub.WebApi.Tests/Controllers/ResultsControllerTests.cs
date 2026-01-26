@@ -23,6 +23,7 @@ namespace CricketClub.WebApi.Tests.Controllers
         {
             // Arrange
             mockDao.Setup(d => d.GetAllMatches()).Returns(new List<CricketClubDomain.MatchData>());
+            mockDao.Setup(d => d.GetAllMatchReports()).Returns(new Dictionary<int, CricketClubDAL.MatchReportAndConditions>());
             var context = TestControllerContextFactory.CreateHttpContext("GET", "http://test.com/api/results");
 
             // Act
@@ -38,6 +39,7 @@ namespace CricketClub.WebApi.Tests.Controllers
         {
             // Arrange
             mockDao.Setup(d => d.GetAllMatches()).Returns(new List<CricketClubDomain.MatchData>());
+            mockDao.Setup(d => d.GetAllMatchReports()).Returns(new Dictionary<int, CricketClubDAL.MatchReportAndConditions>());
             var context = TestControllerContextFactory.CreateHttpContext("GET", "http://test.com/api/results?season=2023");
 
             // Act

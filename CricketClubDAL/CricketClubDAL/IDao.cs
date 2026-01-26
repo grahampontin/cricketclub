@@ -114,5 +114,6 @@ namespace CricketClubDAL
         void DeleteBallByBallOver(int matchId, int lastCompletedOver);
         void CreateOrUpdateMatchReport(int matchId, string conditions, string report, string base64EncodedImage);
         MatchReportAndConditions GetMatchReport(int matchId);
+        Dictionary<int, MatchReportAndConditions> GetAllMatchReports();
     }
 }

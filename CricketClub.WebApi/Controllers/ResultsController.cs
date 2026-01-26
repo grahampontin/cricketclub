@@ -57,7 +57,14 @@ namespace CricketClub.WebApi.Controllers
                 .Where(m => m.MatchDate >= startDate && m.MatchDate <= endDate)
                 .ToList();
 
-            var results = filteredMatches.Select(ResultV1.FromInternal).ToList();
+            // Fetch all match reports in one query for efficiency
+            var allMatchReports = database.GetAllMatchReports();
+
+            var results = filteredMatches.Select(m =>
+            {
+                allMatchReports.TryGetValue(m.ID, out var report);
+                return ResultV1.FromInternal(m, report);
+            }).ToList();
 
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = 200;
