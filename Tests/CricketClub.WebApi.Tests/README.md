@@ -41,12 +41,11 @@ Current test coverage includes:
 - [x] AwardsController
 - [x] CommitteeController
 - [x] FixturesController
-- [x] ResultsController
+- [x] ResultsController (includes match report data)
 - [ ] MatchesController
 - [ ] PlayersController
 - [ ] TeamsController
 - [ ] VenuesController
-- [ ] MatchReportsController
 - [ ] ScorecardsController
 - [ ] StatsController
 - [ ] LiveScoringController

@@ -50,6 +50,8 @@ namespace CricketClub.WebApi.Domain
                 isWinner = match.Winner.IsUs;
             }
             
+            bool hasMatchReport = matchReport != null && matchReport != CricketClubDAL.MatchReportAndConditions.None;
+            
             return new ResultV1()
             {
                 MatchId = match.ID,
@@ -73,9 +75,9 @@ namespace CricketClub.WebApi.Domain
                 TheirOversFaced = match.GetOurBowlingStats().BowlingStatsData.Sum(b => b.Overs),
                 IsAbandoned = match.Abandoned,
                 IsWinner = isWinner,
-                MatchReportConditions = matchReport != null && matchReport != CricketClubDAL.MatchReportAndConditions.None ? matchReport.Conditions : null,
-                MatchReportText = matchReport != null && matchReport != CricketClubDAL.MatchReportAndConditions.None ? matchReport.Report : null,
-                MatchReportImage = matchReport != null && matchReport != CricketClubDAL.MatchReportAndConditions.None ? matchReport.ReportImage : null
+                MatchReportConditions = hasMatchReport ? matchReport.Conditions : null,
+                MatchReportText = hasMatchReport ? matchReport.Report : null,
+                MatchReportImage = hasMatchReport ? matchReport.ReportImage : null
             };
         }
     }
