@@ -1,6 +1,5 @@
 #nullable disable
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using CricketClub.WebApi.Domain;
 using CricketClub.WebApi.Stats;
 using CricketClubDAL;
@@ -11,7 +10,7 @@ namespace CricketClub.WebApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class StatsController : ControllerBase
+    public class StatsController : Controller
     {
         private readonly IWebHostEnvironment environment;
         private readonly IDao database;
@@ -23,161 +22,101 @@ namespace CricketClub.WebApi.Controllers
         }
 
         [HttpPost("query")]
-        [HttpGet("player/{playerId}/detail")]
-        [HttpGet("player/{playerId}/{statsType}")]
-        [HttpGet("chart/{playerId}/{chartType}")]
-        [HttpGet("playermatches/{playerId}")]
-        [HttpGet("familytree")]
-        public async Task<IActionResult> HandleRequest()
-        {
-            return await ProcessRequest();
-        }
-
-        [NonAction]
-        public override void ProcessRequest(IHandlerContext context)
+        public IActionResult QueryStats([FromBody] StatsQueryV1 query)
         {
             try
             {
-                var path = context.Request.Url.AbsolutePath.ToLower();
-
-                if (path.Contains("/stats/query"))
-                {
-                    HandleStatsQuery(context);
-                }
-                else if (path.Contains("/stats/player/") && path.Contains("/detail"))
-                {
-                    HandlePlayerDetail(context);
-                }
-                else if (path.Contains("/stats/player/"))
-                {
-                    HandlePlayerStats(context);
-                }
-                else if (path.Contains("/stats/chart/"))
-                {
-                    HandleChartData(context);
-                }
-                else if (path.Contains("/stats/playermatches/"))
-                {
-                    HandlePlayerMatches(context);
-                }
-                else if (path.Contains("/stats/familytree"))
-                {
-                    HandleFamilyTree(context);
-                }
-                else
-                {
-                    context.Response.StatusCode = 404;
-                    context.Response.ContentType = "text/plain";
-                    context.Response.Write("Not Found");
-                }
+                var statsData = StatsProvider.Query(query);
+                return Ok(statsData);
             }
             catch (Exception ex)
             {
-                context.Response.StatusCode = 500;
-                context.Response.ContentType = "text/plain";
-                context.Response.Write(ex.Message + Environment.NewLine + ex.StackTrace);
+                return StatusCode(500, ex.Message + Environment.NewLine + ex.StackTrace);
             }
         }
 
-        private void HandleStatsQuery(IHandlerContext context)
+        [HttpGet("player/{playerId}/detail")]
+        public IActionResult GetPlayerDetail(int playerId)
         {
-            var stringReader = new StreamReader(context.Request.InputStream);
-            string body = stringReader.ReadToEnd();
-            var query = JsonSerializer.Deserialize<StatsQueryV1>(body);
-            var statsData = StatsProvider.Query(query);
-            context.Response.ContentType = "application/json";
-            context.Response.Write(JsonSerializer.Serialize(statsData));
-            context.Response.StatusCode = 200;
-        }
-
-        private void HandlePlayerDetail(IHandlerContext context)
-        {
-            var match = Regex.Match(context.Request.Url.AbsolutePath, @"/stats/player/(\d+)/detail");
-            if (!match.Success)
+            try
             {
-                context.Response.StatusCode = 400;
-                return;
+                var playerDetailV1 = StatsProvider.QueryPlayer(playerId, (s) => Path.Combine(environment.WebRootPath, s.TrimStart('~', '/')));
+                return Ok(playerDetailV1);
             }
-
-            var playerId = int.Parse(match.Groups[1].Value);
-            var playerDetailV1 = StatsProvider.QueryPlayer(playerId, (s) => Path.Combine(environment.WebRootPath, s.TrimStart('~', '/')));
-            context.Response.ContentType = "application/json";
-            context.Response.Write(JsonSerializer.Serialize(playerDetailV1));
-            context.Response.StatusCode = 200;
-        }
-
-        private void HandlePlayerStats(IHandlerContext context)
-        {
-            var match = Regex.Match(context.Request.Url.AbsolutePath, @"/stats/player/(\d+)/(.+)");
-            if (!match.Success)
+            catch (Exception ex)
             {
-                context.Response.StatusCode = 400;
-                return;
+                return StatusCode(500, ex.Message + Environment.NewLine + ex.StackTrace);
             }
-
-            var playerId = int.Parse(match.Groups[1].Value);
-            var statsType = match.Groups[2].Value;
-
-            var dataCollection = StatsProvider.GetPlayerStatsBreakDown(playerId, statsType);
-            context.Response.ContentType = "application/json";
-            context.Response.Write(JsonSerializer.Serialize(dataCollection));
-            context.Response.StatusCode = 200;
         }
 
-        private void HandleChartData(IHandlerContext context)
+        [HttpGet("player/{playerId}/{statsType}")]
+        public IActionResult GetPlayerStats(int playerId, string statsType)
         {
-            var match = Regex.Match(context.Request.Url.AbsolutePath, @"/stats/chart/(\d+)/(.+)");
-            if (!match.Success)
+            try
             {
-                context.Response.StatusCode = 400;
-                return;
+                var dataCollection = StatsProvider.GetPlayerStatsBreakDown(playerId, statsType);
+                return Ok(dataCollection);
             }
-
-            var playerId = int.Parse(match.Groups[1].Value);
-            var chartType = match.Groups[2].Value;
-
-            var chartData = StatsProvider.BuildChartData(playerId, chartType);
-            context.Response.ContentType = "application/json";
-            context.Response.Write(JsonSerializer.Serialize(chartData));
-            context.Response.StatusCode = 200;
-        }
-
-        private void HandlePlayerMatches(IHandlerContext context)
-        {
-            var match = Regex.Match(context.Request.Url.AbsolutePath, @"/stats/playermatches/(\d+)");
-            if (!match.Success)
+            catch (Exception ex)
             {
-                context.Response.StatusCode = 400;
-                return;
+                return StatusCode(500, ex.Message + Environment.NewLine + ex.StackTrace);
             }
-
-            var playerId = int.Parse(match.Groups[1].Value);
-            var data = StatsProvider.QueryPlayerMatches(playerId);
-            context.Response.ContentType = "application/json";
-            context.Response.Write(JsonSerializer.Serialize(data));
-            context.Response.StatusCode = 200;
         }
 
-        private void HandleFamilyTree(IHandlerContext context)
+        [HttpGet("chart/{playerId}/{chartType}")]
+        public IActionResult GetChartData(int playerId, string chartType)
         {
-            var allPlayers = Player.GetAll(true, database);
-            var familyTreeNodes = allPlayers.Select(p => new FamilyTreeNode()
+            try
             {
-                Id = p.Id,
-                ParentId = p.RingerOf == null ? -2 : p.RingerOf.Id,
-                Name = p.FirstName + " " + p.Surname,
-                Caps = p.Caps,
-                ResponsibleCaps = allPlayers.Where(c => c.RingerOf != null && c.RingerOf.Id == p.Id).Sum(c => c.Caps) + p.Caps
-            }).ToList();
-            familyTreeNodes.Add(new FamilyTreeNode()
+                var chartData = StatsProvider.BuildChartData(playerId, chartType);
+                return Ok(chartData);
+            }
+            catch (Exception ex)
             {
-                Id = -2,
-                Name = "The Village CC"
-            });
+                return StatusCode(500, ex.Message + Environment.NewLine + ex.StackTrace);
+            }
+        }
 
-            context.Response.ContentType = "application/json";
-            context.Response.Write(JsonSerializer.Serialize(familyTreeNodes));
-            context.Response.StatusCode = 200;
+        [HttpGet("playermatches/{playerId}")]
+        public IActionResult GetPlayerMatches(int playerId)
+        {
+            try
+            {
+                var data = StatsProvider.QueryPlayerMatches(playerId);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message + Environment.NewLine + ex.StackTrace);
+            }
+        }
+
+        [HttpGet("familytree")]
+        public IActionResult GetFamilyTree()
+        {
+            try
+            {
+                var allPlayers = Player.GetAll(true, database);
+                var familyTreeNodes = allPlayers.Select(p => new FamilyTreeNode()
+                {
+                    Id = p.Id,
+                    ParentId = p.RingerOf == null ? -2 : p.RingerOf.Id,
+                    Name = p.FirstName + " " + p.Surname,
+                    Caps = p.Caps,
+                    ResponsibleCaps = allPlayers.Where(c => c.RingerOf != null && c.RingerOf.Id == p.Id).Sum(c => c.Caps) + p.Caps
+                }).ToList();
+                familyTreeNodes.Add(new FamilyTreeNode()
+                {
+                    Id = -2,
+                    Name = "The Village CC"
+                });
+
+                return Ok(familyTreeNodes);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message + Environment.NewLine + ex.StackTrace);
+            }
         }
     }
 
