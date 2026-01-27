@@ -6,6 +6,7 @@ using CricketClubDomain;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
+using CricketClub.WebApi.Tests.Utils;
 
 namespace CricketClub.WebApi.Tests.Controllers
 {
@@ -16,42 +17,15 @@ namespace CricketClub.WebApi.Tests.Controllers
 
         public ResultsControllerTests()
         {
+            TestDefaults.ResetInternalCache();
+
             _mockDao = new Mock<IDao>();
+            TestDefaults.SetupSafeVenueAndTeamLookups(_mockDao);
+
             _controller = new ResultsController(_mockDao.Object);
-            
-            // Mock venue/team/stats data that Match objects need
-            SetupMockVenueAndTeamData();
+
+            // Mock extra dependencies ResultV1.FromInternal touches
             SetupMockBowlingStats();
-        }
-
-        private void SetupMockVenueAndTeamData()
-        {
-            // Mock venue data for VenueID = 1
-            var venueData = new VenueData
-            {
-                ID = 1,
-                Name = "Test Ground",
-                MapUrl = "http://maps.test.com",
-                Description = "Test venue",
-                Coordinates = new Tuple<decimal?, decimal?>(51.5m, -0.1m)
-            };
-            _mockDao.Setup(d => d.GetVenueData(1)).Returns(venueData);
-
-            // Mock team data for OppositionID = 1
-            var teamData = new TeamData
-            {
-                ID = 1,
-                Name = "Test Opposition"
-            };
-            _mockDao.Setup(d => d.GetTeamData(1)).Returns(teamData);
-
-            // Mock team data for Us (ID = 0)
-            var usTeamData = new TeamData
-            {
-                ID = 0,
-                Name = "The Village"
-            };
-            _mockDao.Setup(d => d.GetTeamData(0)).Returns(usTeamData);
         }
 
         private void SetupMockBowlingStats()

@@ -37,6 +37,11 @@ namespace CricketClubMiddle
             this.dao = dao;
         }
 
+        /// <summary>
+        /// Exposes the data-access object associated with this match instance.
+        /// </summary>
+        public IDao Dao => dao ?? new Dao();
+
         public int ID => data.ID;
 
         public int VenueID
@@ -1047,6 +1052,10 @@ namespace CricketClubMiddle
         }
     }
 }
+
+
+
+
 
 
 

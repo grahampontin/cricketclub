@@ -6,6 +6,7 @@ using CricketClubDomain;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
+using CricketClub.WebApi.Tests.Utils;
 
 namespace CricketClub.WebApi.Tests.Controllers
 {
@@ -16,7 +17,11 @@ namespace CricketClub.WebApi.Tests.Controllers
 
         public CommitteeControllerTests()
         {
+            TestDefaults.ResetInternalCache();
+
             _mockDao = new Mock<IDao>();
+            TestDefaults.SetupSafeVenueAndTeamLookups(_mockDao);
+
             _controller = new CommitteeController(_mockDao.Object);
         }
 
@@ -185,4 +190,3 @@ namespace CricketClub.WebApi.Tests.Controllers
         }
     }
 }
-

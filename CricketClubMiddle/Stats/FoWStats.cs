@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using CricketClubDomain;
 using CricketClubDAL;
 
@@ -9,35 +8,28 @@ namespace CricketClubMiddle.Stats
 {
     public class FoWStats
     {
-        
-        public FoWStats(int MatchID, ThemOrUs who)
+        private readonly IDao dao;
+
+        public FoWStats(int MatchID, ThemOrUs who) : this(MatchID, who, new Dao())
         {
+        }
+
+        public FoWStats(int MatchID, ThemOrUs who, IDao dao)
+        {
+            this.dao = dao;
             Who = who;
-            var myDAO = new Dao();
-            Data = (from a in myDAO.GetFoWData(MatchID, who) 
-                   select new FoWStatsLine(a)).ToList();
+            Data = dao.GetFoWData(MatchID, who).Select(a => new FoWStatsLine(a)).ToList();
         }
 
+        public ThemOrUs Who { get; set; }
 
-        public ThemOrUs Who
-        {
-            get;
-            set;
-        }
-        public List<FoWStatsLine> Data
-        {
-            get;
-            set;
-        }
+        public List<FoWStatsLine> Data { get; set; }
 
         public void Save()
         {
-            var myDAO = new Dao();
-
-            var _data = (from a in Data select a._data).ToList();
-            myDAO.UpdateFoWData(_data, Who);
+            var myDao = dao ?? new Dao();
+            var _data = Data.Select(a => a._data).ToList();
+            myDao.UpdateFoWData(_data, Who);
         }
-
-
     }
 }

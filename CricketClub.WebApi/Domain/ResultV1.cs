@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using CricketClubDAL;
 using CricketClubMiddle;
 
 namespace CricketClub.WebApi.Domain
@@ -42,7 +43,7 @@ namespace CricketClub.WebApi.Domain
             return FromInternal(match, null);
         }
         
-        public static ResultV1 FromInternal(Match match, CricketClubDAL.MatchReportAndConditions matchReport)
+        public static ResultV1 FromInternal(Match match, MatchReportAndConditions matchReport)
         {
             bool? isWinner = null;
             if (match.Winner != null)
@@ -67,8 +68,8 @@ namespace CricketClub.WebApi.Domain
                 Margin = match.ResultMargin,
                 IsTied = match.ResultTied,
                 IsDrawn = match.ResultDrawn,
-                OurScore = match.GetTeamScore(Team.OurTeam),
-                OurWickets = match.GetTeamWicketsDown(Team.OurTeam),
+                OurScore = match.GetTeamScore(match.Us),
+                OurWickets = match.GetTeamWicketsDown(match.Us),
                 OurOversFaced = match.GetThierBowlingStats().BowlingStatsData.Sum(b => b.Overs),
                 TheirScore = match.GetTeamScore(match.Opposition),
                 TheirWickets = match.GetTeamWicketsDown(match.Opposition),

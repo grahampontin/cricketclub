@@ -1,6 +1,3 @@
-#nullable disable
-using System.Text.Json;
-using System.Text.RegularExpressions;
 using CricketClub.WebApi.Domain;
 using CricketClubDAL;
 using CricketClubDomain;
@@ -11,8 +8,12 @@ using Match = CricketClubMiddle.Match;
 
 namespace CricketClub.WebApi.Controllers
 {
+    /// <summary>
+    /// Provides read/write access to match scorecards.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
+    [Produces("application/json")]
     public class ScorecardsController : ControllerBase
     {
         private readonly IDao database;
@@ -22,127 +23,120 @@ namespace CricketClub.WebApi.Controllers
             this.database = database;
         }
 
-        [HttpGet("{id}")]
-        [HttpPost("{id}")]
-        public async Task<IActionResult> HandleRequest()
+        /// <summary>
+        /// Get the full scorecard for a match.
+        /// </summary>
+        [HttpGet("{id:int}")]
+        [ProducesResponseType(typeof(MatchScorecardV1), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult GetScorecard([FromRoute] int id)
         {
-            return await ProcessRequest();
-        }
-
-        [NonAction]
-        public override void ProcessRequest(IHandlerContext context)
-        {
-            var matchId = ExtractMatchIdFromUrl(context.Request.Url.ToString());
-            if (matchId == null)
+            var match = new Match(id, database);
+            // If match doesn't exist, underlying match data will be null and many properties will throw.
+            // Best-effort: treat "missing" match data as 404.
+            if (match.ID == 0)
             {
-                context.Response.ContentType = "text/plain";
-                context.Response.Write("Match ID not specified in URL");
-                context.Response.StatusCode = 400;
-                return;
+                return NotFound();
             }
 
-            switch (context.Request.HttpMethod)
-            {
-                case "GET":
-                    GetScorecard(context, matchId.Value);
-                    break;
-                case "POST":
-                    SaveScorecard(context, matchId.Value);
-                    break;
-                default:
-                    context.Response.StatusCode = 405;
-                    break;
-            }
-        }
-
-        private int? ExtractMatchIdFromUrl(string url)
-        {
-            var matchCollection = Regex.Matches(url, "/scorecards/([0-9]+)");
-            if (matchCollection.Count == 1)
-            {
-                return int.Parse(matchCollection[0].Groups[1].Value);
-            }
-            return null;
-        }
-
-        private void GetScorecard(IHandlerContext context, int matchId)
-        {
-            var match = new Match(matchId, database);
             var scorecard = MatchScorecardV1.GetExternalScorecard(match);
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = 200;
-            context.Response.Write(JsonSerializer.Serialize(scorecard));
+            return Ok(scorecard);
         }
 
-        private void SaveScorecard(IHandlerContext context, int matchId)
+        /// <summary>
+        /// Save the scorecard for a match.
+        /// </summary>
+        [HttpPost("{id:int}")]
+        [Consumes("application/json")]
+        [ProducesResponseType(typeof(MatchScorecardV1), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult SaveScorecard([FromRoute] int id, [FromBody] MatchScorecardV1 unsavedScorecard)
         {
-            var stringReader = new StreamReader(context.Request.InputStream);
-            string postData = stringReader.ReadToEnd();
-            var unsavedScorecard = JsonSerializer.Deserialize<MatchScorecardV1>(postData);
-            
-            var match = new Match(matchId, database);
-
-            if (unsavedScorecard.ourInnings.batting.entries.Any())
+            if (unsavedScorecard == null)
             {
-                var internalBattingCard =
-                    unsavedScorecard.ourInnings.batting.ToInternalBattingCard(match, ThemOrUs.Us);
+                return BadRequest("Request body was empty or invalid JSON");
+            }
+
+            var match = new Match(id, database);
+            if (match.ID == 0)
+            {
+                return NotFound();
+            }
+
+            if (unsavedScorecard.OurInnings?.batting?.entries?.Any() == true)
+            {
+                var internalBattingCard = unsavedScorecard.OurInnings.batting.ToInternalBattingCard(match, ThemOrUs.Us);
                 internalBattingCard.Save(BattingOrBowling.Batting);
             }
 
-            if (unsavedScorecard.theirInnings.batting.entries.Any())
+            if (unsavedScorecard.TheirInnings?.batting?.entries?.Any() == true)
             {
-                var internalOppoBattingCard =
-                    unsavedScorecard.theirInnings.batting.ToInternalBattingCard(match, ThemOrUs.Them);
+                var internalOppoBattingCard = unsavedScorecard.TheirInnings.batting.ToInternalBattingCard(match, ThemOrUs.Them);
                 internalOppoBattingCard.Save(BattingOrBowling.Bowling);
             }
 
-            var internalExtras =
-                unsavedScorecard.ourInnings.batting.ToInternalExtras(match.ID, ThemOrUs.Them);
-            internalExtras.Save();
+            if (unsavedScorecard.OurInnings?.batting != null)
+            {
+                var internalExtras = unsavedScorecard.OurInnings.batting.ToInternalExtras(match.ID, ThemOrUs.Them);
+                internalExtras.Save();
+            }
 
-            var internalOppoExtras =
-                unsavedScorecard.theirInnings.batting.ToInternalExtras(match.ID, ThemOrUs.Us);
-            internalOppoExtras.Save();
+            if (unsavedScorecard.TheirInnings?.batting != null)
+            {
+                var internalOppoExtras = unsavedScorecard.TheirInnings.batting.ToInternalExtras(match.ID, ThemOrUs.Us);
+                internalOppoExtras.Save();
+            }
 
-            match.OurInningsLength = unsavedScorecard.ourInnings.inningsLength;
-            match.TheirInningsLength = unsavedScorecard.theirInnings.inningsLength;
-            match.Abandoned = unsavedScorecard.matchConditions.abandoned;
-            match.WasDeclaration = unsavedScorecard.matchConditions.declaration;
-            match.Overs = unsavedScorecard.matchConditions.overs;
-            match.Captain = new Player(unsavedScorecard.matchConditions.captainId);
-            match.WicketKeeper = new Player(unsavedScorecard.matchConditions.wicketKeeperId);
-            match.WonToss = unsavedScorecard.matchConditions.weWonTheToss;
-            match.TossWinnerBatted = unsavedScorecard.matchConditions.tossWinnerBatted;
+            if (unsavedScorecard.OurInnings != null)
+            {
+                match.OurInningsLength = unsavedScorecard.OurInnings.inningsLength;
+            }
+
+            if (unsavedScorecard.TheirInnings != null)
+            {
+                match.TheirInningsLength = unsavedScorecard.TheirInnings.inningsLength;
+            }
+
+            match.Abandoned = unsavedScorecard.MatchConditions.abandoned;
+            match.WasDeclaration = unsavedScorecard.MatchConditions.declaration;
+            match.Overs = unsavedScorecard.MatchConditions.overs;
+            match.Captain = new Player(unsavedScorecard.MatchConditions.captainId, database);
+            match.WicketKeeper = new Player(unsavedScorecard.MatchConditions.wicketKeeperId, database);
+            match.WonToss = unsavedScorecard.MatchConditions.weWonTheToss;
+            match.TossWinnerBatted = unsavedScorecard.MatchConditions.tossWinnerBatted;
             match.Save();
 
-            if (unsavedScorecard.ourInnings.bowling.entries.Any())
+            if (unsavedScorecard.OurInnings?.bowling?.entries?.Any() == true)
             {
-                var theirBowlingStats =
-                    unsavedScorecard.ourInnings.bowling.ToInternal(match, ThemOrUs.Them);
+                var theirBowlingStats = unsavedScorecard.OurInnings.bowling.ToInternal(match, ThemOrUs.Them);
                 theirBowlingStats.Save();
             }
 
-            if (unsavedScorecard.theirInnings.bowling.entries.Any())
+            if (unsavedScorecard.TheirInnings?.bowling?.entries?.Any() == true)
             {
-                var ourBowlingStats =
-                    unsavedScorecard.theirInnings.bowling.ToInternal(match, ThemOrUs.Us);
+                var ourBowlingStats = unsavedScorecard.TheirInnings.bowling.ToInternal(match, ThemOrUs.Us);
                 ourBowlingStats.Save();
             }
 
-            if (unsavedScorecard.ourInnings.fow.entries.Any())
+            if (unsavedScorecard.OurInnings?.fow?.entries?.Any() == true)
             {
-                var ourFowData = unsavedScorecard.ourInnings.fow.ToInternal(match, ThemOrUs.Us);
+                var ourFowData = unsavedScorecard.OurInnings.fow.ToInternal(match, ThemOrUs.Us);
                 ourFowData.Save();
             }
 
-            var savedScorecard = new MatchScorecardV1(match.GetOurBattingScoreCard(),
-                match.GetThierBowlingStats(), new FoWStats(match.ID, ThemOrUs.Us),
-                match.GetTheirBattingScoreCard(), match.GetOurBowlingStats(),
-                new FoWStats(match.ID, ThemOrUs.Them), new Extras(match.ID, ThemOrUs.Them),
-                new Extras(match.ID, ThemOrUs.Us), match);
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = 200;
-            context.Response.Write(JsonSerializer.Serialize(savedScorecard));
+            var savedScorecard = new MatchScorecardV1(
+                match.GetOurBattingScoreCard(),
+                match.GetThierBowlingStats(),
+                new FoWStats(match.ID, ThemOrUs.Us, database),
+                match.GetTheirBattingScoreCard(),
+                match.GetOurBowlingStats(),
+                new FoWStats(match.ID, ThemOrUs.Them, database),
+                new Extras(match.ID, ThemOrUs.Them, database),
+                new Extras(match.ID, ThemOrUs.Us, database),
+                match);
+
+            return Ok(savedScorecard);
         }
     }
 }

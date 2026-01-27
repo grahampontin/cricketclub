@@ -117,8 +117,13 @@ namespace CricketClubMiddle
         {
             get
             {
-                return new Team(0);
+                return GetOurTeam(new Dao());
             }
+        }
+
+        public static Team GetOurTeam(IDao dao)
+        {
+            return new Team(0, dao);
         }
 
         protected bool Equals(Team other)

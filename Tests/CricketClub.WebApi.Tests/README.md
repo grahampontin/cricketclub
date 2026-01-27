@@ -1,33 +1,16 @@
-# TheVillageCC.WebApi.Tests
+# CricketClub.WebApi.Tests
 
-This test project contains unit tests for the TheVillageCC.WebApi ASP.NET Core Web API.
+This project contains unit tests and integration tests for `CricketClub.WebApi`.
 
-## Test Structure
+## Unit test style
 
-Tests are organized by controller:
-- `Controllers/` - Contains test classes for each controller
+Controllers are tested using **direct action method invocation** (e.g., calling `GetResults(...)` and asserting on `OkObjectResult`, `CreatedAtActionResult`, etc.).
 
-## Test Helpers
+This keeps tests aligned with modern ASP.NET Core practices and avoids the legacy handler-style abstraction.
 
-### TestControllerContextFactory
+## Integration tests
 
-A lightweight implementation of `IHandlerContext` for unit tests. This maintains compatibility with the original handler testing approach while working with the new controller architecture.
-
-Usage:
-```csharp
-var context = TestControllerContextFactory.CreateHttpContext("GET", "http://test.com/api/awards");
-controller.ProcessRequest(context);
-```
-
-## Porting Tests from TheVillageCC.Web.Tests
-
-When porting tests from the old project:
-
-1. **Update namespaces**: Change `TheVillageCC.Web.HttpHandlers` to `TheVillageCC.WebApi.Controllers`
-2. **Update class names**: Change `*Handler` to `*Controller`
-3. **Update URLs**: Add `/api/` prefix to URLs (e.g., `/awards` becomes `/api/awards`)
-4. **Update serialization**: Replace `JavaScriptSerializer` with `System.Text.Json.JsonSerializer`
-5. **Use TestControllerContextFactory**: Replace `TestHandlerContextFactory` with `TestControllerContextFactory`
+Integration tests use `WebApplicationFactory<Program>` and override the DI registration for `IDao` to inject a mocked DAO.
 
 ## Running Tests
 

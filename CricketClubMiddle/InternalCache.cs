@@ -20,9 +20,12 @@ namespace CricketClubMiddle
 
         public void Insert(string key, object value, TimeSpan timeToLive)
         {
-            if (thisCache.ContainsKey(key))
-                thisCache.Remove(key);
-            thisCache.Add(key, new CacheObject(value, DateTime.UtcNow.Add(timeToLive)));
+            lock (thisCache)
+            {
+                if (thisCache.ContainsKey(key))
+                    thisCache.Remove(key);
+                thisCache[key] = new CacheObject(value, DateTime.UtcNow.Add(timeToLive));
+            }
         }
 
         public object Get(string key)

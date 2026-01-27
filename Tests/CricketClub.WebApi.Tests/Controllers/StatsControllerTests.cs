@@ -1,13 +1,17 @@
 #nullable disable
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using CricketClub.WebApi.Controllers;
 using CricketClub.WebApi.Domain;
+using CricketClub.WebApi.Stats;
 using CricketClubDAL;
 using CricketClubDomain;
-using CricketClubMiddle;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
+using CricketClub.WebApi.Tests.Utils;
 
 namespace CricketClub.WebApi.Tests.Controllers
 {
@@ -19,8 +23,14 @@ namespace CricketClub.WebApi.Tests.Controllers
 
         public StatsControllerTests()
         {
+            TestDefaults.ResetInternalCache();
+
             mockDao = new Mock<IDao>();
+            TestDefaults.SetupSafeVenueAndTeamLookups(mockDao);
+
             mockEnvironment = new Mock<IWebHostEnvironment>();
+            mockEnvironment.SetupGet(e => e.WebRootPath).Returns("C:\\inetpub\\wwwroot");
+
             controller = new StatsController(mockEnvironment.Object, mockDao.Object);
         }
 

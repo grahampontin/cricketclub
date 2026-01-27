@@ -9,32 +9,33 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
+using CricketClub.WebApi.Tests.Utils;
 
 namespace CricketClub.WebApi.Tests.Integration
 {
     public class VenuesControllerIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
     {
-        private readonly WebApplicationFactory<Program> _factory;
+        private readonly WebApplicationFactory<Program> factory;
         private readonly Mock<IDao> _mockDao;
 
         public VenuesControllerIntegrationTests(WebApplicationFactory<Program> factory)
         {
+            TestDefaults.ResetInternalCache();
+
             _mockDao = new Mock<IDao>();
-            
-            _factory = factory.WithWebHostBuilder(builder =>
+            TestDefaults.SetupSafeVenueAndTeamLookups(_mockDao);
+
+            this.factory = factory.WithWebHostBuilder(builder =>
             {
                 builder.ConfigureTestServices(services =>
                 {
-                    // Remove the existing IDao registration
-                    var descriptor = services.SingleOrDefault(
-                        d => d.ServiceType == typeof(IDao));
+                    var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IDao));
                     if (descriptor != null)
                     {
                         services.Remove(descriptor);
                     }
 
-                    // Add mock IDao
-                    services.AddScoped<IDao>(_ => _mockDao.Object);
+                    services.AddScoped(_ => _mockDao.Object);
                 });
             });
         }
@@ -63,7 +64,7 @@ namespace CricketClub.WebApi.Tests.Integration
 
             _mockDao.Setup(d => d.GetAllVenueData()).Returns(new List<VenueData> { venueData1, venueData2 });
 
-            var client = _factory.CreateClient();
+            var client = factory.CreateClient();
 
             // Act
             var response = await client.GetAsync("/api/venues");
@@ -104,7 +105,7 @@ namespace CricketClub.WebApi.Tests.Integration
 
             _mockDao.Setup(d => d.GetAllVenueData()).Returns(new List<VenueData> { venueData1, venueData2 });
 
-            var client = _factory.CreateClient();
+            var client = factory.CreateClient();
 
             // Act
             var response = await client.GetAsync("/api/venues");
@@ -143,7 +144,7 @@ namespace CricketClub.WebApi.Tests.Integration
 
             _mockDao.Setup(d => d.GetVenueData(1)).Returns(venueData);
 
-            var client = _factory.CreateClient();
+            var client = factory.CreateClient();
 
             // Act
             var response = await client.GetAsync("/api/venues/1");
@@ -167,4 +168,3 @@ namespace CricketClub.WebApi.Tests.Integration
         }
     }
 }
-

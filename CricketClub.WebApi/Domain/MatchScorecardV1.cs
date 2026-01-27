@@ -11,15 +11,15 @@ namespace CricketClub.WebApi.Domain
     [SuppressMessage("ReSharper", "NotAccessedField.Global")]
     public class MatchScorecardV1
     {
-        public InningsScoreCardV1 ourInnings;
-        public InningsScoreCardV1 theirInnings;
-        public MatchConditionsV1 matchConditions;
+        public InningsScoreCardV1 OurInnings { get; set; }
+        public InningsScoreCardV1 TheirInnings { get; set; }
+        public MatchConditionsV1 MatchConditions { get; set; }
 
         public MatchScorecardV1(BattingCard ourBatting, BowlingStats theirBowling, FoWStats ourFoW, BattingCard theirBatting, BowlingStats ourBowling, FoWStats theirFoW, Extras ourExtras, Extras theirExtras, Match match)
         {
-            ourInnings = new InningsScoreCardV1(ourBatting, theirBowling, ourFoW, ourExtras,  match.OurInningsLength);
-            theirInnings = new InningsScoreCardV1(theirBatting, ourBowling, theirFoW, theirExtras, match.TheirInningsLength);
-            matchConditions = new MatchConditionsV1(match);
+            OurInnings = new InningsScoreCardV1(ourBatting, theirBowling, ourFoW, ourExtras,  match.OurInningsLength);
+            TheirInnings = new InningsScoreCardV1(theirBatting, ourBowling, theirFoW, theirExtras, match.TheirInningsLength);
+            MatchConditions = new MatchConditionsV1(match);
         }
 
         // Deserialize
@@ -31,10 +31,19 @@ namespace CricketClub.WebApi.Domain
 
         public static MatchScorecardV1 GetExternalScorecard(Match match)
         {
-            return new MatchScorecardV1(match.GetOurBattingScoreCard(), match.GetThierBowlingStats(),
-                new FoWStats(match.ID, ThemOrUs.Us), match.GetTheirBattingScoreCard(), match.GetOurBowlingStats(),
-                new FoWStats(match.ID, ThemOrUs.Them), new Extras(match.ID, ThemOrUs.Them),
-                new Extras(match.ID, ThemOrUs.Us), match);
+            // Use the same DAO as the Match instance to avoid creating new Dao() instances.
+            var dao = match.Dao;
+
+            return new MatchScorecardV1(
+                match.GetOurBattingScoreCard(),
+                match.GetThierBowlingStats(),
+                new FoWStats(match.ID, ThemOrUs.Us, dao),
+                match.GetTheirBattingScoreCard(),
+                match.GetOurBowlingStats(),
+                new FoWStats(match.ID, ThemOrUs.Them, dao),
+                new Extras(match.ID, ThemOrUs.Them, dao),
+                new Extras(match.ID, ThemOrUs.Us, dao),
+                match);
         }
     }
 }
