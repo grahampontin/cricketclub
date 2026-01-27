@@ -1,5 +1,4 @@
 #nullable disable
-using System.Collections.Specialized;
 using CricketClub.WebApi.Domain;
 using CricketClubDAL;
 using CricketClubMiddle;
@@ -7,26 +6,91 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CricketClub.WebApi.Controllers
 {
+    /// <summary>
+    /// Manages cricket venues
+    /// </summary>
+    [ApiController]
     [Route("api/[controller]")]
-    public class VenuesController : EntityControllerBase<VenueV1>
+    [Produces("application/json")]
+    public class VenuesController : Microsoft.AspNetCore.Mvc.ControllerBase
     {
-        public VenuesController(IDao database) : base(database)
+        private readonly IDao _database;
+
+        public VenuesController(IDao database)
         {
+            _database = database;
         }
 
+        /// <summary>
+        /// Gets all venues
+        /// </summary>
         [HttpGet]
-        [HttpGet("{id}")]
-        [HttpPost]
-        [HttpPut]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> HandleRequest()
+        [ProducesResponseType(typeof(List<VenueV1>), StatusCodes.Status200OK)]
+        public IActionResult GetAllVenues()
         {
-            return await ProcessRequest();
+            var venues = Venue.GetAll(_database).Select(VenueV1.FromInternal).OrderBy(v => v.Name).ToList();
+            return Ok(venues);
         }
 
-        protected override VenueV1 UpdateEntity(VenueV1 entity)
+        /// <summary>
+        /// Gets a specific venue by ID
+        /// </summary>
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(VenueV1), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult GetVenue(int id)
         {
-            var venue = new Venue(entity.Id, database)
+            var venue = new Venue(id, _database);
+            if (string.IsNullOrEmpty(venue.Name))
+            {
+                return NotFound();
+            }
+            
+            return Ok(VenueV1.FromInternal(venue));
+        }
+
+        /// <summary>
+        /// Creates a new venue
+        /// </summary>
+        [HttpPost]
+        [Consumes("application/json")]
+        [ProducesResponseType(typeof(VenueV1), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult CreateVenue([FromBody] VenueV1 entity)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            Venue.CreateNewVenue(entity.Name, entity.MapUrl, entity.Description, entity.Latitude, entity.Longitude, _database);
+            var venues = Venue.GetAll(_database);
+            var createdVenue = venues.OrderByDescending(v => v.ID).FirstOrDefault(v => v.Name == entity.Name);
+            
+            if (createdVenue == null)
+            {
+                return Ok(entity);
+            }
+            
+            var result = VenueV1.FromInternal(createdVenue);
+            return CreatedAtAction(nameof(GetVenue), new { id = result.Id }, result);
+        }
+
+        /// <summary>
+        /// Updates an existing venue
+        /// </summary>
+        [HttpPut]
+        [Consumes("application/json")]
+        [ProducesResponseType(typeof(VenueV1), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult UpdateVenue([FromBody] VenueV1 entity)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var venue = new Venue(entity.Id, _database)
             {
                 Name = entity.Name,
                 GoogleMapsLocationURL = entity.MapUrl,
@@ -34,40 +98,25 @@ namespace CricketClub.WebApi.Controllers
                 Coordinates = new Tuple<decimal?, decimal?>(entity.Latitude, entity.Longitude)
             };
             venue.Save();
-            return entity;
+            
+            return Ok(entity);
         }
 
-        protected override void DeleteEntity(int id)
+        /// <summary>
+        /// Deletes a venue by ID
+        /// </summary>
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult DeleteVenue(int id)
         {
-            var venue = new Venue(id, database);
+            var venue = new Venue(id, _database);
             if (!string.IsNullOrEmpty(venue.Name))
             {
                 venue.Delete();
             }
-        }
-
-        protected override VenueV1 CreateEntity(VenueV1 entity)
-        {
-            Venue.CreateNewVenue(entity.Name, entity.MapUrl, entity.Description, entity.Latitude, entity.Longitude, database);
-            var venues = Venue.GetAll(database);
-            var createdVenue = venues.OrderByDescending(v => v.ID).FirstOrDefault(v => v.Name == entity.Name);
-            return createdVenue == null ? entity : VenueV1.FromInternal(createdVenue);
-        }
-
-        protected override List<VenueV1> GetAllEntities(NameValueCollection requestQueryString)
-        {
-            return Venue.GetAll(database).Select(VenueV1.FromInternal).OrderBy(v => v.Name).ToList();
-        }
-
-        protected override VenueV1 GetEntity(int id)
-        {
-            var venue = new Venue(id, database);
-            return string.IsNullOrEmpty(venue.Name) ? null : VenueV1.FromInternal(venue);
-        }
-
-        public override string GetTypeName()
-        {
-            return "venues";
+            
+            return NoContent();
         }
     }
 }

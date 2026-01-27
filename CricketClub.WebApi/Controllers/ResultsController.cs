@@ -7,58 +7,41 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CricketClub.WebApi.Controllers
 {
+    /// <summary>
+    /// Provides match results
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    public class ResultsController : ControllerBase
+    [Produces("application/json")]
+    public class ResultsController : Microsoft.AspNetCore.Mvc.ControllerBase
     {
-        private readonly IDao database;
+        private readonly IDao _database;
 
         public ResultsController(IDao database)
         {
-            this.database = database;
+            _database = database;
         }
 
+        /// <summary>
+        /// Gets match results, optionally filtered by season
+        /// </summary>
+        /// <param name="season">Season year to filter by (optional)</param>
+        /// <returns>List of match results</returns>
         [HttpGet]
-        public async Task<IActionResult> HandleRequest()
+        [ProducesResponseType(typeof(List<ResultV1>), StatusCodes.Status200OK)]
+        public IActionResult GetResults([FromQuery] int? season)
         {
-            return await ProcessRequest();
-        }
-
-        [NonAction]
-        public override void ProcessRequest(IHandlerContext context)
-        {
-            switch (context.Request.HttpMethod)
-            {
-                case "GET":
-                    GetResults(context);
-                    break;
-                default:
-                    context.Response.StatusCode = 405;
-                    break;
-            }
-        }
-
-        private void GetResults(IHandlerContext context)
-        {
-            var queryString = context.Request.QueryString;
-            var seasonParam = queryString["season"];
-
-            int season = DateTime.Now.Year;
-            if (!string.IsNullOrEmpty(seasonParam) && int.TryParse(seasonParam, out var parsedSeason))
-            {
-                season = parsedSeason;
-            }
-
-            var startDate = new DateTime(season, 1, 1);
-            var endDate = new DateTime(season, 12, 31);
-            var matches = Match.GetResults(database);
-
+            var seasonYear = season ?? DateTime.Now.Year;
+            var startDate = new DateTime(seasonYear, 1, 1);
+            var endDate = new DateTime(seasonYear, 12, 31);
+            
+            var matches = Match.GetResults(_database);
             var filteredMatches = matches
                 .Where(m => m.MatchDate >= startDate && m.MatchDate <= endDate)
                 .ToList();
 
             // Fetch all match reports in one query for efficiency
-            var allMatchReports = database.GetAllMatchReports();
+            var allMatchReports = _database.GetAllMatchReports();
 
             var results = filteredMatches.Select(m =>
             {
@@ -66,9 +49,7 @@ namespace CricketClub.WebApi.Controllers
                 return ResultV1.FromInternal(m, report);
             }).ToList();
 
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = 200;
-            context.Response.Write(JsonSerializer.Serialize(results));
+            return Ok(results);
         }
     }
 }

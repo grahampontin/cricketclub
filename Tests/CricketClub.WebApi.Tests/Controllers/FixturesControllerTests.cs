@@ -1,7 +1,9 @@
 #nullable disable
 using CricketClub.WebApi.Controllers;
-using CricketClub.WebApi.Tests.Utils;
+using CricketClub.WebApi.Domain;
 using CricketClubDAL;
+using CricketClubDomain;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
 
@@ -9,56 +11,127 @@ namespace CricketClub.WebApi.Tests.Controllers
 {
     public class FixturesControllerTests
     {
-        private readonly Mock<IDao> mockDao;
-        private readonly FixturesController controller;
+        private readonly Mock<IDao> _mockDao;
+        private readonly FixturesController _controller;
 
         public FixturesControllerTests()
         {
-            mockDao = new Mock<IDao>();
-            controller = new FixturesController(mockDao.Object);
+            _mockDao = new Mock<IDao>();
+            _controller = new FixturesController(_mockDao.Object);
+
+            // Mock venue/team data that Match objects need
+            SetupMockVenueAndTeamData();
+        }
+
+        private void SetupMockVenueAndTeamData()
+        {
+            // Mock venue data for VenueID = 1
+            var venueData = new VenueData
+            {
+                ID = 1,
+                Name = "Test Ground",
+                MapUrl = "http://maps.test.com",
+                Description = "Test venue",
+                Coordinates = new Tuple<decimal?, decimal?>(51.5m, -0.1m)
+            };
+            _mockDao.Setup(d => d.GetVenueData(1)).Returns(venueData);
+
+            // Mock team data for OppositionID = 1
+            var teamData = new TeamData
+            {
+                ID = 1,
+                Name = "Test Opposition"
+            };
+            _mockDao.Setup(d => d.GetTeamData(1)).Returns(teamData);
+
+            // Mock team data for Us (ID = 0)
+            var usTeamData = new TeamData
+            {
+                ID = 0,
+                Name = "The Village"
+            };
+            _mockDao.Setup(d => d.GetTeamData(0)).Returns(usTeamData);
         }
 
         [Fact]
-        public void ProcessRequest_Get_ReturnsFixtures()
+        public void GetFixtures_WithoutSeason_ReturnsAllFixtures()
         {
-            // Arrange
-            mockDao.Setup(d => d.GetAllMatches()).Returns(new List<CricketClubDomain.MatchData>());
-            var context = TestControllerContextFactory.CreateHttpContext("GET", "http://test.com/api/fixtures");
+            // Arrange - use future dates (today is 2026-01-27)
+            var matchData = new MatchData
+            {
+                ID = 1,
+                Date = DateTime.Today.AddDays(10), // Future fixture
+                OppositionID = 1,
+                VenueID = 1,
+                MatchType = 1,
+                HomeOrAway = "Home"
+            };
+            _mockDao.Setup(d => d.GetAllMatches()).Returns(new List<MatchData> { matchData });
 
             // Act
-            controller.ProcessRequest(context);
+            var result = _controller.GetFixtures(null);
 
             // Assert
-            Assert.Equal<string>("application/json", context.Response.ContentType);
-            Assert.Equal(200, context.Response.StatusCode);
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var fixtures = Assert.IsAssignableFrom<List<MatchV1>>(okResult.Value);
+            Assert.Single(fixtures);
         }
 
         [Fact]
-        public void ProcessRequest_GetWithSeasonFilter_ReturnsFilteredFixtures()
+        public void GetFixtures_WithSeasonFilter_ReturnsFilteredFixtures()
         {
-            // Arrange
-            mockDao.Setup(d => d.GetAllMatches()).Returns(new List<CricketClubDomain.MatchData>());
-            var context = TestControllerContextFactory.CreateHttpContext("GET", "http://test.com/api/fixtures?season=2023");
+            // Arrange - use current year (2026) for fixtures
+            var matches = new List<MatchData>
+            {
+                new MatchData { ID = 1, Date = new DateTime(2026, 8, 15), OppositionID = 1, VenueID = 1, MatchType = 1, HomeOrAway = "Home" },
+                new MatchData { ID = 2, Date = new DateTime(2027, 8, 15), OppositionID = 1, VenueID = 1, MatchType = 1, HomeOrAway = "Home" }
+            };
+            _mockDao.Setup(d => d.GetAllMatches()).Returns(matches);
 
             // Act
-            controller.ProcessRequest(context);
+            var result = _controller.GetFixtures(2026);
 
             // Assert
-            Assert.Equal<string>("application/json", context.Response.ContentType);
-            Assert.Equal(200, context.Response.StatusCode);
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var fixtures = Assert.IsAssignableFrom<List<MatchV1>>(okResult.Value);
+            Assert.Single(fixtures);
         }
 
         [Fact]
-        public void ProcessRequest_Post_ReturnsMethodNotAllowed()
+        public void GetFixtures_WithNoMatchesInSeason_ReturnsEmptyList()
         {
             // Arrange
-            var context = TestControllerContextFactory.CreateHttpContext("POST", "http://test.com/api/fixtures");
+            _mockDao.Setup(d => d.GetAllMatches()).Returns(new List<MatchData>());
 
             // Act
-            controller.ProcessRequest(context);
+            var result = _controller.GetFixtures(2025);
 
             // Assert
-            Assert.Equal(405, context.Response.StatusCode);
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var fixtures = Assert.IsAssignableFrom<List<MatchV1>>(okResult.Value);
+            Assert.Empty(fixtures);
+        }
+
+        [Fact]
+        public void GetFixtures_FiltersCorrectly_ByDateRange()
+        {
+            // Arrange - use 2026 (current year) for testing date range filtering
+            var matches = new List<MatchData>
+            {
+                new MatchData { ID = 1, Date = new DateTime(2026, 2, 15), OppositionID = 1, VenueID = 1, MatchType = 1, HomeOrAway = "Home" },
+                new MatchData { ID = 2, Date = new DateTime(2026, 6, 15), OppositionID = 1, VenueID = 1, MatchType = 1, HomeOrAway = "Home" },
+                new MatchData { ID = 3, Date = new DateTime(2026, 12, 31), OppositionID = 1, VenueID = 1, MatchType = 1, HomeOrAway = "Home" },
+                new MatchData { ID = 4, Date = new DateTime(2027, 1, 1), OppositionID = 1, VenueID = 1, MatchType = 1, HomeOrAway = "Home" }
+            };
+            _mockDao.Setup(d => d.GetAllMatches()).Returns(matches);
+
+            // Act
+            var result = _controller.GetFixtures(2026);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var fixtures = Assert.IsAssignableFrom<List<MatchV1>>(okResult.Value);
+            Assert.Equal(3, fixtures.Count);
         }
     }
 }

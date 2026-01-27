@@ -1,66 +1,107 @@
 #nullable disable
-using System.Collections.Specialized;
 using CricketClub.WebApi.Domain;
 using CricketClubDAL;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CricketClub.WebApi.Controllers
 {
+    /// <summary>
+    /// Manages committee members
+    /// </summary>
+    [ApiController]
     [Route("api/[controller]")]
-    public class CommitteeController : EntityControllerBase<CommitteePostV1>
+    [Produces("application/json")]
+    public class CommitteeController : Microsoft.AspNetCore.Mvc.ControllerBase
     {
-        public CommitteeController(IDao database) : base(database)
+        private readonly IDao _database;
+
+        public CommitteeController(IDao database)
         {
+            _database = database;
         }
 
+        /// <summary>
+        /// Gets all committee members, optionally filtered by season or year
+        /// </summary>
         [HttpGet]
-        [HttpGet("{id}")]
-        [HttpPost]
-        [HttpPut]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> HandleRequest()
+        [ProducesResponseType(typeof(List<CommitteePostV1>), StatusCodes.Status200OK)]
+        public IActionResult GetAllCommitteeMembers([FromQuery] int? season, [FromQuery] int? year)
         {
-            return await ProcessRequest();
-        }
-
-        protected override CommitteePostV1 UpdateEntity(CommitteePostV1 entity)
-        {
-            database.UpdateCommittee(CommitteePostV1.ToInternal(entity));
-            return entity;
-        }
-
-        protected override void DeleteEntity(int id)
-        {
-            database.DeleteCommittee(id);
-        }
-
-        protected override CommitteePostV1 CreateEntity(CommitteePostV1 deserializeRequestBody)
-        {
-            var createdId = database.CreateNewCommittee(CommitteePostV1.ToInternal(deserializeRequestBody));
-            return CommitteePostV1.ToExternal(database.GetCommitteeData(createdId));
-        }
-
-        protected override List<CommitteePostV1> GetAllEntities(NameValueCollection requestQueryString)
-        {
-            var season = requestQueryString["season"] ?? requestQueryString["year"];
-            var allEntities = database.GetAllCommitteeData().Select(CommitteePostV1.ToExternal).ToList();
-            if (season != null && int.TryParse(season, out var seasonAsInt))
+            var filterYear = season ?? year;
+            var allEntities = _database.GetAllCommitteeData().Select(CommitteePostV1.ToExternal).ToList();
+            
+            if (filterYear.HasValue)
             {
-                allEntities = allEntities.Where(a => a.Year == seasonAsInt).ToList();
+                allEntities = allEntities.Where(a => a.Year == filterYear.Value).ToList();
             }
 
-            return allEntities;
+            return Ok(allEntities);
         }
 
-        protected override CommitteePostV1 GetEntity(int id)
+        /// <summary>
+        /// Gets a specific committee member by ID
+        /// </summary>
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(CommitteePostV1), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult GetCommitteeMember(int id)
         {
-            var committeeData = database.GetCommitteeData(id);
-            return committeeData == null ? null : CommitteePostV1.ToExternal(committeeData);
+            var committeeData = _database.GetCommitteeData(id);
+            if (committeeData == null)
+            {
+                return NotFound();
+            }
+            
+            return Ok(CommitteePostV1.ToExternal(committeeData));
         }
 
-        public override string GetTypeName()
+        /// <summary>
+        /// Creates a new committee member
+        /// </summary>
+        [HttpPost]
+        [Consumes("application/json")]
+        [ProducesResponseType(typeof(CommitteePostV1), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult CreateCommitteeMember([FromBody] CommitteePostV1 committeeMember)
         {
-            return "committee";
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var createdId = _database.CreateNewCommittee(CommitteePostV1.ToInternal(committeeMember));
+            var created = CommitteePostV1.ToExternal(_database.GetCommitteeData(createdId));
+            
+            return CreatedAtAction(nameof(GetCommitteeMember), new { id = createdId }, created);
+        }
+
+        /// <summary>
+        /// Updates an existing committee member
+        /// </summary>
+        [HttpPut]
+        [Consumes("application/json")]
+        [ProducesResponseType(typeof(CommitteePostV1), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult UpdateCommitteeMember([FromBody] CommitteePostV1 committeeMember)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            _database.UpdateCommittee(CommitteePostV1.ToInternal(committeeMember));
+            return Ok(committeeMember);
+        }
+
+        /// <summary>
+        /// Deletes a committee member by ID
+        /// </summary>
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public IActionResult DeleteCommitteeMember(int id)
+        {
+            _database.DeleteCommittee(id);
+            return NoContent();
         }
     }
 }

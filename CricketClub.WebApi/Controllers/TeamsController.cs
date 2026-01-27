@@ -1,5 +1,4 @@
 #nullable disable
-using System.Collections.Specialized;
 using CricketClub.WebApi.Domain;
 using CricketClubDAL;
 using CricketClubMiddle;
@@ -7,56 +6,98 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CricketClub.WebApi.Controllers
 {
+    /// <summary>
+    /// Manages opposition cricket teams
+    /// </summary>
+    [ApiController]
     [Route("api/[controller]")]
-    public class TeamsController : EntityControllerBase<TeamV1>
+    [Produces("application/json")]
+    public class TeamsController : Microsoft.AspNetCore.Mvc.ControllerBase
     {
-        public TeamsController(IDao database) : base(database)
+        private readonly IDao _database;
+
+        public TeamsController(IDao database)
         {
+            _database = database;
         }
 
+        /// <summary>
+        /// Gets all teams (excluding "Us")
+        /// </summary>
         [HttpGet]
+        [ProducesResponseType(typeof(List<TeamV1>), StatusCodes.Status200OK)]
+        public IActionResult GetAllTeams()
+        {
+            var teams = Team.GetAll(_database)
+                .Where(t => !t.IsUs)
+                .Select(TeamV1.FromInternal)
+                .OrderBy(t => t.Name)
+                .ToList();
+
+            return Ok(teams);
+        }
+
+        /// <summary>
+        /// Gets a specific team by ID
+        /// </summary>
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(TeamV1), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult GetTeam(int id)
+        {
+            var team = new Team(id, _database);
+            return Ok(TeamV1.FromInternal(team));
+        }
+
+        /// <summary>
+        /// Creates a new team
+        /// </summary>
         [HttpPost]
+        [Consumes("application/json")]
+        [ProducesResponseType(typeof(TeamV1), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult CreateTeam([FromBody] TeamV1 teamData)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var team = Team.CreateNewTeam(teamData.Name, _database);
+            var result = TeamV1.FromInternal(team);
+            
+            return CreatedAtAction(nameof(GetTeam), new { id = team.ID }, result);
+        }
+
+        /// <summary>
+        /// Updates an existing team
+        /// </summary>
         [HttpPut]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> HandleRequest()
+        [Consumes("application/json")]
+        [ProducesResponseType(typeof(TeamV1), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult UpdateTeam([FromBody] TeamV1 teamData)
         {
-            return await ProcessRequest();
-        }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-        protected override TeamV1 UpdateEntity(TeamV1 entity)
-        {
-            var team = new Team(entity.Id, database) { Name = entity.Name };
+            var team = new Team(teamData.Id, _database) { Name = teamData.Name };
             team.Save();
-            return entity;
+            
+            return Ok(teamData);
         }
 
-        protected override void DeleteEntity(int id)
+        /// <summary>
+        /// Deletes a team by ID
+        /// </summary>
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status501NotImplemented)]
+        public IActionResult DeleteTeam(int id)
         {
-            throw new NotImplementedException();
-        }
-
-        protected override TeamV1 CreateEntity(TeamV1 deserializeRequestBody)
-        {
-            var team = Team.CreateNewTeam(deserializeRequestBody.Name, database);
-            return TeamV1.FromInternal(team);
-        }
-
-        protected override List<TeamV1> GetAllEntities(NameValueCollection requestQueryString)
-        {
-            return Team.GetAll(database).Where(t => !t.IsUs)
-                .Select(TeamV1.FromInternal).OrderBy(t => t.Name).ToList();
-        }
-
-        protected override TeamV1 GetEntity(int id)
-        {
-            var team = new Team(id, database);
-            return TeamV1.FromInternal(team);
-        }
-
-        public override string GetTypeName()
-        {
-            return "teams";
+            return StatusCode(StatusCodes.Status501NotImplemented, "Team deletion is not implemented");
         }
     }
 }

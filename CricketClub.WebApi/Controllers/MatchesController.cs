@@ -1,5 +1,4 @@
 #nullable disable
-using System.Collections.Specialized;
 using CricketClub.WebApi.Domain;
 using CricketClubDAL;
 using CricketClubDomain;
@@ -10,80 +9,126 @@ using MatchType = CricketClubDomain.MatchType;
 
 namespace CricketClub.WebApi.Controllers
 {
+    /// <summary>
+    /// Manages cricket matches
+    /// </summary>
+    [ApiController]
     [Route("api/[controller]")]
-    public class MatchesController : EntityControllerBase<MatchV1>
+    [Produces("application/json")]
+    public class MatchesController : Microsoft.AspNetCore.Mvc.ControllerBase
     {
-        public MatchesController(IDao database) : base(database)
+        private readonly IDao _database;
+
+        public MatchesController(IDao database)
         {
+            _database = database;
         }
 
+        /// <summary>
+        /// Gets all matches, optionally filtered by season
+        /// </summary>
         [HttpGet]
-        [HttpGet("{id}")]
-        [HttpPost]
-        [HttpPut]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> HandleRequest()
+        [ProducesResponseType(typeof(List<MatchV1>), StatusCodes.Status200OK)]
+        public IActionResult GetAllMatches([FromQuery] int? season)
         {
-            return await ProcessRequest();
-        }
-
-        protected override MatchV1 UpdateEntity(MatchV1 entity)
-        {
-            var match = new Match(entity.Id, database)
+            if (season.HasValue)
             {
-                OppositionID = entity.Opposition.Id,
-                VenueID = entity.Venue.Id,
-                MatchDate = DateTime.Parse(entity.Date),
-                HomeOrAway = entity.IsHome ? HomeOrAway.Home : HomeOrAway.Away,
-                Type = (MatchType)Enum.Parse(typeof(MatchType), entity.Type, true)
-            };
-            match.Save();
-            return entity;
-        }
-
-        protected override void DeleteEntity(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override MatchV1 CreateEntity(MatchV1 deserializeRequestBody)
-        {
-            var matchType = (MatchType)Enum.Parse(typeof(MatchType), deserializeRequestBody.Type, true);
-            var homeOrAway = deserializeRequestBody.IsHome ? HomeOrAway.Home : HomeOrAway.Away;
-            var match = Match.CreateNewMatch(
-                new Team(deserializeRequestBody.Opposition.Id, database),
-                DateTime.Parse(deserializeRequestBody.Date),
-                new Venue(deserializeRequestBody.Venue.Id, database),
-                matchType,
-                homeOrAway,
-                database);
-            return MatchV1.FromInternal(match);
-        }
-
-        protected override List<MatchV1> GetAllEntities(NameValueCollection requestQueryString)
-        {
-            var season = requestQueryString["season"];
-            
-            if (season != null && int.TryParse(season, out var seasonAsInt))
-            {
-                return Match.GetAll(new DateTime(seasonAsInt, 1, 1), new DateTime(seasonAsInt, 12, 31), null, null, database)
-                    .OrderBy(m => m.MatchDate).Select(MatchV1.FromInternal).ToList();
+                var matches = Match.GetAll(
+                    new DateTime(season.Value, 1, 1),
+                    new DateTime(season.Value, 12, 31),
+                    null, null, _database)
+                    .OrderBy(m => m.MatchDate)
+                    .Select(MatchV1.FromInternal)
+                    .ToList();
+                
+                return Ok(matches);
             }
 
-            return Match.GetAll(database)
-                .OrderBy(m => m.MatchDate).Select(MatchV1.FromInternal).ToList();
+            var allMatches = Match.GetAll(_database)
+                .OrderBy(m => m.MatchDate)
+                .Select(MatchV1.FromInternal)
+                .ToList();
 
+            return Ok(allMatches);
         }
 
-        protected override MatchV1 GetEntity(int id)
+        /// <summary>
+        /// Gets a specific match by ID
+        /// </summary>
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(MatchV1), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult GetMatch(int id)
         {
-            var match = new Match(id, database);
-            return MatchV1.FromInternal(match);
+            var match = new Match(id, _database);
+            return Ok(MatchV1.FromInternal(match));
         }
 
-        public override string GetTypeName()
+        /// <summary>
+        /// Creates a new match
+        /// </summary>
+        [HttpPost]
+        [Consumes("application/json")]
+        [ProducesResponseType(typeof(MatchV1), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult CreateMatch([FromBody] MatchV1 matchData)
         {
-            return "matches";
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var matchType = (MatchType)Enum.Parse(typeof(MatchType), matchData.Type, true);
+            var homeOrAway = matchData.IsHome ? HomeOrAway.Home : HomeOrAway.Away;
+            
+            var match = Match.CreateNewMatch(
+                new Team(matchData.Opposition.Id, _database),
+                DateTime.Parse(matchData.Date),
+                new Venue(matchData.Venue.Id, _database),
+                matchType,
+                homeOrAway,
+                _database);
+            
+            var result = MatchV1.FromInternal(match);
+            return CreatedAtAction(nameof(GetMatch), new { id = match.ID }, result);
+        }
+
+        /// <summary>
+        /// Updates an existing match
+        /// </summary>
+        [HttpPut]
+        [Consumes("application/json")]
+        [ProducesResponseType(typeof(MatchV1), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult UpdateMatch([FromBody] MatchV1 matchData)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var match = new Match(matchData.Id, _database)
+            {
+                OppositionID = matchData.Opposition.Id,
+                VenueID = matchData.Venue.Id,
+                MatchDate = DateTime.Parse(matchData.Date),
+                HomeOrAway = matchData.IsHome ? HomeOrAway.Home : HomeOrAway.Away,
+                Type = (MatchType)Enum.Parse(typeof(MatchType), matchData.Type, true)
+            };
+            match.Save();
+            
+            return Ok(matchData);
+        }
+
+        /// <summary>
+        /// Deletes a match by ID
+        /// </summary>
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status501NotImplemented)]
+        public IActionResult DeleteMatch(int id)
+        {
+            return StatusCode(StatusCodes.Status501NotImplemented, "Match deletion is not implemented");
         }
     }
 }

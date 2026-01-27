@@ -7,56 +7,41 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CricketClub.WebApi.Controllers
 {
+    /// <summary>
+    /// Provides upcoming cricket fixtures
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    public class FixturesController : ControllerBase
+    [Produces("application/json")]
+    public class FixturesController : Microsoft.AspNetCore.Mvc.ControllerBase
     {
-        private readonly IDao database;
+        private readonly IDao _database;
 
         public FixturesController(IDao database)
         {
-            this.database = database;
+            _database = database;
         }
 
+        /// <summary>
+        /// Gets upcoming fixtures, optionally filtered by season
+        /// </summary>
+        /// <param name="season">Season year to filter by (optional)</param>
+        /// <returns>List of upcoming fixtures</returns>
         [HttpGet]
-        public async Task<IActionResult> HandleRequest()
+        [ProducesResponseType(typeof(List<MatchV1>), StatusCodes.Status200OK)]
+        public IActionResult GetFixtures([FromQuery] int? season)
         {
-            return await ProcessRequest();
-        }
+            var matches = Match.GetFixtures(_database);
 
-        [NonAction]
-        public override void ProcessRequest(IHandlerContext context)
-        {
-            switch (context.Request.HttpMethod)
+            if (season.HasValue)
             {
-                case "GET":
-                    GetFixtures(context);
-                    break;
-                default:
-                    context.Response.StatusCode = 405;
-                    break;
-            }
-        }
-
-        private void GetFixtures(IHandlerContext context)
-        {
-            var queryString = context.Request.QueryString;
-            var seasonParam = queryString["season"];
-
-            var matches = Match.GetFixtures(database);
-
-            if (!string.IsNullOrEmpty(seasonParam) && int.TryParse(seasonParam, out var season))
-            {
-                var startDate = new DateTime(season, 1, 1);
-                var endDate = new DateTime(season, 12, 31);
+                var startDate = new DateTime(season.Value, 1, 1);
+                var endDate = new DateTime(season.Value, 12, 31);
                 matches = matches.Where(m => m.MatchDate >= startDate && m.MatchDate <= endDate).ToList();
             }
 
             var fixtures = matches.Select(MatchV1.FromInternal).ToList();
-
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = 200;
-            context.Response.Write(JsonSerializer.Serialize(fixtures));
+            return Ok(fixtures);
         }
     }
 }
