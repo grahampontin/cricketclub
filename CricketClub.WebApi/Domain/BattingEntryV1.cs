@@ -11,20 +11,20 @@ namespace CricketClub.WebApi.Domain
     [SuppressMessage("ReSharper", "NotAccessedField.Global")]
     public class BattingEntryV1
     {
-        public int playerId;
-        public string playerName;
-        public int runs;
-        public string modeOfDismissal;
-        public int bowlerId;
-        public string bowlerName;
-        public int fielderId;
-        public string fielderName;
-        public int fours;
-        public int sixes;
-        public int battingAt;
-        public int ballsFaced;
-        public int dotBalls;
-        public WicketV1 wicket;
+        public int PlayerId { get; set; }
+        public string PlayerName { get; set; }
+        public int Runs { get; set; }
+        public string ModeOfDismissal { get; set; }
+        public int BowlerId { get; set; }
+        public string BowlerName { get; set; }
+        public int FielderId { get; set; }
+        public string FielderName { get; set; }
+        public int Fours { get; set; }
+        public int Sixes { get; set; }
+        public int BattingAt { get; set; }
+        public int BallsFaced { get; set; }
+        public int DotBalls { get; set; }
+        public WicketV1 Wicket { get; set; }
 
         // ReSharper disable once UnusedMember.Global
         public BattingEntryV1()
@@ -33,47 +33,46 @@ namespace CricketClub.WebApi.Domain
 
         public BattingEntryV1(BattingCardLine battingCardLine)
         {
-            playerId = battingCardLine.Batsman.Id;
-            playerName = battingCardLine.Batsman.Name;
-            runs = battingCardLine.Score;
-            modeOfDismissal = battingCardLine.Dismissal.ToString();
-            bowlerId = battingCardLine.Bowler.Id;
-            bowlerName = battingCardLine.Bowler.Name;
-            fielderId = battingCardLine.Fielder.Id;
-            fielderName = battingCardLine.Fielder.Name;
-            fours = battingCardLine.Fours;
-            sixes = battingCardLine.Sixes;
-            battingAt = battingCardLine.BattingAt;
-            ballsFaced = battingCardLine.BallsFaced;
-            dotBalls = battingCardLine.DotBalls;
-            wicket = new WicketV1(bowlerName, fielderName, battingCardLine.Dismissal);
-
+            PlayerId = battingCardLine.Batsman.Id;
+            PlayerName = battingCardLine.Batsman.Name;
+            Runs = battingCardLine.Score;
+            ModeOfDismissal = battingCardLine.Dismissal.ToString();
+            BowlerId = battingCardLine.Bowler.Id;
+            BowlerName = battingCardLine.Bowler.Name;
+            FielderId = battingCardLine.Fielder.Id;
+            FielderName = battingCardLine.Fielder.Name;
+            Fours = battingCardLine.Fours;
+            Sixes = battingCardLine.Sixes;
+            BattingAt = battingCardLine.BattingAt;
+            BallsFaced = battingCardLine.BallsFaced;
+            DotBalls = battingCardLine.DotBalls;
+            Wicket = new WicketV1(BowlerName, FielderName, battingCardLine.Dismissal);
         }
 
         public BattingCardLine ToInternal(Match match)
         {
             ModesOfDismissal dismissal;
-            ModesOfDismissal.TryParse(modeOfDismissal, true, out dismissal);
+            ModesOfDismissal.TryParse(ModeOfDismissal, true, out dismissal);
             return new BattingCardLine(new BattingCardLineData()
             {
-                BattingAt = battingAt,
-                BowlerID = bowlerId,
-                BowlerName = bowlerName,
-                FielderID = fielderId,
-                FielderName = fielderName,
-                Fours = fours,
+                BattingAt = BattingAt,
+                BowlerID = BowlerId,
+                BowlerName = BowlerName,
+                FielderID = FielderId,
+                FielderName = FielderName,
+                Fours = Fours,
                 MatchDate = match.MatchDate,
                 MatchID = match.ID,
                 MatchTypeID = (int)match.Type,
                 ModeOfDismissal = (int)dismissal,
-                PlayerID = playerId,
-                PlayerName = playerName,
-                Runs = runs - (fours * 4 + sixes * 6),
-                Score = runs,
-                Sixes = sixes,
+                PlayerID = PlayerId,
+                PlayerName = PlayerName,
+                Runs = Runs - (Fours * 4 + Sixes * 6),
+                Score = Runs,
+                Sixes = Sixes,
                 VenueID = match.VenueID,
-                BallsFaced = ballsFaced,
-                DotBalls = dotBalls
+                BallsFaced = BallsFaced,
+                DotBalls = DotBalls
             });
         }
     }

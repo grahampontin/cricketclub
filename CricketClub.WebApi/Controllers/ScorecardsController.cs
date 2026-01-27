@@ -64,38 +64,38 @@ namespace CricketClub.WebApi.Controllers
                 return NotFound();
             }
 
-            if (unsavedScorecard.OurInnings?.batting?.entries?.Any() == true)
+            if (unsavedScorecard.OurInnings?.Batting?.Entries?.Any() == true)
             {
-                var internalBattingCard = unsavedScorecard.OurInnings.batting.ToInternalBattingCard(match, ThemOrUs.Us);
+                var internalBattingCard = unsavedScorecard.OurInnings.Batting.ToInternalBattingCard(match, ThemOrUs.Us);
                 internalBattingCard.Save(BattingOrBowling.Batting);
             }
 
-            if (unsavedScorecard.TheirInnings?.batting?.entries?.Any() == true)
+            if (unsavedScorecard.TheirInnings?.Batting?.Entries?.Any() == true)
             {
-                var internalOppoBattingCard = unsavedScorecard.TheirInnings.batting.ToInternalBattingCard(match, ThemOrUs.Them);
+                var internalOppoBattingCard = unsavedScorecard.TheirInnings.Batting.ToInternalBattingCard(match, ThemOrUs.Them);
                 internalOppoBattingCard.Save(BattingOrBowling.Bowling);
             }
 
-            if (unsavedScorecard.OurInnings?.batting != null)
+            if (unsavedScorecard.OurInnings?.Batting != null)
             {
-                var internalExtras = unsavedScorecard.OurInnings.batting.ToInternalExtras(match.ID, ThemOrUs.Them);
+                var internalExtras = unsavedScorecard.OurInnings.Batting.ToInternalExtras(match.ID, ThemOrUs.Them);
                 internalExtras.Save();
             }
 
-            if (unsavedScorecard.TheirInnings?.batting != null)
+            if (unsavedScorecard.TheirInnings?.Batting != null)
             {
-                var internalOppoExtras = unsavedScorecard.TheirInnings.batting.ToInternalExtras(match.ID, ThemOrUs.Us);
+                var internalOppoExtras = unsavedScorecard.TheirInnings.Batting.ToInternalExtras(match.ID, ThemOrUs.Us);
                 internalOppoExtras.Save();
             }
 
             if (unsavedScorecard.OurInnings != null)
             {
-                match.OurInningsLength = unsavedScorecard.OurInnings.inningsLength;
+                match.OurInningsLength = unsavedScorecard.OurInnings.InningsLength;
             }
 
             if (unsavedScorecard.TheirInnings != null)
             {
-                match.TheirInningsLength = unsavedScorecard.TheirInnings.inningsLength;
+                match.TheirInningsLength = unsavedScorecard.TheirInnings.InningsLength;
             }
 
             match.Abandoned = unsavedScorecard.MatchConditions.abandoned;
@@ -107,21 +107,21 @@ namespace CricketClub.WebApi.Controllers
             match.TossWinnerBatted = unsavedScorecard.MatchConditions.tossWinnerBatted;
             match.Save();
 
-            if (unsavedScorecard.OurInnings?.bowling?.entries?.Any() == true)
+            if (unsavedScorecard.OurInnings?.Bowling?.Entries?.Any() == true)
             {
-                var theirBowlingStats = unsavedScorecard.OurInnings.bowling.ToInternal(match, ThemOrUs.Them);
+                var theirBowlingStats = unsavedScorecard.OurInnings.Bowling.ToInternal(match, ThemOrUs.Them);
                 theirBowlingStats.Save();
             }
 
-            if (unsavedScorecard.TheirInnings?.bowling?.entries?.Any() == true)
+            if (unsavedScorecard.TheirInnings?.Bowling?.Entries?.Any() == true)
             {
-                var ourBowlingStats = unsavedScorecard.TheirInnings.bowling.ToInternal(match, ThemOrUs.Us);
+                var ourBowlingStats = unsavedScorecard.TheirInnings.Bowling.ToInternal(match, ThemOrUs.Us);
                 ourBowlingStats.Save();
             }
 
-            if (unsavedScorecard.OurInnings?.fow?.entries?.Any() == true)
+            if (unsavedScorecard.OurInnings?.Fow?.Entries?.Any() == true)
             {
-                var ourFowData = unsavedScorecard.OurInnings.fow.ToInternal(match, ThemOrUs.Us);
+                var ourFowData = unsavedScorecard.OurInnings.Fow.ToInternal(match, ThemOrUs.Us);
                 ourFowData.Save();
             }
 

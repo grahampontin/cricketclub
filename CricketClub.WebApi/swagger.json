@@ -1981,6 +1981,91 @@
         },
         "additionalProperties": false
       },
+      "BattingCardV1": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BattingEntryV1"
+            },
+            "nullable": true
+          },
+          "extras": {
+            "$ref": "#/components/schemas/ExtrasV1"
+          },
+          "score": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "wickets": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BattingEntryV1": {
+        "type": "object",
+        "properties": {
+          "playerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "playerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "runs": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "modeOfDismissal": {
+            "type": "string",
+            "nullable": true
+          },
+          "bowlerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "bowlerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "fielderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fielderName": {
+            "type": "string",
+            "nullable": true
+          },
+          "fours": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sixes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "battingAt": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ballsFaced": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dotBalls": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "wicket": {
+            "$ref": "#/components/schemas/WicketV1"
+          }
+        },
+        "additionalProperties": false
+      },
       "BowlerInningsDetails": {
         "type": "object",
         "properties": {
@@ -2009,6 +2094,19 @@
           },
           "details": {
             "$ref": "#/components/schemas/BowlingDetailsV1"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BowlingCardV1": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BowlingEntryV1"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -2085,6 +2183,36 @@
         },
         "additionalProperties": false
       },
+      "BowlingEntryV1": {
+        "type": "object",
+        "properties": {
+          "playerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "playerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maidens": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "runs": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "wickets": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "overs": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
       "BowlingStatsEntryData": {
         "type": "object",
         "properties": {
@@ -2153,6 +2281,10 @@
         },
         "additionalProperties": false
       },
+      "ExtrasV1": {
+        "type": "object",
+        "additionalProperties": false
+      },
       "FallOfWicket": {
         "type": "object",
         "properties": {
@@ -2208,6 +2340,23 @@
         },
         "additionalProperties": false
       },
+      "FoWEntryV1": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "FoWV1": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FoWEntryV1"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "InningsEndDetails": {
         "type": "object",
         "properties": {
@@ -2227,6 +2376,21 @@
       },
       "InningsScoreCardV1": {
         "type": "object",
+        "properties": {
+          "batting": {
+            "$ref": "#/components/schemas/BattingCardV1"
+          },
+          "bowling": {
+            "$ref": "#/components/schemas/BowlingCardV1"
+          },
+          "fow": {
+            "$ref": "#/components/schemas/FoWV1"
+          },
+          "inningsLength": {
+            "type": "number",
+            "format": "double"
+          }
+        },
         "additionalProperties": false
       },
       "LiveBattingCard": {
@@ -2953,6 +3117,10 @@
           },
           "isAbandoned": {
             "type": "boolean"
+          },
+          "venueName": {
+            "type": "string",
+            "nullable": true
           },
           "matchReportConditions": {
             "type": "string",

@@ -11,20 +11,20 @@ namespace CricketClub.WebApi.Domain
     [SuppressMessage("ReSharper", "NotAccessedField.Global")]
     public class BattingCardV1
     {
-        public List<BattingEntryV1> entries;
-        public ExtrasV1 extras;
-        public int score;
-        public int wickets;
+        public List<BattingEntryV1> Entries { get; set; }
+        public ExtrasV1 Extras { get; set; }
+        public int Score { get; set; }
+        public int Wickets { get; set; }
 
         private readonly List<ModesOfDismissal> notOutThings = new List<ModesOfDismissal>()
             { ModesOfDismissal.RetiredHurt, ModesOfDismissal.NotOut, ModesOfDismissal.DidNotBat };
 
         public BattingCardV1(BattingCard internalModel, Extras extras)
         {
-            this.entries = internalModel.ScorecardData.Select(d => new BattingEntryV1(d)).ToList();
-            this.extras = new ExtrasV1(extras);
-            this.score = entries.Sum(e => e.runs) + this.extras.total;
-            this.wickets = internalModel.ScorecardData.Count(e => !notOutThings.Contains(e.Dismissal));
+            Entries = internalModel.ScorecardData.Select(d => new BattingEntryV1(d)).ToList();
+            Extras = new ExtrasV1(extras);
+            Score = Entries.Sum(e => e.Runs) + Extras.total;
+            Wickets = internalModel.ScorecardData.Count(e => !notOutThings.Contains(e.Dismissal));
         }
 
 
@@ -36,16 +36,16 @@ namespace CricketClub.WebApi.Domain
         public BattingCard ToInternalBattingCard(Match match, ThemOrUs themOrUs)
         {
             var battingCard = new BattingCard(match.ID, themOrUs);
-            battingCard.Extras = extras.GetTotal();
+            battingCard.Extras = Extras.GetTotal();
             battingCard.ScorecardData.Clear();
-            battingCard.ScorecardData.AddRange(entries.Select(e=>e.ToInternal(match)));
+            battingCard.ScorecardData.AddRange(Entries.Select(e => e.ToInternal(match)));
 
             return battingCard;
         }
 
         public Extras ToInternalExtras(int matchId, ThemOrUs themOrUs)
         {
-            return extras.ToInternal(matchId, themOrUs);
+            return Extras.ToInternal(matchId, themOrUs);
         }
     }
 }

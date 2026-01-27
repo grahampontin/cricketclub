@@ -29,6 +29,8 @@ namespace CricketClub.WebApi.Domain
         public bool IsTied { get; set; }
         public bool IsDrawn { get; set; }
         public bool IsAbandoned { get; set; }
+
+        public string VenueName { get; set; }
         
         // New fields for match report
         public string MatchReportConditions { get; set; }
@@ -75,6 +77,7 @@ namespace CricketClub.WebApi.Domain
                 TheirWickets = match.GetTeamWicketsDown(match.Opposition),
                 TheirOversFaced = match.GetOurBowlingStats().BowlingStatsData.Sum(b => b.Overs),
                 IsAbandoned = match.Abandoned,
+                VenueName = match.Venue?.Name,
                 IsWinner = isWinner,
                 MatchReportConditions = hasMatchReport ? matchReport.Conditions : null,
                 MatchReportText = hasMatchReport ? matchReport.Report : null,

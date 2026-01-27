@@ -10,12 +10,12 @@ namespace CricketClub.WebApi.Domain
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     public class BowlingEntryV1
     {
-        public string playerName;
-        public int playerId;
-        public int maidens;
-        public int runs;
-        public int wickets;
-        public decimal overs;
+        public string PlayerName { get; set; }
+        public int PlayerId { get; set; }
+        public int Maidens { get; set; }
+        public int Runs { get; set; }
+        public int Wickets { get; set; }
+        public decimal Overs { get; set; }
 
         //Deserialize
         // ReSharper disable once UnusedMember.Global
@@ -25,28 +25,28 @@ namespace CricketClub.WebApi.Domain
 
         public BowlingEntryV1(BowlingStatsLine bowlingStatsLine)
         {
-            maidens = bowlingStatsLine.Maidens;
-            runs = bowlingStatsLine.Runs;
-            wickets = bowlingStatsLine.Wickets;
-            overs = bowlingStatsLine.Overs;
-            playerName = bowlingStatsLine.BowlerName;
-            playerId = bowlingStatsLine.Bowler.Id;
+            Maidens = bowlingStatsLine.Maidens;
+            Runs = bowlingStatsLine.Runs;
+            Wickets = bowlingStatsLine.Wickets;
+            Overs = bowlingStatsLine.Overs;
+            PlayerName = bowlingStatsLine.BowlerName;
+            PlayerId = bowlingStatsLine.Bowler.Id;
         }
 
         public BowlingStatsLine ToInternal(Match match)
         {
             return new BowlingStatsLine(new BowlingStatsEntryData
             {
-                Maidens = maidens,
+                Maidens = Maidens,
                 MatchDate = match.MatchDate,
                 MatchID = match.ID,
                 MatchTypeID = (int)match.Type,
-                Overs = overs,
-                PlayerName = playerName,
-                Runs = runs,
+                Overs = Overs,
+                PlayerName = PlayerName,
+                Runs = Runs,
                 VenueID = match.VenueID,
-                Wickets = wickets,
-                PlayerID = playerId
+                Wickets = Wickets,
+                PlayerID = PlayerId
             });
         }
     }

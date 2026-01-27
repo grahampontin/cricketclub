@@ -11,7 +11,7 @@ namespace CricketClub.WebApi.Domain
     [SuppressMessage("ReSharper", "NotAccessedField.Global")]
     public class FoWV1
     {
-        public List<FoWEntryV1> entries;
+        public List<FoWEntryV1> Entries { get; set; }
 
         // ReSharper disable once UnusedMember.Global
         public FoWV1()
@@ -20,14 +20,14 @@ namespace CricketClub.WebApi.Domain
 
         public FoWV1(FoWStats internalModel)
         {
-            entries = internalModel.Data.Select(d => new FoWEntryV1(d)).ToList();
+            Entries = internalModel.Data.Select(d => new FoWEntryV1(d)).ToList();
         }
 
         public FoWStats ToInternal(Match match, ThemOrUs themOrUs)
         {
             var foWStats = new FoWStats(match.ID, themOrUs);
             foWStats.Data.Clear();
-            foWStats.Data.AddRange(entries.Select(e=>e.ToInternal(match.ID, themOrUs)));
+            foWStats.Data.AddRange(Entries.Select(e => e.ToInternal(match.ID, themOrUs)));
             return foWStats;
 
         }

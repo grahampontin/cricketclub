@@ -11,7 +11,7 @@ namespace CricketClub.WebApi.Domain
     [SuppressMessage("ReSharper", "NotAccessedField.Global")]
     public class BowlingCardV1
     {
-        public List<BowlingEntryV1> entries;
+        public List<BowlingEntryV1> Entries { get; set; }
 
         // ReSharper disable once UnusedMember.Global
         public BowlingCardV1()
@@ -20,14 +20,14 @@ namespace CricketClub.WebApi.Domain
 
         public BowlingCardV1(BowlingStats internalModel)
         {
-            entries = internalModel.BowlingStatsData.Select(s => new BowlingEntryV1(s)).ToList();
+            Entries = internalModel.BowlingStatsData.Select(s => new BowlingEntryV1(s)).ToList();
         }
 
         public BowlingStats ToInternal(Match match, ThemOrUs themOrUs)
         {
             var bowlingStats = new BowlingStats(match.ID, themOrUs);
             bowlingStats.BowlingStatsData.Clear();
-            bowlingStats.BowlingStatsData.AddRange(entries.Select(e=>e.ToInternal(match)));
+            bowlingStats.BowlingStatsData.AddRange(Entries.Select(e => e.ToInternal(match)));
             return bowlingStats;
         }
     }
