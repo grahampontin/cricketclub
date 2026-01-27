@@ -105,5 +105,36 @@ namespace CricketClub.Tests
             Assert.IsTrue(awardDatas.Any());
             Assert.IsTrue(awardDatas.Any(a => a.Id == awardId));
         }
+
+        [Test]
+        public void PlayerNameIsPopulatedFromDatabase()
+        {
+            // Arrange - create an award for player ID 1
+            var awardData = new AwardData
+            {
+                Year = random.Next(),
+                Award = Award.BatsmanOfTheYear,
+                PlayerId = 1,
+                Data = "Test Award"
+            };
+
+            var awardId = dao.CreateNewAward(awardData.Award, awardData.Year, awardData.PlayerId, awardData.Data);
+            Assert.True(awardId > 0);
+
+            // Act - retrieve the award
+            var saved = dao.GetAwardData(awardId);
+
+            // Assert - verify PlayerName is populated from the database join
+            Assert.NotNull(saved);
+            Assert.NotNull(saved.PlayerName, "PlayerName should be populated from database join");
+            Assert.IsNotEmpty(saved.PlayerName, "PlayerName should not be empty");
+            
+            // Also verify it works in GetAllAwardsData
+            var allAwards = dao.GetAllAwardsData().ToList();
+            var foundAward = allAwards.FirstOrDefault(a => a.Id == awardId);
+            Assert.NotNull(foundAward);
+            Assert.NotNull(foundAward.PlayerName, "PlayerName should be populated in GetAllAwardsData");
+            Assert.AreEqual(saved.PlayerName, foundAward.PlayerName);
+        }
     }
 }

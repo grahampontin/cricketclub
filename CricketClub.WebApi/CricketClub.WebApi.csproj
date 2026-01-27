@@ -30,4 +30,20 @@
     <ProjectReference Include="..\CricketClubMiddle\CricketClubMiddle.csproj" />
   </ItemGroup>
 
+  <!-- Generate Swagger JSON file after build -->
+  <Target Name="GenerateSwagger" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Release'">
+    <!-- Ensure local tools are restored -->
+    <Exec Command="dotnet tool restore" 
+          IgnoreExitCode="true" 
+          ContinueOnError="true"
+          WorkingDirectory="$(ProjectDir).." />
+    
+    <!-- Generate swagger.json using local tool -->
+    <Exec Command="dotnet swagger tofile --output &quot;$(ProjectDir)swagger.json&quot; &quot;$(OutputPath)$(AssemblyName).dll&quot; v1" 
+          WorkingDirectory="$(ProjectDir)"
+          ContinueOnError="true" />
+    
+    <Message Text="Swagger JSON generation completed. Output: $(ProjectDir)swagger.json" Importance="high" />
+  </Target>
+
 </Project>

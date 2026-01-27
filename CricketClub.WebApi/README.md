@@ -97,6 +97,52 @@ A `nuget.config` file has been added to the solution root that configures this f
 
 To build this project, you need:
 1. Network access to the Azure DevOps feed
+
+## Swagger/OpenAPI Documentation
+
+### Automatic Generation
+
+The project is configured to automatically generate a `swagger.json` file during each build. This file is created in the project root directory and contains the complete OpenAPI specification for the API.
+
+**Build Process:**
+- The Swashbuckle.AspNetCore.Cli tool is configured as a local .NET tool via `.config/dotnet-tools.json`
+- During build, `dotnet tool restore` ensures the tool is available
+- After each successful build (Debug or Release), the tool generates `CricketClub.WebApi/swagger.json`
+- The file is version-controlled and should be committed to the repository
+
+**First Build Setup:**
+```bash
+# Restore local tools (one-time per clone)
+dotnet tool restore
+
+# Build the project - swagger.json will be generated automatically
+dotnet build
+```
+
+**Local Tool Manifest:**
+The solution includes a `.config/dotnet-tools.json` file that specifies:
+- Tool: Swashbuckle.AspNetCore.Cli version 6.7.3
+- This ensures consistent tooling across all developers and CI/CD pipelines
+
+**Benefits:**
+- ✅ API consumers can use the swagger.json for client code generation
+- ✅ Always up-to-date with the latest API changes
+- ✅ No need to run the application to get the API specification
+- ✅ No manual tool installation required
+- ✅ Version-controlled tool dependencies
+- ✅ Works consistently across development machines and CI/CD
+
+### Viewing the API Documentation
+
+When running in Development mode, Swagger UI is available at:
+```
+https://localhost:<port>/swagger
+```
+
+This provides an interactive interface for:
+- Browsing all API endpoints
+- Viewing request/response schemas
+- Testing API calls directly from the browser
 2. Appropriate authentication credentials for the feed (if required)
 3. .NET 9 SDK installed
 

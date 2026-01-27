@@ -355,7 +355,10 @@ namespace CricketClubDAL
 
         public AwardData GetAwardData(int awardId)
         {
-            var sql = "select * from dbo.awards where award_id = " + awardId;
+            var sql = @"SELECT a.*, p.player_name 
+                        FROM dbo.awards a 
+                        LEFT JOIN thevilla_admin.players p ON a.player_id = p.player_id 
+                        WHERE a.award_id = " + awardId;
 
             var data = db.ExecuteSQLAndReturnFirstRow(sql);
             return AwardDataFromRow(new Row(data));
@@ -368,6 +371,7 @@ namespace CricketClubDAL
                 Id = data.GetInt("award_id"),
                 Award = data.GetEnum<Award>("award"),
                 PlayerId = data.GetInt("player_id"),
+                PlayerName = data.GetString("player_name"),
                 Data = data.GetString("data"),
                 Year = data.GetInt("year")
             };
@@ -413,7 +417,9 @@ namespace CricketClubDAL
 
         public IEnumerable<AwardData> GetAllAwardsData()
         {
-            var sql = "select * from dbo.awards";
+            var sql = @"SELECT a.*, p.player_name 
+                        FROM dbo.awards a 
+                        LEFT JOIN thevilla_admin.players p ON a.player_id = p.player_id";
             return db.ExecuteSqlAndReturnAllRows(sql, r => AwardDataFromRow(r));
         }
         

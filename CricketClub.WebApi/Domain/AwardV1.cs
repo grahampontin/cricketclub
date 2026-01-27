@@ -7,6 +7,7 @@ namespace CricketClub.WebApi.Domain
         public int Year { get; set; }
         public string Award { get; set; }
         public int PlayerId { get; set; }
+        public string PlayerName { get; init; }
         public string Data { get; set; }
         public int Id { get; set; }
 
@@ -17,6 +18,7 @@ namespace CricketClub.WebApi.Domain
                 Year = awardData.Year,
                 Award = awardData.Award.ToString(),
                 PlayerId = awardData.PlayerId,
+                PlayerName = awardData.PlayerName,
                 Data = awardData.Data,
                 Id = awardData.Id
             };
