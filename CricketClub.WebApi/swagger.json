@@ -1262,22 +1262,19 @@
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatsDataV1"
+                }
+              }
+            }
           },
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1305,22 +1302,19 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerDetailV1"
+                }
+              }
+            }
           },
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1356,22 +1350,22 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StatsDataV1"
+                  }
+                }
+              }
+            }
           },
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1407,22 +1401,19 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChartJsConfig"
+                }
+              }
+            }
           },
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1450,22 +1441,19 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatsDataV1"
+                }
+              }
+            }
           },
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1482,22 +1470,22 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FamilyTreeNode"
+                  }
+                }
+              }
+            }
           },
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1516,23 +1504,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/LeadingPlayerCategoryV1"
-                  }
-                }
-              },
               "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/LeadingPlayerCategoryV1"
-                  }
-                }
-              },
-              "text/json": {
                 "schema": {
                   "type": "array",
                   "items": {
@@ -1545,17 +1517,7 @@
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -1891,6 +1853,27 @@
   },
   "components": {
     "schemas": {
+      "AGGridOptions": {
+        "type": "object",
+        "properties": {
+          "columnDefs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatsColumnDefinitionV1"
+            },
+            "nullable": true
+          },
+          "rowData": {
+            "type": "array",
+            "items": { },
+            "nullable": true
+          },
+          "footerRow": {
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "AwardV1": {
         "type": "object",
         "properties": {
@@ -2468,6 +2451,147 @@
         },
         "additionalProperties": false
       },
+      "ChartJsConfig": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ChartJsData"
+          },
+          "options": {
+            "$ref": "#/components/schemas/ChartJsOptions"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChartJsData": {
+        "type": "object",
+        "properties": {
+          "datasets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChartJsDataSet"
+            },
+            "nullable": true
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChartJsDataSet": {
+        "type": "object",
+        "properties": {
+          "spanGaps": {
+            "type": "boolean"
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "type": "array",
+            "items": { },
+            "nullable": true
+          },
+          "backgroundColor": {
+            "nullable": true
+          },
+          "borderColor": {
+            "nullable": true
+          },
+          "borderWidth": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChartJsLegendOptions": {
+        "type": "object",
+        "properties": {
+          "display": {
+            "type": "boolean"
+          },
+          "position": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChartJsOptions": {
+        "type": "object",
+        "properties": {
+          "responsive": {
+            "type": "boolean"
+          },
+          "plugins": {
+            "$ref": "#/components/schemas/ChartJsPlugins"
+          },
+          "scales": {
+            "$ref": "#/components/schemas/ChartJsScales"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChartJsPlugins": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/ChartJsTitleOptions"
+          },
+          "legend": {
+            "$ref": "#/components/schemas/ChartJsLegendOptions"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChartJsScale": {
+        "type": "object",
+        "properties": {
+          "min": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChartJsScales": {
+        "type": "object",
+        "properties": {
+          "r": {
+            "$ref": "#/components/schemas/ChartJsScale"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChartJsTitleOptions": {
+        "type": "object",
+        "properties": {
+          "display": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CommitteePostV1": {
         "type": "object",
         "properties": {
@@ -2543,6 +2667,33 @@
             "format": "int32"
           },
           "notOutPlayerScore": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FamilyTreeNode": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "parentId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "caps": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "responsibleCaps": {
             "type": "integer",
             "format": "int32"
           }
@@ -3236,6 +3387,25 @@
         },
         "additionalProperties": false
       },
+      "PlayerDetailV1": {
+        "type": "object",
+        "properties": {
+          "player": {
+            "$ref": "#/components/schemas/PlayerV1"
+          },
+          "playerImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "battingStats": {
+            "$ref": "#/components/schemas/StatsDataV1"
+          },
+          "bowlingStats": {
+            "$ref": "#/components/schemas/StatsDataV1"
+          }
+        },
+        "additionalProperties": false
+      },
       "PlayerStateV1": {
         "type": "object",
         "additionalProperties": false
@@ -3381,6 +3551,38 @@
           "isWinner": {
             "type": "boolean",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StatsColumnDefinitionV1": {
+        "type": "object",
+        "properties": {
+          "headerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "field": {
+            "type": "string",
+            "nullable": true
+          },
+          "cellRenderer": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StatsDataV1": {
+        "type": "object",
+        "properties": {
+          "statsType": {
+            "type": "string",
+            "nullable": true
+          },
+          "gridOptions": {
+            "$ref": "#/components/schemas/AGGridOptions"
           }
         },
         "additionalProperties": false

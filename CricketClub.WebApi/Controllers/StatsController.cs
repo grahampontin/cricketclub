@@ -8,6 +8,7 @@ namespace CricketClub.WebApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Produces("application/json")]
     public class StatsController : Controller
     {
         private readonly IWebHostEnvironment environment;
@@ -20,7 +21,7 @@ namespace CricketClub.WebApi.Controllers
         }
 
         [HttpPost("query")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(StatsDataV1), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public IActionResult QueryStats([FromBody] StatsQueryV1 query)
         {
@@ -29,7 +30,7 @@ namespace CricketClub.WebApi.Controllers
         }
 
         [HttpGet("player/{playerId}/detail")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PlayerDetailV1), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public IActionResult GetPlayerDetail(int playerId)
         {
@@ -43,7 +44,7 @@ namespace CricketClub.WebApi.Controllers
         }
 
         [HttpGet("player/{playerId}/{statsType}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<StatsDataV1>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public IActionResult GetPlayerStats(int playerId, string statsType)
         {
@@ -52,7 +53,7 @@ namespace CricketClub.WebApi.Controllers
         }
 
         [HttpGet("chart/{playerId}/{chartType}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CricketClub.WebApi.Charts.ChartJsConfig), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public IActionResult GetChartData(int playerId, string chartType)
         {
@@ -61,7 +62,7 @@ namespace CricketClub.WebApi.Controllers
         }
 
         [HttpGet("playermatches/{playerId}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(StatsDataV1), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public IActionResult GetPlayerMatches(int playerId)
         {
@@ -70,7 +71,7 @@ namespace CricketClub.WebApi.Controllers
         }
 
         [HttpGet("familytree")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<FamilyTreeNode>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public IActionResult GetFamilyTree()
         {

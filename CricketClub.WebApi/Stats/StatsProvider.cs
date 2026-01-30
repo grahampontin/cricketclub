@@ -182,10 +182,10 @@ namespace CricketClub.WebApi.Stats
             var player = new Player(playerId);
             return new PlayerDetailV1()
             {
-                player = PlayerV1.FromInternal(player),
-                battingStats = BattingStatsFrom(player),
-                bowlingStats = BowlingStatsFrom(player),
-                playerImageUrl = ResolvePlayerImageUrl(player.Id, playerImageUrlResolver, contentRootPath)
+                Player = PlayerV1.FromInternal(player),
+                BattingStats = BattingStatsFrom(player),
+                BowlingStats = BowlingStatsFrom(player),
+                PlayerImageUrl = ResolvePlayerImageUrl(player.Id, playerImageUrlResolver, contentRootPath)
             };
         }
 
