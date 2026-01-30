@@ -67,6 +67,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Centralized exception handling (RFC7807 ProblemDetails + log4net stack traces)
+app.UseMiddleware<CricketClub.WebApi.ExceptionHandlingMiddleware>();
+
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
@@ -88,4 +91,4 @@ app.MapControllers();
 app.Run();
 
 // Make Program class accessible to integration tests
-public partial class Program { }
+public partial class Program {}

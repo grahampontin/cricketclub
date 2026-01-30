@@ -58,13 +58,8 @@ namespace CricketClub.WebApi.Controllers
             }
             catch (ArgumentException ex)
             {
-                Log.Error("Bad request error in LiveScoringController", ex);
+                Log.Error($"Bad request error in LiveScoringController.GetMatches (season={season})", ex);
                 return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Error in LiveScoringController", ex);
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -82,13 +77,8 @@ namespace CricketClub.WebApi.Controllers
             }
             catch (ArgumentException ex)
             {
-                Log.Error("Bad request error in LiveScoringController", ex);
+                Log.Error($"Bad request error in LiveScoringController.GetMatchState (matchId={matchId})", ex);
                 return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Error in LiveScoringController", ex);
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -106,13 +96,8 @@ namespace CricketClub.WebApi.Controllers
             }
             catch (ArgumentException ex)
             {
-                Log.Error("Bad request error in LiveScoringController", ex);
+                Log.Error($"Bad request error in LiveScoringController.GetLiveScorecard (matchId={matchId})", ex);
                 return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Error in LiveScoringController", ex);
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -141,11 +126,6 @@ namespace CricketClub.WebApi.Controllers
                 Log.Error("Bad request error in LiveScoringController", ex);
                 return BadRequest(ex.Message);
             }
-            catch (Exception ex)
-            {
-                Log.Error("Error in LiveScoringController", ex);
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
         }
 
         /// <summary>
@@ -166,11 +146,6 @@ namespace CricketClub.WebApi.Controllers
             {
                 Log.Error("Bad request error in LiveScoringController", ex);
                 return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Error in LiveScoringController", ex);
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -193,11 +168,6 @@ namespace CricketClub.WebApi.Controllers
                 Log.Error("Bad request error in LiveScoringController", ex);
                 return BadRequest(ex.Message);
             }
-            catch (Exception ex)
-            {
-                Log.Error("Error in LiveScoringController", ex);
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
         }
 
         /// <summary>
@@ -219,11 +189,6 @@ namespace CricketClub.WebApi.Controllers
                 Log.Error("Bad request error in LiveScoringController", ex);
                 return BadRequest(ex.Message);
             }
-            catch (Exception ex)
-            {
-                Log.Error("Error in LiveScoringController", ex);
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
         }
 
         /// <summary>
@@ -243,11 +208,6 @@ namespace CricketClub.WebApi.Controllers
             {
                 Log.Error("Bad request error in LiveScoringController", ex);
                 return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Error in LiveScoringController", ex);
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -269,11 +229,6 @@ namespace CricketClub.WebApi.Controllers
                 Log.Error("Bad request error in LiveScoringController", ex);
                 return BadRequest(ex.Message);
             }
-            catch (Exception ex)
-            {
-                Log.Error("Error in LiveScoringController", ex);
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
         }
 
         /// <summary>
@@ -293,11 +248,6 @@ namespace CricketClub.WebApi.Controllers
             {
                 Log.Error("Bad request error in LiveScoringController", ex);
                 return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Error in LiveScoringController", ex);
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
