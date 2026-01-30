@@ -177,7 +177,7 @@ namespace CricketClub.WebApi.Stats
             }
         }
 
-        public static PlayerDetailV1 QueryPlayer(int playerId, Func<String, String> pathMapper)
+        public static PlayerDetailV1 QueryPlayer(int playerId, Func<int, string> playerImageUrlResolver, string contentRootPath)
         {
             var player = new Player(playerId);
             return new PlayerDetailV1()
@@ -185,21 +185,16 @@ namespace CricketClub.WebApi.Stats
                 player = PlayerV1.FromInternal(player),
                 battingStats = BattingStatsFrom(player),
                 bowlingStats = BowlingStatsFrom(player),
-                playerImage = LoadPlayerImage(player, pathMapper)
+                playerImageUrl = ResolvePlayerImageUrl(player.Id, playerImageUrlResolver, contentRootPath)
             };
         }
 
-        private static string LoadPlayerImage(Player player, Func<string, string> pathMapper)
+        private static string ResolvePlayerImageUrl(int playerId, Func<int, string> playerImageUrlResolver, string contentRootPath)
         {
-            var filePath = MakeFileName(player.Id, pathMapper);
-            var actualFilePath = File.Exists(filePath) ? filePath : MakeFileName(0, pathMapper);
-            var imageBytes = File.ReadAllBytes(actualFilePath);
-            return Convert.ToBase64String(imageBytes);
-        }
-
-        private static string MakeFileName(int playerId, Func<string, string> pathMapper)
-        {
-            return pathMapper("/images/player_profiles/" + playerId + ".png");
+            var imageRoot = Path.Combine(contentRootPath, "Assets", "PlayerImages");
+            var playerImagePath = Path.Combine(imageRoot, playerId + ".png");
+            var resolvedId = File.Exists(playerImagePath) ? playerId : 0;
+            return playerImageUrlResolver(resolvedId);
         }
 
         private static StatsDataV1 BowlingStatsFrom(Player player)
@@ -494,3 +489,4 @@ namespace CricketClub.WebApi.Stats
         }
     }
 }
+

@@ -3,6 +3,7 @@ using CricketClubDAL;
 using log4net;
 using log4net.Config;
 using System.Reflection;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,6 +70,13 @@ var app = builder.Build();
 
 // Centralized exception handling (RFC7807 ProblemDetails + log4net stack traces)
 app.UseMiddleware<CricketClub.WebApi.ExceptionHandlingMiddleware>();
+
+// Serve player images from /Assets/PlayerImages at /images/players/
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(app.Environment.ContentRootPath, "Assets", "PlayerImages")),
+    RequestPath = "/images/players"
+});
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())

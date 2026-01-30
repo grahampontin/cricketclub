@@ -33,7 +33,12 @@ namespace CricketClub.WebApi.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public IActionResult GetPlayerDetail(int playerId)
         {
-            var playerDetailV1 = StatsProvider.QueryPlayer(playerId, (s) => Path.Combine(environment.WebRootPath, s.TrimStart('~', '/')));
+            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+            var playerDetailV1 = StatsProvider.QueryPlayer(
+                playerId,
+                imagePlayerId => new Uri(new Uri(baseUrl), $"/images/players/{imagePlayerId}.png").ToString(),
+                environment.ContentRootPath);
+
             return Ok(playerDetailV1);
         }
 
