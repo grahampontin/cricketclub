@@ -3798,6 +3798,18 @@
           "playingRole": {
             "type": "string",
             "nullable": true
+          },
+          "wickets": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "catches": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "runs": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false

@@ -29,6 +29,9 @@ namespace CricketClub.WebApi.Domain
                 PlayerId = player.Id,
                 Name = player.FormalName,
                 Matches = player.GetMatchesPlayed(),
+                Runs = player.GetRunsScored(),
+                Catches = player.GetCatchesTaken(),
+                Wickets = player.GetWicketsTaken(),
                 ShortName = player.Name,
                 Nickname = player.Nickname,
                 BattingStyle = player.BattingStyle,
@@ -46,6 +49,12 @@ namespace CricketClub.WebApi.Domain
             };
 
         }
+
+        public int Wickets { get; set; }
+
+        public int Catches { get; set; }
+
+        public int Runs { get; set; }
 
         private static string CanonicalBowlingStyle(string storedStyle)
         {
