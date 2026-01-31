@@ -4,45 +4,45 @@ namespace CricketClub.WebApi.Domain
 {
     public class PlayerV1
     {
-        public int playerId;
-        public int matches;
-        public string name;
-        public string shortName;
-        public string nickname;
-        public string battingStyle;
-        public string bowlingStyle;
-        public bool isActive;
-        public string firstName;
-        public string surname;
-        public string middleInitials;
-        public string debut;
-        public PlayerV1 clubConnection;
-        public bool isRightHandBat;
-        public string lastMatchDate;
-        public string playingRole;
+        public int PlayerId { get; set; }
+        public int Matches { get; set; }
+        public string Name { get; set; }
+        public string ShortName { get; set; }
+        public string Nickname { get; set; }
+        public string BattingStyle { get; set; }
+        public string BowlingStyle { get; set; }
+        public bool IsActive { get; set; }
+        public string FirstName { get; set; }
+        public string Surname { get; set; }
+        public string MiddleInitials { get; set; }
+        public string Debut { get; set; }
+        public PlayerV1 ClubConnection { get; set; }
+        public bool IsRightHandBat { get; set; }
+        public string LastMatchDate { get; set; }
+        public string PlayingRole { get; set; }
 
 
         public static PlayerV1 FromInternal(Player player)
         {
             return new PlayerV1()
             {
-                playerId = player.Id,
-                name = player.FormalName,
-                matches = player.GetMatchesPlayed(),
-                shortName = player.Name,
-                nickname = player.Nickname,
-                battingStyle = player.BattingStyle,
-                bowlingStyle = CanonicalBowlingStyle(player.BowlingStyle),
-                isActive = player.IsActive,
-                firstName = player.FirstName,
-                surname = player.Surname,
-                middleInitials = player.MiddleInitials,
-                clubConnection = player.RingerOf==null?null:FromInternal(player.RingerOf),
-                isRightHandBat = player.IsRightHandBat,
-                debut = player.Debut.ToString("o"),
-                lastMatchDate = player.BattingStatsData.Select(d=>d.MatchDate)
-                    .OrderByDescending(d=>d).FirstOrDefault().ToString("o"),
-                playingRole = DeterminePlayingRole(player)
+                PlayerId = player.Id,
+                Name = player.FormalName,
+                Matches = player.GetMatchesPlayed(),
+                ShortName = player.Name,
+                Nickname = player.Nickname,
+                BattingStyle = player.BattingStyle,
+                BowlingStyle = CanonicalBowlingStyle(player.BowlingStyle),
+                IsActive = player.IsActive,
+                FirstName = player.FirstName,
+                Surname = player.Surname,
+                MiddleInitials = player.MiddleInitials,
+                ClubConnection = player.RingerOf == null ? null : FromInternal(player.RingerOf),
+                IsRightHandBat = player.IsRightHandBat,
+                Debut = player.Debut.ToString("o"),
+                LastMatchDate = player.BattingStatsData.Select(d => d.MatchDate)
+                    .OrderByDescending(d => d).FirstOrDefault().ToString("o"),
+                PlayingRole = DeterminePlayingRole(player)
             };
 
         }

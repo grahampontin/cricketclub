@@ -6,9 +6,9 @@ namespace CricketClub.WebApi.Domain
     [SuppressMessage("ReSharper", "NotAccessedField.Global")]
     public class FoWPlayerV1
     {
-        public int id;
-        public string name;
-        public int battingAt;
-        public int score;
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int BattingAt { get; set; }
+        public int Score { get; set; }
     }
 }

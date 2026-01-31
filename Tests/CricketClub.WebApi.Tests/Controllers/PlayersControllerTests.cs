@@ -48,7 +48,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             var ok = Assert.IsType<OkObjectResult>(result);
             var players = Assert.IsAssignableFrom<List<PlayerV1>>(ok.Value);
             Assert.Single(players);
-            Assert.Equal(1, players[0].playerId);
+            Assert.Equal(1, players[0].PlayerId);
         }
 
         [Fact]
@@ -82,7 +82,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
             var player = Assert.IsType<PlayerV1>(ok.Value);
-            Assert.Equal(7, player.playerId);
+            Assert.Equal(7, player.PlayerId);
         }
 
         [Fact]
@@ -94,12 +94,12 @@ namespace CricketClub.WebApi.Tests.Controllers
             mockDao.Setup(d => d.GetPlayerData(3)).Returns(new PlayerData { ID = 3, Name = "New Player", IsActive = true });
 
             // Act
-            var result = controller.CreatePlayer(new PlayerV1 { firstName = "New", surname = "Player", isActive = true });
+            var result = controller.CreatePlayer(new PlayerV1 { FirstName = "New", Surname = "Player", IsActive = true });
 
             // Assert
             var created = Assert.IsType<CreatedAtActionResult>(result);
             var player = Assert.IsType<PlayerV1>(created.Value);
-            Assert.Equal(3, player.playerId);
+            Assert.Equal(3, player.PlayerId);
             mockDao.Verify(d => d.CreateNewPlayer("New Player"), Times.Once);
             mockDao.Verify(d => d.UpdatePlayer(It.Is<PlayerData>(p => p.ID == 3)), Times.Once);
         }
@@ -112,7 +112,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             mockDao.Setup(d => d.UpdatePlayer(It.IsAny<PlayerData>()));
 
             // Act
-            var result = controller.UpdatePlayer(new PlayerV1 { playerId = 3, firstName = "Updated", surname = "Player", isActive = true });
+            var result = controller.UpdatePlayer(new PlayerV1 { PlayerId = 3, FirstName = "Updated", Surname = "Player", IsActive = true });
 
             // Assert
             Assert.IsType<OkObjectResult>(result);

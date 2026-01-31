@@ -1,4 +1,4 @@
-﻿using CricketClubDomain;
+﻿﻿using CricketClubDomain;
 
 namespace CricketClub.WebApi.Domain
 {
@@ -75,7 +75,7 @@ namespace CricketClub.WebApi.Domain
             {
                 Player = wicket.Player,
                 PlayerName = wicket.PlayerName,
-                ModeOfDismissal = wicket.ModeOfDismissalAsEnum,
+                ModeOfDismissal = EnumMappers.ToV1(wicket.ModeOfDismissalAsEnum),
                 Fielder = wicket.Fielder,
                 Description = wicket.Description,
             };
@@ -130,6 +130,140 @@ namespace CricketClub.WebApi.Domain
             if (bowlingDetails == null) return null;
 
             return new BowlingDetailsV1
+            {
+                Overs = bowlingDetails.Overs,
+                Maidens = bowlingDetails.Maidens,
+                Runs = bowlingDetails.Runs,
+                Wickets = bowlingDetails.Wickets,
+                Economy = bowlingDetails.Economy
+            };
+        }
+
+        public static MatchState MapToInternalMatchState(MatchStateUpdateV1 update)
+        {
+            if (update == null) return null;
+
+            return new MatchState()
+            {
+                LastCompletedOver = update.LastCompletedOver,
+                OnStrikeBatsmanId = update.OnStrikeBatsmanId,
+                Over = MapOverToInternal(update.Over),
+                Players = update.Players != null ? update.Players.Select(MapPlayerStateToInternal).ToArray() : null,
+                RunRate = update.RunRate,
+                Score = update.Score,
+                Bowlers = update.Bowlers,
+                MatchId = update.MatchId,
+                PreviousBowler = update.PreviousBowler,
+                PreviousBowlerButOne = update.PreviousBowlerButOne,
+                Partnership = MapPartnershipToInternal(update.Partnership),
+                NextState = update.NextState,
+                OppositionScore = update.OppositionScore,
+                OppositionWickets = update.OppositionWickets,
+                OppositionName = update.OppositionName,
+                OppositionShortName = update.OppositionShortName,
+                BowlerDetails = update.BowlerDetails != null ? update.BowlerDetails.Select(MapBowlerDetailsToInternal).ToArray() : null
+            };
+        }
+
+        private static Over MapOverToInternal(OverV1 over)
+        {
+            if (over == null) return null;
+
+            return new Over()
+            {
+                OverNumber = over.OverNumber,
+                Balls = over.Balls?.Select(MapBallToInternal).ToArray(),
+                Commentary = null
+            };
+        }
+
+        private static Ball MapBallToInternal(BallV1 ball)
+        {
+            if (ball == null) return null;
+
+            // Ball.IsWide / Ball.IsNoBall are derived from Thing, so we need to set Thing consistently.
+            var thing = ball.Thing;
+            if (ball.IsWide) thing = Ball.Wides;
+            else if (ball.IsNoBall) thing = Ball.NoBall;
+
+            return new Ball()
+            {
+                BallNumber = ball.BallNumber,
+                Amount = ball.Amount,
+                Batsman = ball.Batsman,
+                BatsmanName = ball.BatsmanName,
+                Bowler = ball.Bowler,
+                Thing = thing,
+                Wicket = MapWicketToInternal(ball.Wicket),
+                Angle = ball.Angle,
+                MatchId = ball.MatchId,
+                OverNumber = ball.OverNumber,
+            };
+        }
+
+        private static Wicket MapWicketToInternal(WicketV1 wicket)
+        {
+            if (wicket == null) return null;
+
+            return new Wicket()
+            {
+                Player = wicket.Player,
+                PlayerName = wicket.PlayerName,
+                ModeOfDismissal = wicket.ModeOfDismissal.ToString().ToLowerInvariant(),
+                Fielder = wicket.Fielder,
+                Description = wicket.Description,
+            };
+        }
+
+        private static PlayerState MapPlayerStateToInternal(PlayerStateV1 playerState)
+        {
+            if (playerState == null) return null;
+
+            return new PlayerState()
+            {
+                PlayerId = playerState.PlayerId,
+                PlayerName = playerState.PlayerName,
+                Position = playerState.Position,
+                State = playerState.State,
+                CurrentScore = playerState.CurrentScore,
+                Fours = playerState.Fours,
+                BallsFaced = playerState.BallsFaced,
+                Sixes = playerState.Sixes,
+                StrikeRate = playerState.StrikeRate,
+                AsOfOver = playerState.AsOfOver
+            };
+        }
+
+        private static PartnershipStub MapPartnershipToInternal(PartnershipStubV1 partnership)
+        {
+            if (partnership == null) return null;
+
+            return new PartnershipStub()
+            {
+                Runs = partnership.Runs,
+                Balls = partnership.Balls,
+                Fours = partnership.Fours,
+                Sixes = partnership.Sixes
+            };
+        }
+
+        private static BowlerInningsDetails MapBowlerDetailsToInternal(BowlerInningsDetailsV1 bowlerDetails)
+        {
+            if (bowlerDetails == null) return null;
+
+            return new BowlerInningsDetails()
+            {
+                Name = bowlerDetails.Name,
+                JustThisSpell = MapBowlingDetailsToInternal(bowlerDetails.JustThisSpell),
+                Details = MapBowlingDetailsToInternal(bowlerDetails.Details)
+            };
+        }
+
+        private static BowlingDetails MapBowlingDetailsToInternal(BowlingDetailsV1 bowlingDetails)
+        {
+            if (bowlingDetails == null) return null;
+
+            return new BowlingDetails()
             {
                 Overs = bowlingDetails.Overs,
                 Maidens = bowlingDetails.Maidens,

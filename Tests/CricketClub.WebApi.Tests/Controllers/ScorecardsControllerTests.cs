@@ -60,7 +60,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             var ok = Assert.IsType<OkObjectResult>(result);
             var scorecard = Assert.IsType<MatchScorecardV1>(ok.Value);
             Assert.NotNull(scorecard.MatchConditions);
-            Assert.Equal(1, scorecard.MatchConditions.captainId);
+            Assert.Equal(1, scorecard.MatchConditions.CaptainId);
         }
 
         [Fact]

@@ -39,9 +39,13 @@ namespace CricketClub.WebApi.Tests.Controllers
 
             // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
-            var payload = Assert.IsAssignableFrom<List<object>>(ok.Value);
+            var payload = Assert.IsAssignableFrom<List<LiveScoringMatchSummaryV1>>(ok.Value);
             Assert.Single(payload);
-            Assert.IsType<MatchV1>(payload[0]);
+
+            var first = payload[0];
+            Assert.Equal(LiveScoringMatchSummaryKindV1.Match, first.Kind);
+            Assert.NotNull(first.Match);
+            Assert.Null(first.BallByBall);
         }
     }
 }

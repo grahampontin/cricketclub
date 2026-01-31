@@ -23,7 +23,7 @@ namespace CricketClub.WebApi.Domain
         {
             Entries = internalModel.ScorecardData.Select(d => new BattingEntryV1(d)).ToList();
             Extras = new ExtrasV1(extras);
-            Score = Entries.Sum(e => e.Runs) + Extras.total;
+            Score = Entries.Sum(e => e.Runs) + Extras.Total;
             Wickets = internalModel.ScorecardData.Count(e => !notOutThings.Contains(e.Dismissal));
         }
 

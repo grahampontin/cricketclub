@@ -1,5 +1,4 @@
-﻿using CricketClubDomain;
-
+﻿
 // ReSharper disable UnusedMember.Global
 
 namespace CricketClub.WebApi.Domain
@@ -9,60 +8,60 @@ namespace CricketClub.WebApi.Domain
         public string Bowler { get; set; }
 
         public string Fielder { get; set; }
-        
+
         public int Player { get; set; }
         public string PlayerName { get; set; }
-        
+
         public string Description { get; set; }
-    
-        public ModesOfDismissal ModeOfDismissal { get; set; }
+
+        public ModesOfDismissalV1 ModeOfDismissal { get; set; }
 
         public bool IsRunOut
         {
-            get { return this.ModeOfDismissal == ModesOfDismissal.RunOut; }
+            get { return ModeOfDismissal == ModesOfDismissalV1.RunOut; }
         }
 
         public bool IsCaught
         {
-            get { return this.ModeOfDismissal == ModesOfDismissal.Caught; }
+            get { return ModeOfDismissal == ModesOfDismissalV1.Caught; }
         }
 
         public bool IsCaughtAndBowled
         {
-            get { return this.ModeOfDismissal == ModesOfDismissal.CaughtAndBowled; }
+            get { return ModeOfDismissal == ModesOfDismissalV1.CaughtAndBowled; }
         }
 
         public bool IsBowled
         {
-            get { return this.ModeOfDismissal == ModesOfDismissal.Bowled; }
+            get { return ModeOfDismissal == ModesOfDismissalV1.Bowled; }
         }
 
         public bool IsLbw
         {
-            get { return this.ModeOfDismissal == ModesOfDismissal.LBW; }
+            get { return ModeOfDismissal == ModesOfDismissalV1.LBW; }
         }
 
         public bool IsStumped
         {
-            get { return this.ModeOfDismissal == ModesOfDismissal.Stumped; }
+            get { return ModeOfDismissal == ModesOfDismissalV1.Stumped; }
         }
 
         public bool IsHitWicket
         {
-            get { return this.ModeOfDismissal == ModesOfDismissal.HitWicket; }
+            get { return ModeOfDismissal == ModesOfDismissalV1.HitWicket; }
         }
 
         public bool IsRetired
         {
-            get { return this.ModeOfDismissal == ModesOfDismissal.Retired; }
+            get { return ModeOfDismissal == ModesOfDismissalV1.Retired; }
         }
 
         public bool IsRetiredHurt
         {
-            get { return this.ModeOfDismissal == ModesOfDismissal.RetiredHurt; }
+            get { return ModeOfDismissal == ModesOfDismissalV1.RetiredHurt; }
         }
 
-        public WicketV1(string bowlerName, string fielderName, ModesOfDismissal modeOfDismissal)
+        public WicketV1(string bowlerName, string fielderName, ModesOfDismissalV1 modeOfDismissal)
         {
             Bowler = bowlerName;
             Fielder = fielderName;

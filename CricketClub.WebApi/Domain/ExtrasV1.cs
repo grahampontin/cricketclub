@@ -9,12 +9,12 @@ namespace CricketClub.WebApi.Domain
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     public class ExtrasV1
     {
-        public int wides;
-        public int noBalls;
-        public int penalties;
-        public int byes;
-        public int legByes;
-        public int total;
+        public int Wides { get; set; }
+        public int NoBalls { get; set; }
+        public int Penalties { get; set; }
+        public int Byes { get; set; }
+        public int LegByes { get; set; }
+        public int Total { get; set; }
 
         // ReSharper disable once UnusedMember.Global
         public ExtrasV1()
@@ -23,29 +23,29 @@ namespace CricketClub.WebApi.Domain
 
         public ExtrasV1(Extras internalModelExtras)
         {
-            this.wides = internalModelExtras.Wides;
-            this.noBalls = internalModelExtras.NoBalls;
-            this.penalties = internalModelExtras.Penalty;
-            this.byes = internalModelExtras.Byes;
-            this.legByes = internalModelExtras.LegByes;
-            this.total = GetTotal();
+            Wides = internalModelExtras.Wides;
+            NoBalls = internalModelExtras.NoBalls;
+            Penalties = internalModelExtras.Penalty;
+            Byes = internalModelExtras.Byes;
+            LegByes = internalModelExtras.LegByes;
+            Total = GetTotal();
         }
 
         public Extras ToInternal(int matchId, ThemOrUs themOrUs)
         {
             return new Extras(matchId, themOrUs)
             {
-                Byes = byes,
-                LegByes = legByes,
-                NoBalls = noBalls,
-                Penalty = penalties,
-                Wides = wides
+                Byes = Byes,
+                LegByes = LegByes,
+                NoBalls = NoBalls,
+                Penalty = Penalties,
+                Wides = Wides
             };
         }
 
         public int GetTotal()
         {
-            return byes + legByes + noBalls + penalties + wides;
+            return Byes + LegByes + NoBalls + Penalties + Wides;
         }
     }
 }

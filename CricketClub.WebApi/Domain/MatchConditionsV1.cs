@@ -4,13 +4,13 @@ namespace CricketClub.WebApi.Domain
 {
     public class MatchConditionsV1
     {
-        public bool abandoned;
-        public int captainId;
-        public int wicketKeeperId;
-        public int overs;
-        public bool declaration;
-        public bool weWonTheToss;
-        public bool tossWinnerBatted;
+        public bool Abandoned { get; set; }
+        public int CaptainId { get; set; }
+        public int WicketKeeperId { get; set; }
+        public int Overs { get; set; }
+        public bool Declaration { get; set; }
+        public bool WeWonTheToss { get; set; }
+        public bool TossWinnerBatted { get; set; }
 
         public MatchConditionsV1()
         {
@@ -18,13 +18,13 @@ namespace CricketClub.WebApi.Domain
 
         public MatchConditionsV1(Match match)
         {
-            abandoned = match.Abandoned;
-            captainId = match.Captain.Id;
-            wicketKeeperId = match.WicketKeeper.Id;
-            overs = match.Overs;
-            declaration = match.WasDeclaration;
-            weWonTheToss = match.TossWinner.IsUs;
-            tossWinnerBatted = match.TossWinnerBatted;
+            Abandoned = match.Abandoned;
+            CaptainId = match.Captain.Id;
+            WicketKeeperId = match.WicketKeeper.Id;
+            Overs = match.Overs;
+            Declaration = match.WasDeclaration;
+            WeWonTheToss = match.TossWinner.IsUs;
+            TossWinnerBatted = match.TossWinnerBatted;
         }
     }
 }

@@ -2,8 +2,9 @@
 {
     public class PartnershipStubV1
     {
-        public int Runs;
-        public int Balls;
-        public int Fours;
-        public int Sixes;}
+        public int Runs { get; set; }
+        public int Balls { get; set; }
+        public int Fours { get; set; }
+        public int Sixes { get; set; }
+    }
 }

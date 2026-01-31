@@ -13,49 +13,48 @@ namespace CricketClub.WebApi.Domain
         {
         }
 
-        public FoWPlayerV1 outgoingPlayer;
-        public FoWPlayerV1 notOutPlayer;
-        public int wicket;
-        public int score;
-        public decimal overs;
-        public int partnership;
-        
+        public FoWPlayerV1 OutgoingPlayer { get; set; }
+        public FoWPlayerV1 NotOutPlayer { get; set; }
+        public int Wicket { get; set; }
+        public int Score { get; set; }
+        public decimal Overs { get; set; }
+        public int Partnership { get; set; }
 
         public FoWEntryV1(FoWStatsLine foWStatsLine)
         {
-            outgoingPlayer = new FoWPlayerV1()
+            OutgoingPlayer = new FoWPlayerV1()
             {
-                battingAt = foWStatsLine.OutgoingBatsmanPosition,
-                id = foWStatsLine.OutgoingBatsman.Id,
-                name = foWStatsLine.OutgoingBatsman.Name,
-                score = foWStatsLine.OutgoingBatsmanScore
+                BattingAt = foWStatsLine.OutgoingBatsmanPosition,
+                Id = foWStatsLine.OutgoingBatsman.Id,
+                Name = foWStatsLine.OutgoingBatsman.Name,
+                Score = foWStatsLine.OutgoingBatsmanScore
             };
-            notOutPlayer = new FoWPlayerV1()
+            NotOutPlayer = new FoWPlayerV1()
             {
-                battingAt = foWStatsLine.NotOutBatsmanPosition,
-                id = foWStatsLine.NotOutBatsman.Id,
-                name = foWStatsLine.NotOutBatsman.Name,
-                score = foWStatsLine.NotOutBatsmanScore
+                BattingAt = foWStatsLine.NotOutBatsmanPosition,
+                Id = foWStatsLine.NotOutBatsman.Id,
+                Name = foWStatsLine.NotOutBatsman.Name,
+                Score = foWStatsLine.NotOutBatsmanScore
             };
-            wicket = foWStatsLine.Wicket;
-            score = foWStatsLine.Score;
-            overs = foWStatsLine.Over;
-            partnership = foWStatsLine.Partnership;
+            Wicket = foWStatsLine.Wicket;
+            Score = foWStatsLine.Score;
+            Overs = foWStatsLine.Over;
+            Partnership = foWStatsLine.Partnership;
         }
 
         public FoWStatsLine ToInternal(int matchId, ThemOrUs themOrUs)
         {
             return new FoWStatsLine(new FoWDataLine()
             {
-                OutgoingBatsman = outgoingPlayer.battingAt,
-                OutgoingBatsmanScore = outgoingPlayer.score,
-                NotOutBatsman = notOutPlayer.battingAt,
-                NotOutBatsmanScore = notOutPlayer.score,
-                Score = score,
-                Partnership = partnership,
-                Wicket = wicket,
+                OutgoingBatsman = OutgoingPlayer.BattingAt,
+                OutgoingBatsmanScore = OutgoingPlayer.Score,
+                NotOutBatsman = NotOutPlayer.BattingAt,
+                NotOutBatsmanScore = NotOutPlayer.Score,
+                Score = Score,
+                Partnership = Partnership,
+                Wicket = Wicket,
                 MatchID = matchId,
-                OverNumber = (int) overs,
+                OverNumber = (int)Overs,
                 Who = themOrUs
             });
         }

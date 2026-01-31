@@ -70,9 +70,9 @@ namespace CricketClub.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var fullName = string.IsNullOrWhiteSpace(playerData.firstName) && string.IsNullOrWhiteSpace(playerData.surname)
+            var fullName = string.IsNullOrWhiteSpace(playerData.FirstName) && string.IsNullOrWhiteSpace(playerData.Surname)
                 ? "Unknown Player"
-                : $"{playerData.firstName} {playerData.surname}".Trim();
+                : $"{playerData.FirstName} {playerData.Surname}".Trim();
             
             var player = Player.CreateNewPlayer(fullName, _database);
             UpdatePlayerFields(player, playerData);
@@ -95,7 +95,7 @@ namespace CricketClub.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var player = new Player(playerData.playerId, _database);
+            var player = new Player(playerData.PlayerId, _database);
             UpdatePlayerFields(player, playerData);
             
             return Ok(playerData);
@@ -114,18 +114,18 @@ namespace CricketClub.WebApi.Controllers
 
         private void UpdatePlayerFields(Player player, PlayerV1 entity)
         {
-            player.Nickname = entity.nickname;
-            player.BattingStyle = entity.battingStyle;
-            player.BowlingStyle = entity.bowlingStyle;
-            player.IsActive = entity.isActive;
-            player.FirstName = entity.firstName;
-            player.Surname = entity.surname;
-            player.MiddleInitials = entity.middleInitials;
-            if (entity.clubConnection != null)
+            player.Nickname = entity.Nickname;
+            player.BattingStyle = entity.BattingStyle;
+            player.BowlingStyle = entity.BowlingStyle;
+            player.IsActive = entity.IsActive;
+            player.FirstName = entity.FirstName;
+            player.Surname = entity.Surname;
+            player.MiddleInitials = entity.MiddleInitials;
+            if (entity.ClubConnection != null)
             {
-                player.RingerOf = new Player(entity.clubConnection.playerId, _database);
+                player.RingerOf = new Player(entity.ClubConnection.PlayerId, _database);
             }
-            player.IsRightHandBat = entity.isRightHandBat;
+            player.IsRightHandBat = entity.IsRightHandBat;
             player.Save();
         }
     }

@@ -98,13 +98,13 @@ namespace CricketClub.WebApi.Controllers
                 match.TheirInningsLength = unsavedScorecard.TheirInnings.InningsLength;
             }
 
-            match.Abandoned = unsavedScorecard.MatchConditions.abandoned;
-            match.WasDeclaration = unsavedScorecard.MatchConditions.declaration;
-            match.Overs = unsavedScorecard.MatchConditions.overs;
-            match.Captain = new Player(unsavedScorecard.MatchConditions.captainId, database);
-            match.WicketKeeper = new Player(unsavedScorecard.MatchConditions.wicketKeeperId, database);
-            match.WonToss = unsavedScorecard.MatchConditions.weWonTheToss;
-            match.TossWinnerBatted = unsavedScorecard.MatchConditions.tossWinnerBatted;
+            match.Abandoned = unsavedScorecard.MatchConditions.Abandoned;
+            match.WasDeclaration = unsavedScorecard.MatchConditions.Declaration;
+            match.Overs = unsavedScorecard.MatchConditions.Overs;
+            match.Captain = new Player(unsavedScorecard.MatchConditions.CaptainId, database);
+            match.WicketKeeper = new Player(unsavedScorecard.MatchConditions.WicketKeeperId, database);
+            match.WonToss = unsavedScorecard.MatchConditions.WeWonTheToss;
+            match.TossWinnerBatted = unsavedScorecard.MatchConditions.TossWinnerBatted;
             match.Save();
 
             if (unsavedScorecard.OurInnings?.Bowling?.Entries?.Any() == true)

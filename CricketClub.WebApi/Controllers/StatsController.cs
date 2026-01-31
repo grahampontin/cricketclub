@@ -38,7 +38,8 @@ namespace CricketClub.WebApi.Controllers
             var playerDetailV1 = StatsProvider.QueryPlayer(
                 playerId,
                 imagePlayerId => new Uri(new Uri(baseUrl), $"/images/players/{imagePlayerId}.png").ToString(),
-                environment.ContentRootPath);
+                environment.ContentRootPath,
+                database);
 
             return Ok(playerDetailV1);
         }

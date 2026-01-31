@@ -7,6 +7,7 @@ using CricketClubDomain;
 using CricketClubMiddle;
 using CricketClubMiddle.Stats;
 using MatchType = CricketClubDomain.MatchType;
+using CricketClubDAL;
 
 namespace CricketClub.WebApi.Stats
 {
@@ -179,7 +180,12 @@ namespace CricketClub.WebApi.Stats
 
         public static PlayerDetailV1 QueryPlayer(int playerId, Func<int, string> playerImageUrlResolver, string contentRootPath)
         {
-            var player = new Player(playerId);
+            return QueryPlayer(playerId, playerImageUrlResolver, contentRootPath, new CricketClubDAL.Dao());
+        }
+
+        public static PlayerDetailV1 QueryPlayer(int playerId, Func<int, string> playerImageUrlResolver, string contentRootPath, IDao dao)
+        {
+            var player = new Player(playerId, dao);
             return new PlayerDetailV1()
             {
                 Player = PlayerV1.FromInternal(player),
@@ -489,4 +495,8 @@ namespace CricketClub.WebApi.Stats
         }
     }
 }
+
+
+
+
 

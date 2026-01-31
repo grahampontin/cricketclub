@@ -25,19 +25,7 @@ namespace CricketClub.WebApi.Tests.Integration
             mockDao = new Mock<IDao>();
             TestDefaults.SetupSafeVenueAndTeamLookups(mockDao);
 
-            this.factory = factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureTestServices(services =>
-                {
-                    var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IDao));
-                    if (descriptor != null)
-                    {
-                        services.Remove(descriptor);
-                    }
-
-                    services.AddScoped(_ => mockDao.Object);
-                });
-            });
+            this.factory = factory.WithDao(mockDao.Object);
         }
 
         [Fact]

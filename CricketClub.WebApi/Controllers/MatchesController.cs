@@ -5,7 +5,6 @@ using CricketClubDomain;
 using CricketClubMiddle;
 using Microsoft.AspNetCore.Mvc;
 using Match = CricketClubMiddle.Match;
-using MatchType = CricketClubDomain.MatchType;
 
 namespace CricketClub.WebApi.Controllers
 {
@@ -78,7 +77,7 @@ namespace CricketClub.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var matchType = (MatchType)Enum.Parse(typeof(MatchType), matchData.Type, true);
+            var matchType = EnumMappers.ParseMatchType(matchData.Type);
             var homeOrAway = matchData.IsHome ? HomeOrAway.Home : HomeOrAway.Away;
             
             var match = Match.CreateNewMatch(
@@ -113,7 +112,7 @@ namespace CricketClub.WebApi.Controllers
                 VenueID = matchData.Venue.Id,
                 MatchDate = DateTime.Parse(matchData.Date),
                 HomeOrAway = matchData.IsHome ? HomeOrAway.Home : HomeOrAway.Away,
-                Type = (MatchType)Enum.Parse(typeof(MatchType), matchData.Type, true)
+                Type = EnumMappers.ParseMatchType(matchData.Type)
             };
             match.Save();
             

@@ -46,13 +46,13 @@ namespace CricketClub.WebApi.Domain
             BattingAt = battingCardLine.BattingAt;
             BallsFaced = battingCardLine.BallsFaced;
             DotBalls = battingCardLine.DotBalls;
-            Wicket = new WicketV1(BowlerName, FielderName, battingCardLine.Dismissal);
+            Wicket = new WicketV1(BowlerName, FielderName, EnumMappers.ToV1(battingCardLine.Dismissal));
         }
 
         public BattingCardLine ToInternal(Match match)
         {
-            ModesOfDismissal dismissal;
-            ModesOfDismissal.TryParse(ModeOfDismissal, true, out dismissal);
+            var dismissal = EnumMappers.ParseModesOfDismissal(ModeOfDismissal);
+
             return new BattingCardLine(new BattingCardLineData()
             {
                 BattingAt = BattingAt,

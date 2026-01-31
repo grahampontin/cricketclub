@@ -30,7 +30,7 @@ namespace CricketClub.WebApi.Controllers
         /// Returns either in-progress games + upcoming fixtures (next 14 days) or all matches for a season.
         /// </summary>
         [HttpGet("matches")]
-        [ProducesResponseType(typeof(List<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<LiveScoringMatchSummaryV1>), StatusCodes.Status200OK)]
         public IActionResult GetMatches([FromQuery] int? season)
         {
             try
@@ -40,7 +40,7 @@ namespace CricketClub.WebApi.Controllers
                     var matchDescriptors = Match.GetAll(new DateTime(season.Value, 1, 1), new DateTime(season.Value, 12, 31), null, null, _database)
                         .OrderBy(m => m.MatchDate)
                         .Select(MatchV1.FromInternal)
-                        .Cast<object>()
+                        .Select(LiveScoringMatchSummaryV1.FromMatch)
                         .ToList();
 
                     return Ok(matchDescriptors);
@@ -50,8 +50,9 @@ namespace CricketClub.WebApi.Controllers
                     .Union(Match.GetFixtures().Where(m =>
                         m.MatchDate < DateTime.Today.AddDays(14) &&
                         !m.GetCurrentBallByBallState().IsMatchComplete()))
-                    .Select(m => new BallByBallMatchDescriptor(m))
-                    .Distinct(BallByBallMatchDescriptor.MatchIdComparer)
+                    .Select(BallByBallMatchDescriptorV1.FromInternal)
+                    .Distinct(new BallByBallMatchDescriptorV1.MatchIdEqualityComparer())
+                    .Select(LiveScoringMatchSummaryV1.FromBallByBall)
                     .ToList();
 
                 return Ok(matchDescriptors2);
@@ -108,7 +109,7 @@ namespace CricketClub.WebApi.Controllers
         [Consumes("application/json")]
         [ProducesResponseType(typeof(MatchStateV1), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult StartMatch([FromRoute] int matchId, [FromBody] BallByBallMatchConditions matchConditions)
+        public IActionResult StartMatch([FromRoute] int matchId, [FromBody] BallByBallMatchConditionsV1 matchConditions)
         {
             try
             {
@@ -118,7 +119,7 @@ namespace CricketClub.WebApi.Controllers
                     return BadRequest("Coverage for match vs " + match.Opposition.Name + " has already been started");
                 }
 
-                match.StartBallByBallCoverage(matchConditions);
+                match.StartBallByBallCoverage(LiveScoringRequestMapper.ToInternal(matchConditions));
                 return Ok(BuildMatchState(match));
             }
             catch (ArgumentException ex)
@@ -134,12 +135,13 @@ namespace CricketClub.WebApi.Controllers
         [HttpPost("{matchId:int}/over")]
         [Consumes("application/json")]
         [ProducesResponseType(typeof(MatchStateV1), StatusCodes.Status200OK)]
-        public IActionResult SubmitOver([FromRoute] int matchId, [FromBody] MatchState stateFromClient)
+        public IActionResult SubmitOver([FromRoute] int matchId, [FromBody] MatchStateUpdateV1 stateFromClient)
         {
             try
             {
                 var match = new Match(matchId, _database);
-                match.UpdateCurrentBallByBallState(stateFromClient);
+                var internalState = MatchStateMapper.MapToInternalMatchState(stateFromClient);
+                match.UpdateCurrentBallByBallState(internalState);
                 return Ok(BuildMatchState(match));
             }
             catch (ArgumentException ex)
@@ -155,12 +157,12 @@ namespace CricketClub.WebApi.Controllers
         [HttpPost("{matchId:int}/opposition-score")]
         [Consumes("application/json")]
         [ProducesResponseType(typeof(MatchStateV1), StatusCodes.Status200OK)]
-        public IActionResult UpdateOppositionScore([FromRoute] int matchId, [FromBody] OppositionInningsDetails incoming)
+        public IActionResult UpdateOppositionScore([FromRoute] int matchId, [FromBody] OppositionInningsDetailsV1 incoming)
         {
             try
             {
                 var match = new Match(matchId, _database);
-                match.UpdateOppositionScore(incoming);
+                match.UpdateOppositionScore(LiveScoringRequestMapper.ToInternal(incoming));
                 return Ok(BuildMatchState(match));
             }
             catch (ArgumentException ex)
@@ -176,12 +178,12 @@ namespace CricketClub.WebApi.Controllers
         [HttpPost("{matchId:int}/end-innings")]
         [Consumes("application/json")]
         [ProducesResponseType(typeof(MatchStateV1), StatusCodes.Status200OK)]
-        public IActionResult EndInnings([FromRoute] int matchId, [FromBody] InningsEndDetails inningsEndDetails)
+        public IActionResult EndInnings([FromRoute] int matchId, [FromBody] InningsEndDetailsV1 inningsEndDetails)
         {
             try
             {
                 var match = new Match(matchId, _database);
-                match.EndInnings(inningsEndDetails);
+                match.EndInnings(LiveScoringRequestMapper.ToInternal(inningsEndDetails));
                 return Ok(BuildMatchState(match));
             }
             catch (ArgumentException ex)

@@ -1,12 +1,12 @@
 #nullable disable
+using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Text.Json;
 using CricketClub.WebApi.Domain;
 using CricketClubDAL;
 using CricketClubDomain;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 using CricketClub.WebApi.Tests.Utils;
@@ -16,28 +16,16 @@ namespace CricketClub.WebApi.Tests.Integration
     public class VenuesControllerIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly WebApplicationFactory<Program> factory;
-        private readonly Mock<IDao> _mockDao;
+        private readonly Mock<IDao> mockDao;
 
         public VenuesControllerIntegrationTests(WebApplicationFactory<Program> factory)
         {
             TestDefaults.ResetInternalCache();
 
-            _mockDao = new Mock<IDao>();
-            TestDefaults.SetupSafeVenueAndTeamLookups(_mockDao);
+            mockDao = new Mock<IDao>();
+            TestDefaults.SetupSafeVenueAndTeamLookups(mockDao);
 
-            this.factory = factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureTestServices(services =>
-                {
-                    var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IDao));
-                    if (descriptor != null)
-                    {
-                        services.Remove(descriptor);
-                    }
-
-                    services.AddScoped(_ => _mockDao.Object);
-                });
-            });
+            this.factory = factory.WithDao(mockDao.Object);
         }
 
         [Fact]
@@ -62,7 +50,7 @@ namespace CricketClub.WebApi.Tests.Integration
                 Coordinates = new Tuple<decimal?, decimal?>(52.5m, -1.1m)
             };
 
-            _mockDao.Setup(d => d.GetAllVenueData()).Returns(new List<VenueData> { venueData1, venueData2 });
+            mockDao.Setup(d => d.GetAllVenueData()).Returns(new List<VenueData> { venueData1, venueData2 });
 
             var client = factory.CreateClient();
 
@@ -103,7 +91,7 @@ namespace CricketClub.WebApi.Tests.Integration
                 Coordinates = new Tuple<decimal?, decimal?>(52.5m, -1.1m)
             };
 
-            _mockDao.Setup(d => d.GetAllVenueData()).Returns(new List<VenueData> { venueData1, venueData2 });
+            mockDao.Setup(d => d.GetAllVenueData()).Returns(new List<VenueData> { venueData1, venueData2 });
 
             var client = factory.CreateClient();
 
@@ -142,7 +130,7 @@ namespace CricketClub.WebApi.Tests.Integration
                 Coordinates = new Tuple<decimal?, decimal?>(51.5m, -0.1m)
             };
 
-            _mockDao.Setup(d => d.GetVenueData(1)).Returns(venueData);
+            mockDao.Setup(d => d.GetVenueData(1)).Returns(venueData);
 
             var client = factory.CreateClient();
 

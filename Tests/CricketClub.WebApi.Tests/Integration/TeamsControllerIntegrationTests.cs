@@ -5,8 +5,6 @@ using CricketClub.WebApi.Domain;
 using CricketClubDAL;
 using CricketClubDomain;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 using CricketClub.WebApi.Tests.Utils;
@@ -25,19 +23,7 @@ namespace CricketClub.WebApi.Tests.Integration
             mockDao = new Mock<IDao>();
             TestDefaults.SetupSafeVenueAndTeamLookups(mockDao);
 
-            this.factory = factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureTestServices(services =>
-                {
-                    var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IDao));
-                    if (descriptor != null)
-                    {
-                        services.Remove(descriptor);
-                    }
-
-                    services.AddScoped(_ => mockDao.Object);
-                });
-            });
+            this.factory = factory.WithDao(mockDao.Object);
         }
 
         [Fact]
@@ -58,8 +44,11 @@ namespace CricketClub.WebApi.Tests.Integration
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var json = await response.Content.ReadAsStringAsync();
+
             var teams = JsonSerializer.Deserialize<List<TeamV1>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             Assert.NotNull(teams);
+
+            // The API filters out the "our team" (id=0) entry
             Assert.Single(teams);
             Assert.Equal(1, teams[0].Id);
         }
