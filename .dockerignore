@@ -1,0 +1,17 @@
+﻿**/bin/
+**/obj/
+**/.vs/
+**/.idea/
+**/*.user
+**/*.suo
+**/*.v12.suo
+**/TestResults/
+**/packages/
+
+# auth/secret-ish local files
+**/appsettings.Development.json
+
+# git
+.git/
+.github/
+

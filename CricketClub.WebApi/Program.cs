@@ -72,21 +72,21 @@ var app = builder.Build();
 app.UseMiddleware<CricketClub.WebApi.ExceptionHandlingMiddleware>();
 
 // Serve player images from /Assets/PlayerImages at /images/players/
+var playerImagesPath = Path.Combine(app.Environment.ContentRootPath, "Assets", "PlayerImages");
+Directory.CreateDirectory(playerImagesPath);
+
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(Path.Combine(app.Environment.ContentRootPath, "Assets", "PlayerImages")),
+    FileProvider = new PhysicalFileProvider(playerImagesPath),
     RequestPath = "/images/players"
 });
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "The Village CC API v1");
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "The Village CC API v1");
+});
 
 app.UseHttpsRedirection();
 

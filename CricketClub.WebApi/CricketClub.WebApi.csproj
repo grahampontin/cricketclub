@@ -31,7 +31,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Assets\PlayerImages\" />
+    <!-- Static assets -->
+    <Content Include="Assets\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
   <!-- Generate Swagger JSON file after build -->
