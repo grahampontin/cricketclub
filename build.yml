@@ -99,11 +99,12 @@ steps:
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   inputs:
     azureSubscription: '$(azureSubscription)'
-    scriptType: 'ps'
+    scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
-      az containerapp update `
-        --resource-group "$(resourceGroup)" `
-        --name "$(containerAppName)" `
-        --image "$(acrLoginServer)/$(imageRepository):$(imageTag)" `
+      set -euo pipefail
+      az containerapp update \
+        --resource-group "$(resourceGroup)" \
+        --name "$(containerAppName)" \
+        --image "$(acrLoginServer)/$(imageRepository):$(imageTag)" \
         --container-name "$(containerName)"
