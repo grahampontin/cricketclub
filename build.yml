@@ -43,6 +43,10 @@ steps:
     packageType: 'sdk'
     version: '9.x'
 
+# Authenticate to Azure Artifacts feeds for restore/push
+- task: NuGetAuthenticate@1
+  displayName: Authenticate to Azure Artifacts
+
 - task: DotNetCoreCLI@2
   displayName: Restore
   inputs:
