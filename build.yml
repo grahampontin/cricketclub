@@ -103,17 +103,10 @@ steps:
       latest
 
 # Deploy to Azure Container Apps
-- task: AzureCLI@2
-  displayName: Deploy WebApi container to Azure Container Apps
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+- task: AzureContainerApps@1
+  displayName: Deploy to Azure Container App
   inputs:
-    azureSubscription: '$(azureSubscription)'
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    inlineScript: |
-      set -euo pipefail
-      az containerapp update \
-        --resource-group "$(resourceGroup)" \
-        --name "$(containerAppName)" \
-        --image "$(acrLoginServer)/$(imageRepository):$(imageTag)" \
-        --container-name "$(containerName)"
+    azureSubscription: '$(acrServiceConnection)'
+    resourceGroup: 'Village_CC'
+    containerAppName: 'villagecc-webapi'
+    imageToDeploy: 'villagecc.azurecr.io/cricketclub-webapi:$(Build.BuildId)'
