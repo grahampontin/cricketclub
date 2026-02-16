@@ -7,6 +7,7 @@ namespace CricketClub.Tests
     class BallByBallTests: IntegrationTestSupport
     {
         [Test]
+        [Category("RequiresDatabase")]
         public void CanPopuateScorecards()
         {
             var match = new Match(381);
@@ -16,6 +17,7 @@ namespace CricketClub.Tests
         }
 
         [Test]
+        [Category("RequiresDatabase")]
         public void CanLoad353()
         {
             var match = new Match(353);

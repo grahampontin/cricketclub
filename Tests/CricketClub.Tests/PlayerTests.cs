@@ -10,6 +10,7 @@ namespace CricketClub.Tests
     public class PlayerTests
     {
         [Test]
+        [Category("RequiresDatabase")]
         public void CanGetFieldingStats()
         {
             var p = new Player(1);
