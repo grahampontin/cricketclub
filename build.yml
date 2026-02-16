@@ -33,6 +33,9 @@ variables:
   containerAppName: 'thevillagecc-webapi'
   containerName: 'webapi'
 
+  # Azure Artifacts feed (NuGet v3) for dotnet nuget push
+  artifactsFeedUrl: 'https://pkgs.dev.azure.com/grahampontin/109e362b-62db-4727-9d2a-e2d0e8f55904/_packaging/CricketClubCore/nuget/v3/index.json'
+
 steps:
 - task: UseDotNet@2
   displayName: Use .NET SDK
@@ -70,15 +73,17 @@ steps:
     minorVersion: '0'
     patchVersion: '0'
 
-# Push packages (NuGetCommand works on Linux too)
-- task: NuGetCommand@2
+# Push packages (cross-platform)
+- task: DotNetCoreCLI@2
   displayName: Push packages
   inputs:
-    command: 'push'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-    nuGetFeedType: 'internal'
-    publishVstsFeed: '109e362b-62db-4727-9d2a-e2d0e8f55904/f8b97027-340d-42d9-8b79-52d89a6d5dcf'
-    allowPackageConflicts: true
+    command: 'custom'
+    custom: 'nuget'
+    arguments: >
+      push "$(Build.ArtifactStagingDirectory)/**/*.nupkg"
+      --source "$(artifactsFeedUrl)"
+      --skip-duplicate
+      --api-key "AzureDevOps"
 
 - task: Docker@2
   displayName: Build and push WebApi container image to ACR
