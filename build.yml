@@ -26,7 +26,7 @@ variables:
 
   # Service connections / deployment target (set these in pipeline variables)
   acrServiceConnection: 'sc-acr'
-  azureSubscription: 'sc-azure-rm-prod'
+  azureSubscription: 'Azure Subscription 1'
 
   # Azure Container Apps deployment target (set these in pipeline variables)
   resourceGroup: 'Village_CC'
