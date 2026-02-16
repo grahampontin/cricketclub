@@ -7,6 +7,8 @@ using Assert = NUnit.Framework.Assert;
 
 namespace CricketClub.Tests
 {
+    [TestFixture]
+    [Category("RequiresDatabase")]
     public class AwardsIntegrationTests : IntegrationTestSupport
     {
     

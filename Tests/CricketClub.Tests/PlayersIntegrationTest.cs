@@ -6,6 +6,7 @@ using NUnit.Framework;
 
 namespace CricketClub.Tests
 {
+    [Category("RequiresDatabase")]
     public class PlayersIntegrationTest : IntegrationTestSupport
     {
         [Test, Ignore("Slow Test - for manual performance testing only")]
