@@ -108,5 +108,5 @@ steps:
   inputs:
     azureSubscription: 'sc-azure-rg'
     resourceGroup: 'Village_CC'
-    containerAppName: 'villagecc-webapi'
+    containerAppName: 'villagecc-api'
     imageToDeploy: 'villagecc.azurecr.io/cricketclub-webapi:$(Build.BuildId)'
