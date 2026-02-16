@@ -8,6 +8,7 @@ using NUnit.Framework;
 namespace CricketClub.Tests
 {
     [TestFixture]
+    [Category("RequiresDatabase")]
     public class BallByBallDaoTests : IntegrationTestSupport
     {
         private static MatchState MakeMatchState(int lastCompletedOver)
