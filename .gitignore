@@ -7,3 +7,5 @@
 .vs/CricketClub/v16/Server/sqlite3/storage.ide-shm
 .vs/CricketClub/v16/Server/sqlite3/storage.ide
 .nuget/nuget.exe
+# Local docker compose environment (secrets)
+.env

@@ -1,4 +1,4 @@
-﻿// csharp
+﻿﻿// csharp
 
 using System.Linq;
 using CricketClubDAL;
@@ -8,6 +8,7 @@ using NUnit.Framework;
 namespace CricketClub.Tests
 {
     [TestFixture]
+    [Category("RequiresDatabase")]
     public class CommitteeIntegrationTests : IntegrationTestSupport
     {
         private Dao dao;

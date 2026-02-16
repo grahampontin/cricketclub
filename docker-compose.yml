@@ -1,0 +1,15 @@
+﻿services:
+  webapi:
+    image: cricketclub-webapi:local
+    ports:
+      - "8080:8080"
+    environment:
+      # Swagger is enabled in all environments, but keep this explicit for parity with local dev
+      ASPNETCORE_ENVIRONMENT: "Development"
+
+      # Connection string comes from .env (see .env.example)
+      Database_ConnectionString: "${Database_ConnectionString}"
+
+    # Optional: persist log4net rolling file logs on the host
+    volumes:
+      - ./container-logs:/app/logs

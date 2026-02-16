@@ -5,6 +5,7 @@ using NUnit.Framework;
 
 namespace CricketClub.Tests
 {
+    [Category("RequiresDatabase")]
     public class TeamIntegrationTests : IntegrationTestSupport
     {
         private readonly Dao dao = new Dao();

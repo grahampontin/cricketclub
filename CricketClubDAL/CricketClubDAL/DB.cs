@@ -45,66 +45,25 @@ namespace CricketClubDAL
 
         private static string GetScorebookConnectionString()
         {
-            if (connectionString == null)
+            if (connectionString != null)
             {
-                var key = "ProdDB";
-                if (Environment.MachineName.Contains("TABLET"))
-                {
-                    key = "LocalDB";
-                }
-                if (Environment.MachineName.Contains("BIG-PC"))
-                {
-                    key = "BigPC-2019";
-                }
-                if (Environment.MachineName.Contains("LAPTOP"))
-                {
-                    key = "Laptop";
-                }
-                if (Environment.MachineName.Contains("PRO9"))
-                {
-                    key = "Surface";
-                }
-
-                if (Environment.CommandLine.ToUpper().Contains("TEST"))
-                {
-                    key = "TestDB";
-                }
-
-                // Try to get from environment variable first (useful for .NET 8 testing)
-                var envConnectionString = Environment.GetEnvironmentVariable($"ConnectionStrings__{key}");
-                if (!string.IsNullOrEmpty(envConnectionString))
-                {
-                    connectionString = envConnectionString;
-                    Log.Info($"Using connection string from environment variable for {key}");
-                    Log.Info("Connection string: " + SanitizeConnectionString(connectionString));
-                    return connectionString;
-                }
-                
-                var cnxStr = ConfigurationManager.ConnectionStrings[key];
-                if (cnxStr == null)
-                {
-                    // Try to load from calling assembly's config (for .NET 8 test scenarios)
-                    try
-                    {
-                        var callingAssembly = System.Reflection.Assembly.GetCallingAssembly();
-                        var config = ConfigurationManager.OpenExeConfiguration(callingAssembly.Location);
-                        cnxStr = config.ConnectionStrings.ConnectionStrings[key];
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Warn("Failed to load config from calling assembly", ex);
-                    }
-                }
-                
-                if (cnxStr == null)
-                    throw new ConfigurationErrorsException("ConnectionString '" + key +
-                                                           "' was not found in the configuration file.");
-
-                connectionString = cnxStr.ConnectionString;
-                Log.Info("Connection string: " + SanitizeConnectionString(connectionString));
+                return connectionString;
             }
-            
-            return connectionString;
+
+            var envConnectionString = Environment.GetEnvironmentVariable($"Database_ConnectionString");
+            if (!string.IsNullOrEmpty(envConnectionString))
+            {
+                connectionString = envConnectionString;
+                Log.Info($"Using connection string from environment variable for key 'Database_ConnectionString'");
+                Log.Info("Connection string: " + SanitizeConnectionString(connectionString));
+                return connectionString;
+            }
+            else
+            {
+                Log.Error("Environment variable 'Database_ConnectionString' not found or empty");
+                throw new ConfigurationErrorsException("Database connection string not found in environment variable 'Database_ConnectionString'");
+            }
+
         }
 
         public T ExecuteSQLAndReturnFirstRow<T>(string sql, Func<Row, T> rowExtractorFunc, T defaultIfNone) where T : class
