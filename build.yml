@@ -30,7 +30,7 @@ variables:
 
   # Azure Container Apps deployment target (set these in pipeline variables)
   resourceGroup: 'Village_CC'
-  containerAppName: 'thevillagecc-webapi'
+  containerAppName: 'villagecc-webapi'
   containerName: 'webapi'
 
   # Azure Artifacts feed (NuGet v3) for dotnet nuget push
