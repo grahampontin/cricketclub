@@ -6,6 +6,10 @@
 trigger:
 - master
 
+# Run build/test on PRs, but don't deploy.
+pr:
+- master
+
 pool:
   vmImage: 'windows-latest'
 
@@ -13,6 +17,21 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+
+  # Docker/ACR settings (set these in pipeline variables or a variable group)
+  acrLoginServer: 'villagecc.azurecr.io'
+  imageRepository: 'cricketclub-webapi'
+  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
+  imageTag: '$(Build.BuildId)'
+
+  # Service connections / deployment target (set these in pipeline variables)
+  acrServiceConnection: 'sc-acr'
+  azureSubscription: 'sc-azure-rm-prod'
+
+  # Azure Container Apps deployment target (set these in pipeline variables)
+  resourceGroup: 'Village_CC'
+  containerAppName: 'thevillagecc-webapi'
+  containerName: 'webapi'
 
 steps:
 - task: NuGetToolInstaller@1
@@ -49,3 +68,31 @@ steps:
     nuGetFeedType: 'internal'
     publishVstsFeed: '109e362b-62db-4727-9d2a-e2d0e8f55904/f8b97027-340d-42d9-8b79-52d89a6d5dcf'
     allowPackageConflicts: true
+
+- task: Docker@2
+  displayName: Build and push WebApi container image to ACR
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  inputs:
+    command: buildAndPush
+    containerRegistry: '$(acrServiceConnection)'
+    repository: '$(imageRepository)'
+    Dockerfile: '$(dockerfilePath)'
+    buildContext: '$(Build.SourcesDirectory)'
+    tags: |
+      $(imageTag)
+      latest
+
+# Deploy to Azure Container Apps
+- task: AzureCLI@2
+  displayName: Deploy WebApi container to Azure Container Apps
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  inputs:
+    azureSubscription: '$(azureSubscription)'
+    scriptType: 'ps'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az containerapp update `
+        --resource-group "$(resourceGroup)" `
+        --name "$(containerAppName)" `
+        --image "$(acrLoginServer)/$(imageRepository):$(imageTag)" `
+        --container-name "$(containerName)"
