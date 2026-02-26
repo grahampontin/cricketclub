@@ -285,7 +285,7 @@ namespace CricketClub.WebApi.Controllers
             return new LiveScorecardV1
             {
                 MatchData = MatchV1.FromInternal(match),
-                InPlayData = match.GetLiveScorecard(),
+                InPlayData = MatchStateMapper.MapToInPlayScorecardV1(match.GetLiveScorecard()),
                 FinalScorecard = MatchScorecardV1.GetExternalScorecard(match),
                 MatchReport = new MatchReportV1(matchReportAndConditions.Conditions, matchReportAndConditions.Report, matchReportAndConditions.ReportImage),
                 Result = ResultV1.FromInternal(match)

@@ -1,9 +1,68 @@
 ﻿﻿using CricketClubDomain;
+using CricketClubMiddle;
 
 namespace CricketClub.WebApi.Domain
 {
     public static class MatchStateMapper
     {
+        public static InPlayScorecardV1 MapToInPlayScorecardV1(LiveScorecard scorecard)
+        {
+            if (scorecard == null) return null;
+
+            return new InPlayScorecardV1
+            {
+                OnStrikeBatsman = scorecard.OnStrikeBatsman,
+                OtherBatsman = scorecard.OtherBatsman,
+                LastBatsmanOut = scorecard.LastBatsmanOut,
+                Opposition = scorecard.Opposition,
+                OurLastCompletedOver = scorecard.OurLastCompletedOver,
+                OversRemaining = scorecard.OversRemaining,
+                DeclarationGame = scorecard.DeclarationGame,
+                Score = scorecard.Score,
+                Wickets = scorecard.Wickets,
+                RunRate = scorecard.RunRate,
+                CurrentPartnership = scorecard.CurrentPartnership,
+                PreviousPartnership = scorecard.PreviousPartnership,
+                LastManOut = scorecard.LastManOut,
+                FallOfWickets = scorecard.FallOfWickets,
+                CompletedOvers = scorecard.CompletedOvers?.Select(MapOverSummaryToOverSummaryV1).ToList(),
+                BowlerOneDetails = scorecard.BowlerOneDetails,
+                BowlerTwoDetails = scorecard.BowlerTwoDetails,
+                LiveBattingCard = scorecard.LiveBattingCard,
+                Overs = scorecard.Overs,
+                TossWinnerBatted = scorecard.TossWinnerBatted,
+                WonToss = scorecard.WonToss,
+                OurInningsStatus = scorecard.OurInningsStatus,
+                TheirInningsStatus = scorecard.TheirInningsStatus,
+                TheirScore = scorecard.TheirScore,
+                TheirWickets = scorecard.TheirWickets,
+                TheirOver = scorecard.TheirOver,
+                TheirRunRate = scorecard.TheirRunRate,
+                IsFirstInnings = scorecard.IsFirstInnings,
+                TheirCompletedOvers = scorecard.TheirCompletedOvers,
+                IsMatchComplete = scorecard.IsMatchComplete,
+                ResultText = scorecard.ResultText,
+                OurInningsCommentary = scorecard.OurInningsCommentary,
+                TheirInningsCommentary = scorecard.TheirInningsCommentary,
+                LiveBowlingCard = scorecard.LiveBowlingCard,
+                Partnerships = scorecard.Partnerships
+            };
+        }
+
+        private static OverSummaryV1 MapOverSummaryToOverSummaryV1(OverSummary overSummary)
+        {
+            if (overSummary == null) return null;
+
+            return new OverSummaryV1
+            {
+                Over = MapOverToOverV1(overSummary.Over),
+                ScoreAtEndOfOver = overSummary.ScoreAtEndOfOver,
+                WicketsAtEndOfOver = overSummary.WicketsAtEndOfOver,
+                ScoreForThisOver = overSummary.ScoreForThisOver
+            };
+        }
+
+
         public static MatchStateV1 MapToMatchStateV1(MatchState matchState)
         {
             return new MatchStateV1

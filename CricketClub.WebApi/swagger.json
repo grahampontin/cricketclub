@@ -2817,82 +2817,7 @@
         },
         "additionalProperties": false
       },
-      "InningsEndDetailsV1": {
-        "type": "object",
-        "properties": {
-          "commentary": {
-            "type": "string",
-            "nullable": true
-          },
-          "inningsType": {
-            "type": "string",
-            "nullable": true
-          },
-          "wasDeclared": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "InningsScoreCardV1": {
-        "type": "object",
-        "properties": {
-          "batting": {
-            "$ref": "#/components/schemas/BattingCardV1"
-          },
-          "bowling": {
-            "$ref": "#/components/schemas/BowlingCardV1"
-          },
-          "fow": {
-            "$ref": "#/components/schemas/FoWV1"
-          },
-          "inningsLength": {
-            "type": "number",
-            "format": "double"
-          }
-        },
-        "additionalProperties": false
-      },
-      "LeadingPlayerCategoryV1": {
-        "type": "object",
-        "properties": {
-          "category": {
-            "type": "string",
-            "nullable": true
-          },
-          "players": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/LeadingPlayerEntryV1"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "LeadingPlayerEntryV1": {
-        "type": "object",
-        "properties": {
-          "playerId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "playerName": {
-            "type": "string",
-            "nullable": true
-          },
-          "value": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "LiveBattingCard": {
-        "type": "object",
-        "additionalProperties": false
-      },
-      "LiveScorecard": {
+      "InPlayScorecardV1": {
         "type": "object",
         "properties": {
           "onStrikeBatsman": {
@@ -2950,7 +2875,7 @@
           "completedOvers": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/OverSummary"
+              "$ref": "#/components/schemas/OverSummaryV1"
             },
             "nullable": true
           },
@@ -3039,11 +2964,86 @@
         },
         "additionalProperties": false
       },
+      "InningsEndDetailsV1": {
+        "type": "object",
+        "properties": {
+          "commentary": {
+            "type": "string",
+            "nullable": true
+          },
+          "inningsType": {
+            "type": "string",
+            "nullable": true
+          },
+          "wasDeclared": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "InningsScoreCardV1": {
+        "type": "object",
+        "properties": {
+          "batting": {
+            "$ref": "#/components/schemas/BattingCardV1"
+          },
+          "bowling": {
+            "$ref": "#/components/schemas/BowlingCardV1"
+          },
+          "fow": {
+            "$ref": "#/components/schemas/FoWV1"
+          },
+          "inningsLength": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LeadingPlayerCategoryV1": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "nullable": true
+          },
+          "players": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LeadingPlayerEntryV1"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LeadingPlayerEntryV1": {
+        "type": "object",
+        "properties": {
+          "playerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "playerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LiveBattingCard": {
+        "type": "object",
+        "additionalProperties": false
+      },
       "LiveScorecardV1": {
         "type": "object",
         "properties": {
           "inPlayData": {
-            "$ref": "#/components/schemas/LiveScorecard"
+            "$ref": "#/components/schemas/InPlayScorecardV1"
           },
           "finalScorecard": {
             "$ref": "#/components/schemas/MatchScorecardV1"
@@ -3416,15 +3416,11 @@
         },
         "additionalProperties": false
       },
-      "Over": {
-        "type": "object",
-        "additionalProperties": false
-      },
-      "OverSummary": {
+      "OverSummaryV1": {
         "type": "object",
         "properties": {
           "over": {
-            "$ref": "#/components/schemas/Over"
+            "$ref": "#/components/schemas/OverV1"
           },
           "scoreAtEndOfOver": {
             "type": "integer",

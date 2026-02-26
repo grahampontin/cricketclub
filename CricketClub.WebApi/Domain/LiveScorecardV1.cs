@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using CricketClubMiddle;
 
 namespace CricketClub.WebApi.Domain
 {
@@ -9,7 +8,7 @@ namespace CricketClub.WebApi.Domain
     
     public class LiveScorecardV1
     {
-        public LiveScorecard InPlayData { get; set; }
+        public InPlayScorecardV1 InPlayData { get; set; }
         public MatchScorecardV1 FinalScorecard { get; set; }
         public MatchReportV1 MatchReport { get; set; }
         public MatchV1 MatchData { get; set; }
