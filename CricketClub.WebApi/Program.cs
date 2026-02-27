@@ -38,7 +38,11 @@ foreach (var connectionString in connectionStrings.GetChildren())
 }
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 
 // Register IDao for dependency injection
 builder.Services.AddScoped<IDao, Dao>();

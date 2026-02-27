@@ -136,6 +136,7 @@ namespace CricketClub.WebApi.Domain
                 Player = wicket.Player,
                 PlayerName = wicket.PlayerName,
                 ModeOfDismissal = EnumMappers.ToV1(wicket.ModeOfDismissalAsEnum),
+                Bowler = wicket.Bowler,
                 Fielder = wicket.Fielder,
                 Description = wicket.Description,
             };
@@ -269,11 +270,26 @@ namespace CricketClub.WebApi.Domain
             {
                 Player = wicket.Player,
                 PlayerName = wicket.PlayerName,
-                ModeOfDismissal = wicket.ModeOfDismissal.ToString().ToLowerInvariant(),
+                ModeOfDismissal = ToDismissalString(EnumMappers.ToInternal(wicket.ModeOfDismissal)),
+                Bowler = wicket.Bowler,
                 Fielder = wicket.Fielder,
                 Description = wicket.Description,
             };
         }
+
+        private static string ToDismissalString(ModesOfDismissal mode) => mode switch
+        {
+            ModesOfDismissal.Bowled => "bowled",
+            ModesOfDismissal.Caught => "caught",
+            ModesOfDismissal.CaughtAndBowled => "c&b",
+            ModesOfDismissal.RunOut => "run out",
+            ModesOfDismissal.Stumped => "stumped",
+            ModesOfDismissal.LBW => "lbw",
+            ModesOfDismissal.HitWicket => "hit wicket",
+            ModesOfDismissal.Retired => "retired",
+            ModesOfDismissal.RetiredHurt => "retired hurt",
+            _ => "not out"
+        };
 
         private static PlayerState MapPlayerStateToInternal(PlayerStateV1 playerState)
         {
