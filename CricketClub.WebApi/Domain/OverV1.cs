@@ -7,5 +7,6 @@
         public int RunsConceded { get; set; }
         public int WicketsTaken { get; set; }
         public BallV1[] Balls { get; set; }
+        public string Commentary { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿﻿using CricketClubDomain;
+﻿using CricketClubDomain;
 using CricketClubMiddle;
 
 namespace CricketClub.WebApi.Domain
@@ -97,7 +97,8 @@ namespace CricketClub.WebApi.Domain
                 Bowler = over.Balls.First().Bowler,
                 RunsConceded = over.Balls.Sum(b=>b.Amount),
                 WicketsTaken = over.Balls.Count(b=>b.Wicket!=null),
-                Balls = over.Balls != null ? over.Balls.Select(MapBallToBallV1).ToArray() : null
+                Balls = over.Balls != null ? over.Balls.Select(MapBallToBallV1).ToArray() : null,
+                Commentary = over.Commentary
             };
         }
 
@@ -232,7 +233,7 @@ namespace CricketClub.WebApi.Domain
             {
                 OverNumber = over.OverNumber,
                 Balls = over.Balls?.Select(MapBallToInternal).ToArray(),
-                Commentary = null
+                Commentary = over.Commentary
             };
         }
 
