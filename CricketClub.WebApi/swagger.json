@@ -3062,11 +3062,10 @@
       },
       "LiveScoringMatchSummaryKindV1": {
         "enum": [
-          0,
-          1
+          "Match",
+          "BallByBall"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "LiveScoringMatchSummaryV1": {
         "type": "object",
@@ -3340,37 +3339,35 @@
       },
       "ModesOfDismissal": {
         "enum": [
-          0,
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10
+          "NotOut",
+          "Bowled",
+          "LBW",
+          "Caught",
+          "RunOut",
+          "Stumped",
+          "HitWicket",
+          "DidNotBat",
+          "Retired",
+          "RetiredHurt",
+          "CaughtAndBowled"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "ModesOfDismissalV1": {
         "enum": [
-          0,
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10
+          "NotOut",
+          "Bowled",
+          "Stumped",
+          "RunOut",
+          "Caught",
+          "CaughtAndBowled",
+          "LBW",
+          "HitWicket",
+          "DidNotBat",
+          "Retired",
+          "RetiredHurt"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "OppositionInningsDetails": {
         "type": "object",
@@ -3461,6 +3458,10 @@
             "items": {
               "$ref": "#/components/schemas/BallV1"
             },
+            "nullable": true
+          },
+          "commentary": {
+            "type": "string",
             "nullable": true
           }
         },
@@ -3812,14 +3813,13 @@
       },
       "PlayingRole": {
         "enum": [
-          0,
-          1,
-          2,
-          3,
-          4
+          "Batsman",
+          "Bowler",
+          "Opening_Batsman",
+          "Wicket_Keeper_Batsman",
+          "All_Rounder"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "ProblemDetails": {
         "type": "object",
