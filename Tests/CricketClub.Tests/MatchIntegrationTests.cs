@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using CricketClubDAL;
 using CricketClubDomain;
@@ -10,6 +11,31 @@ namespace CricketClub.Tests
     public class MatchIntegrationTests : IntegrationTestSupport
     {
         private readonly Dao dao = new Dao();
+        private readonly List<int> _createdMatchIds = new List<int>();
+        private readonly List<int> _createdTeamIds = new List<int>();
+        private readonly List<int> _createdVenueIds = new List<int>();
+
+        [TearDown]
+        public void TearDown()
+        {
+            foreach (var matchId in _createdMatchIds)
+            {
+                try { dao.DeleteMatch(matchId); } catch { /* ignore cleanup errors */ }
+            }
+            _createdMatchIds.Clear();
+
+            foreach (var venueId in _createdVenueIds)
+            {
+                try { dao.DeleteVenue(venueId); } catch { /* ignore cleanup errors */ }
+            }
+            _createdVenueIds.Clear();
+
+            foreach (var teamId in _createdTeamIds)
+            {
+                try { dao.DeleteTeam(teamId); } catch { /* ignore cleanup errors */ }
+            }
+            _createdTeamIds.Clear();
+        }
 
         [Test]
         public void CanCreateQueryAndUpdateMatch()
@@ -17,14 +43,17 @@ namespace CricketClub.Tests
             // Setup - create prerequisite data
             var opponentName = "Opp_" + Guid.NewGuid().ToString().Substring(0, 8);
             var opponentId = dao.CreateNewTeam(opponentName);
+            _createdTeamIds.Add(opponentId);
             
             var venueName = "Ven_" + Guid.NewGuid().ToString().Substring(0, 8);
             var venueId = dao.CreateNewVenue(venueName, "http://test.com", "Test venue", null, null);
+            _createdVenueIds.Add(venueId);
 
             // Create match
             var matchDate = DateTime.Now.Date;
             var matchTypeId = 1; // assuming this exists
             var matchId = dao.CreateNewMatch(opponentId, matchDate, venueId, matchTypeId, HomeOrAway.Home);
+            _createdMatchIds.Add(matchId);
             Assert.True(matchId > 0);
 
             // Query
@@ -60,13 +89,16 @@ namespace CricketClub.Tests
             // Create a match to ensure we have at least one
             var opponentName = "OppAll_" + Guid.NewGuid().ToString().Substring(0, 8);
             var opponentId = dao.CreateNewTeam(opponentName);
+            _createdTeamIds.Add(opponentId);
             
             var venueName = "VenAll_" + Guid.NewGuid().ToString().Substring(0, 8);
             var venueId = dao.CreateNewVenue(venueName, "http://test.com", "Test venue", null, null);
+            _createdVenueIds.Add(venueId);
 
             var matchDate = DateTime.Now.Date;
             var matchTypeId = 1;
             var matchId = dao.CreateNewMatch(opponentId, matchDate, venueId, matchTypeId, HomeOrAway.Away);
+            _createdMatchIds.Add(matchId);
             Assert.True(matchId > 0);
 
             // Get all matches
@@ -81,8 +113,11 @@ namespace CricketClub.Tests
         {
             // Setup
             var opponentId = dao.CreateNewTeam("Bool_" + Guid.NewGuid().ToString().Substring(0, 8));
+            _createdTeamIds.Add(opponentId);
             var venueId = dao.CreateNewVenue("BoolV_" + Guid.NewGuid().ToString().Substring(0, 8), "http://test.com", "Test", null, null);
+            _createdVenueIds.Add(venueId);
             var matchId = dao.CreateNewMatch(opponentId, DateTime.Now.Date, venueId, 1, HomeOrAway.Home);
+            _createdMatchIds.Add(matchId);
 
             // Set various boolean fields
             var match = dao.GetMatchData(matchId);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using CricketClubDAL;
 using NUnit.Framework;
@@ -11,6 +12,17 @@ namespace CricketClub.Tests
     {
     
         private readonly Dao dao = new Dao();
+        private readonly List<int> _createdVenueIds = new List<int>();
+
+        [TearDown]
+        public void TearDown()
+        {
+            foreach (var venueId in _createdVenueIds)
+            {
+                try { dao.DeleteVenue(venueId); } catch { /* ignore cleanup errors */ }
+            }
+            _createdVenueIds.Clear();
+        }
 
         [Test]
         public void CanCreateQueryAndUpdateVenue()
@@ -23,6 +35,7 @@ namespace CricketClub.Tests
             var lng = -0.1278m;
 
             var venueId = dao.CreateNewVenue(name, mapUrl, description, lat, lng);
+            _createdVenueIds.Add(venueId);
             Assert.True(venueId > 0);
 
             // Query
@@ -75,6 +88,7 @@ namespace CricketClub.Tests
             decimal? lng = null;
 
             var venueId = dao.CreateNewVenue(name, mapUrl, description, lat, lng);
+            _createdVenueIds.Add(venueId);
             Assert.True(venueId > 0);
 
             // Query

@@ -24,6 +24,7 @@ namespace CricketClubDAL
         int CreateNewTeam(string teamName);
         void UpdateTeam(TeamData data);
         IEnumerable<TeamData> GetAllTeamData();
+        void DeleteTeam(int teamId);
 
         // Venues
         VenueData GetVenueData(int venueId);
@@ -43,6 +44,7 @@ namespace CricketClubDAL
         MatchData GetMatchData(int matchId);
         int CreateNewMatch(int opponentId, DateTime matchDate, int venueId, int matchTypeId, HomeOrAway homeAway);
         void UpdateMatch(MatchData data);
+        void DeleteMatch(int matchId);
         int GetNextMatch(DateTime date);
         int GetPreviousMatch(DateTime date);
         List<MatchData> GetAllMatches();

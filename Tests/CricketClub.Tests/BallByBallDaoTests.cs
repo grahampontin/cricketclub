@@ -11,6 +11,19 @@ namespace CricketClub.Tests
     [Category("RequiresDatabase")]
     public class BallByBallDaoTests : IntegrationTestSupport
     {
+        private readonly Dao dao = new Dao();
+        private readonly List<int> _createdMatchIds = new List<int>();
+
+        [TearDown]
+        public void TearDown()
+        {
+            foreach (var matchId in _createdMatchIds)
+            {
+                try { dao.DeleteMatch(matchId); } catch { /* ignore cleanup errors */ }
+            }
+            _createdMatchIds.Clear();
+        }
+
         private static MatchState MakeMatchState(int lastCompletedOver)
         {
             var matchState = new MatchState
@@ -42,11 +55,11 @@ namespace CricketClub.Tests
         [Test]
         public void CanAddOverToMatch()
         {
-            var da = new Dao();
-            var matchId = da.CreateNewMatch(1, DateTime.Now, 1, 1, HomeOrAway.Home);
-            da.StartBallByBallCoverage(matchId, new List<int> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, new MatchData());
+            var matchId = dao.CreateNewMatch(1, DateTime.Now, 1, 1, HomeOrAway.Home);
+            _createdMatchIds.Add(matchId);
+            dao.StartBallByBallCoverage(matchId, new List<int> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, new MatchData());
             var matchState = MakeMatchState(0);
-            da.UpdateCurrentBallByBallState(matchState, matchId);
+            dao.UpdateCurrentBallByBallState(matchState, matchId);
 
             BallByBallMatch.Load(matchId, null);
         }
@@ -54,11 +67,11 @@ namespace CricketClub.Tests
         [Test]
         public void CanRollBackAnOver()
         {
-            var da = new Dao();
-            var matchId = da.CreateNewMatch(1, DateTime.Now, 1, 1, HomeOrAway.Home);
-            da.StartBallByBallCoverage(matchId, new List<int> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, new MatchData());
+            var matchId = dao.CreateNewMatch(1, DateTime.Now, 1, 1, HomeOrAway.Home);
+            _createdMatchIds.Add(matchId);
+            dao.StartBallByBallCoverage(matchId, new List<int> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, new MatchData());
             var matchState = MakeMatchState(0);
-            da.UpdateCurrentBallByBallState(matchState, matchId);
+            dao.UpdateCurrentBallByBallState(matchState, matchId);
 
 
             var match = new CricketClubMiddle.Match(matchId);
@@ -92,13 +105,13 @@ namespace CricketClub.Tests
                 new PlayerState {PlayerId = 5, PlayerName = "Graham", Position = 5, State = "Batting"}
             };
 
-            da.UpdateCurrentBallByBallState(stateToMutate, matchId);
+            dao.UpdateCurrentBallByBallState(stateToMutate, matchId);
 
             var stateAfterUpdate = BallByBallMatch.Load(matchId, match).GetMatchState();
 
             Assert.That(stateAfterUpdate.Players.Length, Is.EqualTo(11));
 
-            da.DeleteBallByBallOver(matchId, 2);
+            dao.DeleteBallByBallOver(matchId, 2);
 
             var stateAfterRollback = BallByBallMatch.Load(matchId, match).GetMatchState();
 
@@ -112,21 +125,21 @@ namespace CricketClub.Tests
         [Test]
         public void CanStartNewMatch()
         {
-            var da = new Dao();
-            var matchId = da.CreateNewMatch(1, DateTime.Now, 1, 1, HomeOrAway.Home);
-            da.StartBallByBallCoverage(matchId, new List<int> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, new MatchData());
+            var matchId = dao.CreateNewMatch(1, DateTime.Now, 1, 1, HomeOrAway.Home);
+            _createdMatchIds.Add(matchId);
+            dao.StartBallByBallCoverage(matchId, new List<int> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, new MatchData());
         }
         
         [Test]
         public void CanResetMatch()
         {
-            var da = new Dao();
-            var matchId = da.CreateNewMatch(1, DateTime.Now, 1, 1, HomeOrAway.Home);
-            da.StartBallByBallCoverage(matchId, new List<int> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, new MatchData());
+            var matchId = dao.CreateNewMatch(1, DateTime.Now, 1, 1, HomeOrAway.Home);
+            _createdMatchIds.Add(matchId);
+            dao.StartBallByBallCoverage(matchId, new List<int> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, new MatchData());
             var matchState = MakeMatchState(0);
-            da.UpdateCurrentBallByBallState(matchState, matchId);
+            dao.UpdateCurrentBallByBallState(matchState, matchId);
 
-            da.ResetBallByBallCoverage(matchId);
+            dao.ResetBallByBallCoverage(matchId);
         }
     }
 }
