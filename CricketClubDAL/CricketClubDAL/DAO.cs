@@ -278,6 +278,12 @@ namespace CricketClubDAL
             return db.ExecuteSqlAndReturnAllRows(sql, TeamDataFromRow);
         }
 
+        public void DeleteTeam(int teamId)
+        {
+            db.ExecuteInsertOrUpdate("delete from thevilla_admin.teams where team_id = @teamId",
+                new SqlParameter("@teamId", teamId));
+        }
+
         #endregion
 
         #region Venues
@@ -542,6 +548,13 @@ namespace CricketClubDAL
         {
             var sql = "select * from thevilla_admin.matches";
             return db.ExecuteSqlAndReturnAllRows(sql, MatchDataFromRow).ToList();
+        }
+
+        public void DeleteMatch(int matchId)
+        {
+            ResetBallByBallCoverage(matchId);
+            db.ExecuteInsertOrUpdate("delete from thevilla_admin.matches where match_id = @matchId",
+                new SqlParameter("@matchId", matchId));
         }
 
         #endregion

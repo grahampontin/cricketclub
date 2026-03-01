@@ -27,6 +27,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\CricketClub.WebApi\CricketClub.WebApi.csproj" />
     <ProjectReference Include="..\..\CricketClubDAL\CricketClubDAL\CricketClubDAL.csproj" />
     <ProjectReference Include="..\..\CricketClubDomain\CricketClubDomain.csproj" />

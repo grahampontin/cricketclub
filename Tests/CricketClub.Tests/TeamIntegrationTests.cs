@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using CricketClubDAL;
 using NUnit.Framework;
@@ -9,6 +10,17 @@ namespace CricketClub.Tests
     public class TeamIntegrationTests : IntegrationTestSupport
     {
         private readonly Dao dao = new Dao();
+        private readonly List<int> _createdTeamIds = new List<int>();
+
+        [TearDown]
+        public void TearDown()
+        {
+            foreach (var teamId in _createdTeamIds)
+            {
+                try { dao.DeleteTeam(teamId); } catch { /* ignore cleanup errors */ }
+            }
+            _createdTeamIds.Clear();
+        }
 
         [Test]
         public void CanCreateQueryAndUpdateTeam()
@@ -16,6 +28,7 @@ namespace CricketClub.Tests
             // Create
             var teamName = "Test_" + Guid.NewGuid().ToString().Substring(0, 8);
             var teamId = dao.CreateNewTeam(teamName);
+            _createdTeamIds.Add(teamId);
             Assert.True(teamId > 0);
 
             // Query
@@ -41,6 +54,7 @@ namespace CricketClub.Tests
             // Create a team to ensure we have at least one
             var teamName = "GetAll_" + Guid.NewGuid().ToString().Substring(0, 8);
             var teamId = dao.CreateNewTeam(teamName);
+            _createdTeamIds.Add(teamId);
             Assert.True(teamId > 0);
 
             // Get all teams
@@ -56,6 +70,7 @@ namespace CricketClub.Tests
             // Create first time
             var teamName = "Dup_" + Guid.NewGuid().ToString().Substring(0, 8);
             var firstId = dao.CreateNewTeam(teamName);
+            _createdTeamIds.Add(firstId);
             Assert.True(firstId > 0);
 
             // Try to create again with same name
