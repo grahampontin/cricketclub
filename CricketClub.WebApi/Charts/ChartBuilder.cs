@@ -218,7 +218,8 @@ namespace CricketClub.WebApi.Charts
             List<string> labels = player.IsRightHandBat
                 ? ScoringArea.GetAll().Select(s => s.nameForRightHandBat).ToList()
                 : ScoringArea.GetAll().Select(s => s.nameForLeftHandBat).ToList();
-            var ballsByScoringArea = ballsForBatsman.Where(b => b.Angle.HasValue)
+            var ballsWithAngle = ballsForBatsman.Where(b => b.Angle.HasValue && b.Angle.Value != 0).ToList();
+            var ballsByScoringArea = ballsWithAngle
                 .GroupBy(b => ScoringArea.For(b.Angle.Value)).ToDictionary(g=>g.Key, g=>g.Sum(b=>b.Amount));
             List<object> data = new List<object>();
             foreach (var scoringArea in ScoringArea.GetAll())
@@ -239,7 +240,7 @@ namespace CricketClub.WebApi.Charts
                 spanGaps = true
             };
             
-            var chartJsConfig = BuildChartJsConfig("radar", labels, "Scoring Areas ("+ballsForBatsman.Count()+" Balls)", chartJsDataSet);
+            var chartJsConfig = BuildChartJsConfig("radar", labels, "Scoring Areas ("+ballsWithAngle.Count+" Balls)", chartJsDataSet);
             chartJsConfig.options.scales = new ChartJsScales()
             {
                 r = new ChartJsScale() { min = 0 }
