@@ -8,6 +8,7 @@ namespace CricketClub.WebApi.Domain
         public string Post { get; set; }
         public int PlayerId { get; set; }
         public int Id { get; set; }
+        public string PlayerImageUrl { get; set; }
         public static CommitteeData ToInternal(CommitteePostV1 entity)
         {
             return Utils.ParseEnumOrThrow<Post, CommitteeData>(entity.Post, parsed => new CommitteeData
@@ -19,14 +20,15 @@ namespace CricketClub.WebApi.Domain
             });
         }
 
-        public static CommitteePostV1 ToExternal(CommitteeData committeeData)
+        public static CommitteePostV1 ToExternal(CommitteeData committeeData, string playerImageUrl = null)
         {
             return new CommitteePostV1
             {
                 Id = committeeData.Id,
                 Year = committeeData.Year,
                 Post = committeeData.Post.ToString(),
-                PlayerId = committeeData.PlayerId
+                PlayerId = committeeData.PlayerId,
+                PlayerImageUrl = playerImageUrl
             };
         }
     }

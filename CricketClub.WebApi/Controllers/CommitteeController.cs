@@ -14,10 +14,21 @@ namespace CricketClub.WebApi.Controllers
     public class CommitteeController : Microsoft.AspNetCore.Mvc.ControllerBase
     {
         private readonly IDao _database;
+        private readonly IWebHostEnvironment _environment;
 
-        public CommitteeController(IDao database)
+        public CommitteeController(IDao database, IWebHostEnvironment environment)
         {
             _database = database;
+            _environment = environment;
+        }
+
+        private string ResolvePlayerImageUrl(int playerId)
+        {
+            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+            var imageRoot = Path.Combine(_environment.ContentRootPath, "Assets", "PlayerImages");
+            var playerImagePath = Path.Combine(imageRoot, playerId + ".png");
+            var resolvedId = System.IO.File.Exists(playerImagePath) ? playerId : 0;
+            return new Uri(new Uri(baseUrl), $"/images/players/{resolvedId}.png").ToString();
         }
 
         /// <summary>
@@ -28,7 +39,9 @@ namespace CricketClub.WebApi.Controllers
         public IActionResult GetAllCommitteeMembers([FromQuery] int? season, [FromQuery] int? year)
         {
             var filterYear = season ?? year;
-            var allEntities = _database.GetAllCommitteeData().Select(CommitteePostV1.ToExternal).ToList();
+            var allEntities = _database.GetAllCommitteeData()
+                .Select(c => CommitteePostV1.ToExternal(c, ResolvePlayerImageUrl(c.PlayerId)))
+                .ToList();
             
             if (filterYear.HasValue)
             {
@@ -52,7 +65,7 @@ namespace CricketClub.WebApi.Controllers
                 return NotFound();
             }
             
-            return Ok(CommitteePostV1.ToExternal(committeeData));
+            return Ok(CommitteePostV1.ToExternal(committeeData, ResolvePlayerImageUrl(committeeData.PlayerId)));
         }
 
         /// <summary>
@@ -70,7 +83,7 @@ namespace CricketClub.WebApi.Controllers
             }
 
             var createdId = _database.CreateNewCommittee(CommitteePostV1.ToInternal(committeeMember));
-            var created = CommitteePostV1.ToExternal(_database.GetCommitteeData(createdId));
+            var created = CommitteePostV1.ToExternal(_database.GetCommitteeData(createdId), ResolvePlayerImageUrl(committeeMember.PlayerId));
             
             return CreatedAtAction(nameof(GetCommitteeMember), new { id = createdId }, created);
         }
