@@ -19,8 +19,8 @@ namespace CricketClub.WebApi.Domain
         public decimal RunRate { get; set; }
         public Partnership CurrentPartnership { get; set; }
         public Partnership PreviousPartnership { get; set; }
-        public FallOfWicket LastManOut { get; set; }
-        public List<FallOfWicket> FallOfWickets { get; set; }
+        public FallOfWicketV1 LastManOut { get; set; }
+        public List<FallOfWicketV1> FallOfWickets { get; set; }
         public List<OverSummaryV1> CompletedOvers { get; set; }
         public BowlerInningsDetails BowlerOneDetails { get; set; }
         public BowlerInningsDetails BowlerTwoDetails { get; set; }

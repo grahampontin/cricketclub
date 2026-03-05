@@ -240,14 +240,14 @@ namespace CricketClubDAL
         public IEnumerable<T> ExecuteSqlAndReturnAllRows<T>(string sql, Func<Row, T> rowConverter)
         {
             var dataSet = ExecuteSqlAndReturnAllRows(sql);
-            
+            if (dataSet.Tables.Count == 0) return Enumerable.Empty<T>();
             return dataSet.Tables[0].Rows.Cast<DataRow>().Select(r=>new Row(r)).Select(rowConverter);
         }
 
         public IEnumerable<T> ExecuteSqlAndReturnAllRows<T>(string sql, Func<Row, T> rowConverter, params SqlParameter[] parameters)
         {
             var dataSet = ExecuteSqlAndReturnAllRows(sql, parameters);
-            
+            if (dataSet.Tables.Count == 0) return Enumerable.Empty<T>();
             return dataSet.Tables[0].Rows.Cast<DataRow>().Select(r=>new Row(r)).Select(rowConverter);
         }
 
@@ -262,12 +262,19 @@ namespace CricketClubDAL
                     var dataSet = new DataSet();
                     var adaptor = new SqlDataAdapter(sql, conn);
                     adaptor.Fill(dataSet);
-                    Log.Info("Found " + dataSet.Tables[0].Rows.Count + " rows.");
-                    dataSet.Tables[0].Rows.Cast<DataRow>().ToList().ForEach(r =>
+                    if (dataSet.Tables.Count > 0)
                     {
-                        var rowData = r.ItemArray.Aggregate("", (current, item) => current + (item + ", "));
-                        Log.Debug("Row: " + rowData);
-                    });
+                        Log.Info("Found " + dataSet.Tables[0].Rows.Count + " rows.");
+                        dataSet.Tables[0].Rows.Cast<DataRow>().ToList().ForEach(r =>
+                        {
+                            var rowData = r.ItemArray.Aggregate("", (current, item) => current + (item + ", "));
+                            Log.Debug("Row: " + rowData);
+                        });
+                    }
+                    else
+                    {
+                        Log.Info("Query returned no result set.");
+                    }
                     return dataSet;
                 }
             }
@@ -294,12 +301,19 @@ namespace CricketClubDAL
                         var dataSet = new DataSet();
                         var adaptor = new SqlDataAdapter(command);
                         adaptor.Fill(dataSet);
-                        Log.Info("Found " + dataSet.Tables[0].Rows.Count + " rows.");
-                        dataSet.Tables[0].Rows.Cast<DataRow>().ToList().ForEach(r =>
+                        if (dataSet.Tables.Count > 0)
                         {
-                            var rowData = r.ItemArray.Aggregate("", (current, item) => current + (item + ", "));
-                            Log.Debug("Row: " + rowData);
-                        });
+                            Log.Info("Found " + dataSet.Tables[0].Rows.Count + " rows.");
+                            dataSet.Tables[0].Rows.Cast<DataRow>().ToList().ForEach(r =>
+                            {
+                                var rowData = r.ItemArray.Aggregate("", (current, item) => current + (item + ", "));
+                                Log.Debug("Row: " + rowData);
+                            });
+                        }
+                        else
+                        {
+                            Log.Info("Query returned no result set.");
+                        }
                         return dataSet;
                     }
                 }
@@ -318,12 +332,16 @@ namespace CricketClubDAL
 
         public IEnumerable<Row> QueryMany(string sql)
         {
-            return ExecuteSqlAndReturnAllRows(sql).Tables[0].Rows.Cast<DataRow>().Select(row => new Row(row));
+            var dataSet = ExecuteSqlAndReturnAllRows(sql);
+            if (dataSet.Tables.Count == 0) return Enumerable.Empty<Row>();
+            return dataSet.Tables[0].Rows.Cast<DataRow>().Select(row => new Row(row));
         }
 
         public IEnumerable<T> QueryMany<T>(string sql, Func<Row, T> extractor)
         {
-            return ExecuteSqlAndReturnAllRows(sql).Tables[0].Rows.Cast<DataRow>().Select(row => new Row(row)).Select(extractor);
+            var dataSet = ExecuteSqlAndReturnAllRows(sql);
+            if (dataSet.Tables.Count == 0) return Enumerable.Empty<T>();
+            return dataSet.Tables[0].Rows.Cast<DataRow>().Select(row => new Row(row)).Select(extractor);
         }
 
 
