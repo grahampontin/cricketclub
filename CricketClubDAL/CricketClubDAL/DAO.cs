@@ -1392,7 +1392,7 @@ namespace CricketClubDAL
             } catch(Exception ex)
             {
                
-                LogException("Failed to insert team for ball by ball coverage - rolling back.", ex);
+                Log.Error("Failed to insert team for ball by ball coverage - rolling back.", ex);
                 db.ExecuteInsertOrUpdate($"delete from ballbyball_team where match_id = {id}");
                 throw;
             }
@@ -1407,12 +1407,6 @@ namespace CricketClubDAL
             db.ExecuteInsertOrUpdate($"delete from thevilla_admin.ballbyball_commentary where match_id = {match_id}");
             db.ExecuteInsertOrUpdate($"delete from dbo.ballbyball_opposition_data where match_id = {match_id}");
             db.ExecuteInsertOrUpdate($"delete from dbo.ballbyball_innings_status where match_id = {match_id}");
-        }
-
-        private void LogException(string message, Exception exception)
-        {
-            // Use log4net to log exceptions
-            Log.Error(message, exception);
         }
 
         public List<PlayerState> GetPlayerStates(int matchId)
@@ -1548,8 +1542,9 @@ namespace CricketClubDAL
                     rollbacks.Add(AddBallToMatch(ball, matchId, thisOver, ballNumber));
                 }
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                Log.Error("Failed to update ball by ball state - rolling back.", exception);
                 foreach (var rollback in rollbacks)
                 {
                     rollback();
@@ -1588,7 +1583,7 @@ namespace CricketClubDAL
                 $"insert into dbo.ballbyball_data (ball, over_number, type, value, player_id, match_id, bowler, out_player_id, dismissal_id, fielder, description, angle) VALUES ({ballNumber},{overNumber},'{ball.Thing}',{ball.Amount},{ball.Batsman},{matchId},'{ball.Bowler}',{outPlayerId},{dismissalId},'{fielder}','{SafeForSql(description)}', {angle})");
             return () =>
                 db.ExecuteSQLAndReturnFirstRow("delete from dbo.ballbyball_data where match_id = " + matchId +
-                                               " and over_number = " + overNumber + " and ball = " + ball);
+                                               " and over_number = " + overNumber + " and ball = " + ballNumber);
         }
 
         private int GetDismissalId(string ballByBallCode)
