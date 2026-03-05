@@ -60,5 +60,21 @@ namespace CricketClub.WebApi.Tests.Utils
             cache.Insert("team1", new TeamData { ID = 1, Name = "Team 1" }, TimeSpan.FromHours(24));
             cache.Insert("team2", new TeamData { ID = 2, Name = "Team 2" }, TimeSpan.FromHours(24));
         }
+        public static Mock<IDao> CreateMockDao()
+        {
+            var mockDao = new Mock<IDao>();
+            SetupSafeVenueAndTeamLookups(mockDao);
+            return mockDao;
+        }
+
+        public static void SetupPlayerLookups(Mock<IDao> dao, params (int id, string name)[] players)
+        {
+            foreach (var (id, name) in players)
+            {
+                dao
+                    .Setup(d => d.GetPlayerData(id))
+                    .Returns(new PlayerData { ID = id, Name = name });
+            }
+        }
     }
 }

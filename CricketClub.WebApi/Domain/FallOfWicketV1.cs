@@ -1,4 +1,3 @@
-using CricketClubMiddle;
 using CricketClubMiddle.Stats;
 
 namespace CricketClub.WebApi.Domain
@@ -15,8 +14,8 @@ namespace CricketClub.WebApi.Domain
         public int NotOutPlayerId { get; set; }
         public int NotOutPlayerScore { get; set; }
         public WicketV1 Wicket { get; set; }
-        public BatsmanInningsDetails OutgoingBatsmanInningsDetails { get; set; }
-        public Partnership Partnership { get; set; }
+        public BatsmanInningsDetailsV1 OutgoingBatsmanInningsDetails { get; set; }
+        public PartnershipV1 Partnership { get; set; }
 
         public static FallOfWicketV1 FromInternal(FallOfWicket fow)
         {
@@ -28,7 +27,7 @@ namespace CricketClub.WebApi.Domain
                 OverAsString = fow.OverAsString,
                 Bowler = fow.Bowler,
                 OutGoingPlayerId = fow.OutGoingPlayerId,
-                OutgoingPlayerName = fow.OutgoingPlayerName,
+                OutgoingPlayerName = fow.OutgoingBatsmanInningsDetails?.Name ?? string.Empty,
                 OutGoingPlayerScore = fow.OutGoingPlayerScore,
                 NotOutPlayerId = fow.NotOutPlayerId,
                 NotOutPlayerScore = fow.NotOutPlayerScore,
@@ -43,8 +42,8 @@ namespace CricketClub.WebApi.Domain
                         Description = fow.Wicket.Description
                     }
                     : null,
-                OutgoingBatsmanInningsDetails = fow.OutgoingBatsmanInningsDetails,
-                Partnership = fow.Partnership
+                OutgoingBatsmanInningsDetails = BatsmanInningsDetailsV1.FromInternal(fow.OutgoingBatsmanInningsDetails),
+                Partnership = PartnershipV1.FromInternal(fow.Partnership)
             };
         }
     }

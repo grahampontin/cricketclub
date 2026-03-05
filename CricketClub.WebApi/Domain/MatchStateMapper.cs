@@ -11,9 +11,9 @@ namespace CricketClub.WebApi.Domain
 
             return new InPlayScorecardV1
             {
-                OnStrikeBatsman = scorecard.OnStrikeBatsman,
-                OtherBatsman = scorecard.OtherBatsman,
-                LastBatsmanOut = scorecard.LastBatsmanOut,
+                OnStrikeBatsman = BatsmanInningsDetailsV1.FromInternal(scorecard.OnStrikeBatsman),
+                OtherBatsman = BatsmanInningsDetailsV1.FromInternal(scorecard.OtherBatsman),
+                LastBatsmanOut = BatsmanInningsDetailsV1.FromInternal(scorecard.LastBatsmanOut),
                 Opposition = scorecard.Opposition,
                 OurLastCompletedOver = scorecard.OurLastCompletedOver,
                 OversRemaining = scorecard.OversRemaining,
@@ -21,14 +21,14 @@ namespace CricketClub.WebApi.Domain
                 Score = scorecard.Score,
                 Wickets = scorecard.Wickets,
                 RunRate = scorecard.RunRate,
-                CurrentPartnership = scorecard.CurrentPartnership,
-                PreviousPartnership = scorecard.PreviousPartnership,
+                CurrentPartnership = PartnershipV1.FromInternal(scorecard.CurrentPartnership),
+                PreviousPartnership = PartnershipV1.FromInternal(scorecard.PreviousPartnership),
                 LastManOut = FallOfWicketV1.FromInternal(scorecard.LastManOut),
                 FallOfWickets = scorecard.FallOfWickets?.Select(FallOfWicketV1.FromInternal).ToList(),
                 CompletedOvers = scorecard.CompletedOvers?.Select(MapOverSummaryToOverSummaryV1).ToList(),
-                BowlerOneDetails = scorecard.BowlerOneDetails,
-                BowlerTwoDetails = scorecard.BowlerTwoDetails,
-                LiveBattingCard = scorecard.LiveBattingCard,
+                BowlerOneDetails = MapBowlerDetailsToBowlerInningsDetailsV1(scorecard.BowlerOneDetails),
+                BowlerTwoDetails = MapBowlerDetailsToBowlerInningsDetailsV1(scorecard.BowlerTwoDetails),
+                LiveBattingCard = LiveBattingCardV1.FromInternal(scorecard.LiveBattingCard),
                 Overs = scorecard.Overs,
                 TossWinnerBatted = scorecard.TossWinnerBatted,
                 WonToss = scorecard.WonToss,
@@ -39,13 +39,25 @@ namespace CricketClub.WebApi.Domain
                 TheirOver = scorecard.TheirOver,
                 TheirRunRate = scorecard.TheirRunRate,
                 IsFirstInnings = scorecard.IsFirstInnings,
-                TheirCompletedOvers = scorecard.TheirCompletedOvers,
+                TheirCompletedOvers = scorecard.TheirCompletedOvers?.Select(MapOppositionInningsDetailsToV1).ToList(),
                 IsMatchComplete = scorecard.IsMatchComplete,
                 ResultText = scorecard.ResultText,
                 OurInningsCommentary = scorecard.OurInningsCommentary,
                 TheirInningsCommentary = scorecard.TheirInningsCommentary,
-                LiveBowlingCard = scorecard.LiveBowlingCard,
-                Partnerships = scorecard.Partnerships
+                LiveBowlingCard = scorecard.LiveBowlingCard?.Select(MapBowlerDetailsToBowlerInningsDetailsV1).ToList(),
+                Partnerships = scorecard.Partnerships?.Select(PartnershipV1.FromInternal).ToList()
+            };
+        }
+
+        private static OppositionInningsDetailsV1 MapOppositionInningsDetailsToV1(CricketClubDomain.OppositionInningsDetails d)
+        {
+            if (d == null) return null;
+            return new OppositionInningsDetailsV1
+            {
+                Over = d.Over,
+                Score = d.Score,
+                Wickets = d.Wickets,
+                Commentary = d.Commentary
             };
         }
 

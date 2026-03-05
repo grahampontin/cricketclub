@@ -14,7 +14,7 @@ namespace CricketClub.WebApi.Domain
         public int PlayerId { get; set; }
         public string PlayerName { get; set; }
         public int Runs { get; set; }
-        public string ModeOfDismissal { get; set; }
+        public ModesOfDismissalV1 ModeOfDismissal { get; set; }
         public int BowlerId { get; set; }
         public string BowlerName { get; set; }
         public int FielderId { get; set; }
@@ -36,7 +36,7 @@ namespace CricketClub.WebApi.Domain
             PlayerId = battingCardLine.Batsman.Id;
             PlayerName = battingCardLine.Batsman.Name;
             Runs = battingCardLine.Score;
-            ModeOfDismissal = battingCardLine.Dismissal.ToString();
+            ModeOfDismissal = EnumMappers.ToV1(battingCardLine.Dismissal);
             BowlerId = battingCardLine.Bowler.Id;
             BowlerName = battingCardLine.Bowler.Name;
             FielderId = battingCardLine.Fielder.Id;
@@ -51,7 +51,7 @@ namespace CricketClub.WebApi.Domain
 
         public BattingCardLine ToInternal(Match match)
         {
-            var dismissal = EnumMappers.ParseModesOfDismissal(ModeOfDismissal);
+            var dismissal = EnumMappers.ToInternal(ModeOfDismissal);
 
             return new BattingCardLine(new BattingCardLineData()
             {

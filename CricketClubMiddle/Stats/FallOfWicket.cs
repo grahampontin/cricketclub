@@ -1,4 +1,5 @@
-﻿using CricketClubDomain;
+﻿using CricketClubDAL;
+using CricketClubDomain;
 
 namespace CricketClubMiddle.Stats
 {
@@ -19,17 +20,18 @@ namespace CricketClubMiddle.Stats
 
         public Player OutGoingPlayer => outGoingPlayer;
 
-        public FallOfWicket(int wicketNumber, 
-                            int teamScore, 
-                            int outGoingPlayerId, 
-                            int outGoingPlayerScore, 
-                            int notOutPlayerId, 
-                            int notOutPlayerScore, 
+        public FallOfWicket(int wicketNumber,
+                            int teamScore,
+                            int outGoingPlayerId,
+                            int outGoingPlayerScore,
+                            int notOutPlayerId,
+                            int notOutPlayerScore,
                             BatsmanInningsDetails outgoingBatsmanInningsDetails,
-                            string overAsString, 
+                            string overAsString,
                             Partnership partnership,
-                            Wicket wicket, 
-                            string bowler)
+                            Wicket wicket,
+                            string bowler,
+                            IDao dao = null)
         {
             this.wicketNumber = wicketNumber;
             this.teamScore = teamScore;
@@ -42,7 +44,7 @@ namespace CricketClubMiddle.Stats
             this.partnership = partnership;
             this.wicket = wicket;
             this.bowler = bowler;
-            this.outGoingPlayer = new Player(outGoingPlayerId);
+            this.outGoingPlayer = dao != null ? new Player(outGoingPlayerId, dao) : new Player(outGoingPlayerId);
         }
 
         public string Bowler => bowler;

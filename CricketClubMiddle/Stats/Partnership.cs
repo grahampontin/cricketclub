@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CricketClubDAL;
 using CricketClubDomain;
 
 namespace CricketClubMiddle.Stats
@@ -11,10 +12,10 @@ namespace CricketClubMiddle.Stats
         private Player player1;
         private Player player2;
 
-        public Partnership(int playerId1, int playerId2)
+        public Partnership(int playerId1, int playerId2, IDao dao = null)
         {
-            this.player1 = new Player(playerId1);
-            this.player2 = new Player(playerId2);
+            this.player1 = dao != null ? new Player(playerId1, dao) : new Player(playerId1);
+            this.player2 = dao != null ? new Player(playerId2, dao) : new Player(playerId2);
             balls = new List<Ball>();
         }
 
