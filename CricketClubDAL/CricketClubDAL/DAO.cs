@@ -1582,15 +1582,16 @@ namespace CricketClubDAL
             db.ExecuteInsertOrUpdate(
                 $"insert into dbo.ballbyball_data (ball, over_number, type, value, player_id, match_id, bowler, out_player_id, dismissal_id, fielder, description, angle) VALUES ({ballNumber},{overNumber},'{ball.Thing}',{ball.Amount},{ball.Batsman},{matchId},'{ball.Bowler}',{outPlayerId},{dismissalId},'{fielder}','{SafeForSql(description)}', {angle})");
             return () =>
-                db.ExecuteSQLAndReturnFirstRow("delete from dbo.ballbyball_data where match_id = " + matchId +
+                db.ExecuteInsertOrUpdate("delete from dbo.ballbyball_data where match_id = " + matchId +
                                                " and over_number = " + overNumber + " and ball = " + ballNumber);
         }
 
-        private int GetDismissalId(string ballByBallCode)
+        private int GetDismissalId(string modeOfDismissal)
         {
             return
-                (int) db.ExecuteSqlAndReturnSingleResult("select dismissal_id from thevilla_admin.how_out where ball_by_ball_short_code = '" +
-                                                         ballByBallCode + "'");
+                (int) db.ExecuteSqlAndReturnSingleResult(
+                    "select dismissal_id from thevilla_admin.how_out where dismissal = @dismissal",
+                    new SqlParameter("@dismissal", modeOfDismissal));
         }
 
         private Action UpdatePlayerState(PlayerState playerState, int matchId, int thisOver)

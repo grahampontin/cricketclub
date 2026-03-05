@@ -90,7 +90,7 @@ namespace CricketClubDAL
                     var data = new DataSet();
                     var adaptor = new SqlDataAdapter(sql, connection);
                     adaptor.Fill(data);
-                    if (data.Tables[0] != null && data.Tables[0].Rows.Count > 0)
+                    if (data.Tables.Count > 0 && data.Tables[0].Rows.Count > 0)
                     {
                         Log.Info("Found " + data.Tables[0].Rows.Count + " rows.");
                         var firstRow = data.Tables[0].Rows[0];
@@ -123,7 +123,7 @@ namespace CricketClubDAL
                         var data = new DataSet();
                         var adaptor = new SqlDataAdapter(command);
                         adaptor.Fill(data);
-                        if (data.Tables[0] != null && data.Tables[0].Rows.Count > 0)
+                        if (data.Tables.Count > 0 && data.Tables[0].Rows.Count > 0)
                         {
                             Log.Info("Found " + data.Tables[0].Rows.Count + " rows.");
                             var firstRow = data.Tables[0].Rows[0];
