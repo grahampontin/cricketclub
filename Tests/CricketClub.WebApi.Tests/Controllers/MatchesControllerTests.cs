@@ -78,5 +78,107 @@ namespace CricketClub.WebApi.Tests.Controllers
             var match = Assert.IsType<MatchV1>(ok.Value);
             Assert.Equal(5, match.Id);
         }
+
+        private void SetupCleanMatch(int matchId)
+        {
+            mockDao.Setup(d => d.GetBattingCard(matchId, ThemOrUs.Us)).Returns(Enumerable.Empty<BattingCardLineData>());
+            mockDao.Setup(d => d.GetBattingCard(matchId, ThemOrUs.Them)).Returns(Enumerable.Empty<BattingCardLineData>());
+            mockDao.Setup(d => d.GetBowlingStats(matchId, ThemOrUs.Us)).Returns(new List<BowlingStatsEntryData>());
+            mockDao.Setup(d => d.GetBowlingStats(matchId, ThemOrUs.Them)).Returns(new List<BowlingStatsEntryData>());
+            mockDao.Setup(d => d.GetAllBallsForMatch(matchId)).Returns(new List<Over>());
+            mockDao.Setup(d => d.GetMatchReport(matchId)).Returns(MatchReportAndConditions.None);
+        }
+
+        [Fact]
+        public void DeleteMatch_WithNoAssociatedData_Returns204NoContent()
+        {
+            // Arrange
+            SetupCleanMatch(42);
+
+            // Act
+            var result = controller.DeleteMatch(42);
+
+            // Assert
+            Assert.IsType<NoContentResult>(result);
+            mockDao.Verify(d => d.DeleteMatch(42), Times.Once);
+        }
+
+        [Fact]
+        public void DeleteMatch_WithScorecardData_Returns409Conflict()
+        {
+            // Arrange
+            SetupCleanMatch(10);
+            mockDao.Setup(d => d.GetBattingCard(10, ThemOrUs.Us)).Returns(new List<BattingCardLineData>
+            {
+                new BattingCardLineData { MatchID = 10, PlayerID = 1, Score = 50 }
+            });
+
+            // Act
+            var result = controller.DeleteMatch(10);
+
+            // Assert
+            var conflict = Assert.IsType<ConflictObjectResult>(result);
+            Assert.Contains("scorecard data", conflict.Value.ToString());
+            Assert.Contains("10", conflict.Value.ToString());
+            mockDao.Verify(d => d.DeleteMatch(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public void DeleteMatch_WithBallByBallData_Returns409Conflict()
+        {
+            // Arrange
+            SetupCleanMatch(20);
+            mockDao.Setup(d => d.GetAllBallsForMatch(20)).Returns(new List<Over> { new Over() });
+
+            // Act
+            var result = controller.DeleteMatch(20);
+
+            // Assert
+            var conflict = Assert.IsType<ConflictObjectResult>(result);
+            Assert.Contains("ball by ball data", conflict.Value.ToString());
+            Assert.Contains("20", conflict.Value.ToString());
+            mockDao.Verify(d => d.DeleteMatch(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public void DeleteMatch_WithMatchReport_Returns409Conflict()
+        {
+            // Arrange
+            SetupCleanMatch(30);
+            mockDao.Setup(d => d.GetMatchReport(30)).Returns(new MatchReportAndConditions("Sunny", "Great match", ""));
+
+            // Act
+            var result = controller.DeleteMatch(30);
+
+            // Assert
+            var conflict = Assert.IsType<ConflictObjectResult>(result);
+            Assert.Contains("a match report", conflict.Value.ToString());
+            Assert.Contains("30", conflict.Value.ToString());
+            mockDao.Verify(d => d.DeleteMatch(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public void DeleteMatch_WithMultipleDataTypes_Returns409ConflictListingAllReasons()
+        {
+            // Arrange
+            SetupCleanMatch(50);
+            mockDao.Setup(d => d.GetBowlingStats(50, ThemOrUs.Us)).Returns(new List<BowlingStatsEntryData>
+            {
+                new BowlingStatsEntryData { MatchID = 50, PlayerID = 1, Wickets = 3 }
+            });
+            mockDao.Setup(d => d.GetAllBallsForMatch(50)).Returns(new List<Over> { new Over() });
+            mockDao.Setup(d => d.GetMatchReport(50)).Returns(new MatchReportAndConditions("Cloudy", "Tough game", ""));
+
+            // Act
+            var result = controller.DeleteMatch(50);
+
+            // Assert
+            var conflict = Assert.IsType<ConflictObjectResult>(result);
+            var message = conflict.Value.ToString();
+            Assert.Contains("scorecard data", message);
+            Assert.Contains("ball by ball data", message);
+            Assert.Contains("a match report", message);
+            mockDao.Verify(d => d.DeleteMatch(It.IsAny<int>()), Times.Never);
+        }
     }
 }
