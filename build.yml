@@ -105,6 +105,7 @@ steps:
 # Deploy to Azure Container Apps
 - task: AzureContainerApps@1
   displayName: Deploy to Azure Container App
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   inputs:
     azureSubscription: 'sc-azure-rg'
     resourceGroup: 'Village_CC'
