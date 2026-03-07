@@ -124,10 +124,38 @@ namespace CricketClub.WebApi.Controllers
         /// </summary>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status501NotImplemented)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public IActionResult DeleteMatch(int id)
         {
-            return StatusCode(StatusCodes.Status501NotImplemented, "Match deletion is not implemented");
+            var blockingReasons = new List<string>();
+
+            if (_database.GetBattingCard(id, ThemOrUs.Us).Any() || _database.GetBattingCard(id, ThemOrUs.Them).Any() ||
+                _database.GetBowlingStats(id, ThemOrUs.Us).Any() || _database.GetBowlingStats(id, ThemOrUs.Them).Any())
+            {
+                blockingReasons.Add("scorecard data");
+            }
+
+            if (_database.GetAllBallsForMatch(id).Any())
+            {
+                blockingReasons.Add("ball by ball data");
+            }
+
+            var matchReport = _database.GetMatchReport(id);
+            if (matchReport != MatchReportAndConditions.None)
+            {
+                blockingReasons.Add("a match report");
+            }
+
+            if (blockingReasons.Count > 0)
+            {
+                var reasons = string.Join(", ", blockingReasons);
+                var verb = blockingReasons.Count == 1 ? "is" : "are";
+                return Conflict($"Cannot delete match {id} because there {verb} {reasons} associated with it. Please remove this data first if you really want to delete the match.");
+            }
+
+            _database.DeleteMatch(id);
+            return NoContent();
         }
     }
 }
