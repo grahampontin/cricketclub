@@ -95,16 +95,16 @@ namespace CricketClubDAL
                 where player_id = @playerId";
 
             db.ExecuteInsertOrUpdate(sql,
-                new SqlParameter("@playerName",     playerData.Name),
-                new SqlParameter("@fullName",        playerData.FullName),
-                new SqlParameter("@nickname",        (object?)playerData.NickName       ?? DBNull.Value),
-                new SqlParameter("@battingStyle",    playerData.BattingStyle),
-                new SqlParameter("@bowlingStyle",    playerData.BowlingStyle),
-                new SqlParameter("@firstName",       playerData.FirstName),
-                new SqlParameter("@lastName",        playerData.Surname),
-                new SqlParameter("@middleInitials",  (object?)playerData.MiddleInitials ?? DBNull.Value),
+                new SqlParameter("@playerName",     (object)playerData.Name           ?? DBNull.Value),
+                new SqlParameter("@fullName",        (object)playerData.FullName       ?? DBNull.Value),
+                new SqlParameter("@nickname",        (object)playerData.NickName       ?? DBNull.Value),
+                new SqlParameter("@battingStyle",    (object)playerData.BattingStyle   ?? DBNull.Value),
+                new SqlParameter("@bowlingStyle",    (object)playerData.BowlingStyle   ?? DBNull.Value),
+                new SqlParameter("@firstName",       (object)playerData.FirstName      ?? DBNull.Value),
+                new SqlParameter("@lastName",        (object)playerData.Surname        ?? DBNull.Value),
+                new SqlParameter("@middleInitials",  (object)playerData.MiddleInitials ?? DBNull.Value),
                 new SqlParameter("@active",          Convert.ToInt16(playerData.IsActive)),
-                new SqlParameter("@ringerOf",        (object?)playerData.RingerOf       ?? DBNull.Value),
+                new SqlParameter("@ringerOf",        (object)playerData.RingerOf       ?? DBNull.Value),
                 new SqlParameter("@isRhb",           Convert.ToInt16(playerData.IsRightHandBat)),
                 new SqlParameter("@playerId",        playerData.ID));
         }
