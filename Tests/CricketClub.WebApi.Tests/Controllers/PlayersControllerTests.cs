@@ -122,5 +122,46 @@ namespace CricketClub.WebApi.Tests.Controllers
                 p.Surname == "Player" &&
                 p.IsActive)), Times.Once);
         }
+        [Fact]
+        public void CreatePlayer_WithoutNickname_PassesNullNicknameToDao()
+        {
+            // Verifies the controller correctly maps a missing Nickname to null in PlayerData.
+            // NOTE: This does NOT test the SQL layer - the DAO is mocked, so the DBNull.Value fix
+            // in Dao.UpdatePlayer is covered by the integration test in PlayersIntegrationTest.
+            //
+            // Also note: CreatePlayer calls UpdatePlayer by design - CreateNewPlayer inserts a
+            // minimal stub row, then UpdatePlayerFields/Save() persists all the remaining fields.
+
+            // Arrange
+            mockDao.Setup(d => d.CreateNewPlayer("PLayer One")).Returns(10);
+            mockDao.Setup(d => d.GetPlayerData(10)).Returns(new PlayerData
+            {
+                ID = 10, Name = "PLayer One", FirstName = "PLayer", Surname = "One",
+                IsRightHandBat = true, BowlingStyle = "RM", IsActive = true
+            });
+
+            // Act
+            var result = controller.CreatePlayer(new PlayerV1
+            {
+                FirstName = "PLayer",
+                Surname = "One",
+                IsRightHandBat = true,
+                BowlingStyle = "RM",
+                IsActive = true
+                // Nickname intentionally omitted (null)
+            });
+
+            // Assert
+            var created = Assert.IsType<CreatedAtActionResult>(result);
+            Assert.IsType<PlayerV1>(created.Value);
+            mockDao.Verify(d => d.UpdatePlayer(It.Is<PlayerData>(p =>
+                p.ID == 10 &&
+                p.FirstName == "PLayer" &&
+                p.Surname == "One" &&
+                p.IsRightHandBat == true &&
+                p.BowlingStyle == "RM" &&
+                p.IsActive == true &&
+                p.NickName == null)), Times.Once);
+        }
     }
 }

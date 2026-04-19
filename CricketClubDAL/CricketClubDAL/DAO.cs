@@ -79,39 +79,34 @@ namespace CricketClubDAL
 
         public void UpdatePlayer(PlayerData playerData)
         {
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set player_name = @playerName where player_id = @playerId",
-                new SqlParameter("@playerName", playerData.Name),
-                new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set full_name = @fullName where player_id = @playerId",
-                new SqlParameter("@fullName", playerData.FullName),
-                new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set nickname = @nickname where player_id = @playerId",
-                new SqlParameter("@nickname", playerData.NickName),
-                new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set batting_style = @battingStyle where player_id = @playerId",
-                new SqlParameter("@battingStyle", playerData.BattingStyle),
-                new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set bowling_style = @bowlingStyle where player_id = @playerId",
-                new SqlParameter("@bowlingStyle", playerData.BowlingStyle),
-                new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set first_name = @firstName where player_id = @playerId",
-                new SqlParameter("@firstName", playerData.FirstName),
-                new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set last_name = @lastName where player_id = @playerId",
-                new SqlParameter("@lastName", playerData.Surname),
-                new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set middle_initials = @middleInitials where player_id = @playerId",
-                new SqlParameter("@middleInitials", playerData.MiddleInitials),
-                new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set active = @active where player_id = @playerId",
-                new SqlParameter("@active", Convert.ToInt16(playerData.IsActive)),
-                new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set ringer_of = @ringerOf where player_id = @playerId",
-                new SqlParameter("@ringerOf", playerData.RingerOf),
-                new SqlParameter("@playerId", playerData.ID));
-            db.ExecuteInsertOrUpdate("update thevilla_admin.players set is_rhb = @isRhb where player_id = @playerId",
-                new SqlParameter("@isRhb", Convert.ToInt16(playerData.IsRightHandBat)),
-                new SqlParameter("@playerId", playerData.ID));
+            const string sql = @"
+                update thevilla_admin.players set
+                    player_name       = @playerName,
+                    full_name         = @fullName,
+                    nickname          = @nickname,
+                    batting_style     = @battingStyle,
+                    bowling_style     = @bowlingStyle,
+                    first_name        = @firstName,
+                    last_name         = @lastName,
+                    middle_initials   = @middleInitials,
+                    active            = @active,
+                    ringer_of         = @ringerOf,
+                    is_rhb            = @isRhb
+                where player_id = @playerId";
+
+            db.ExecuteInsertOrUpdate(sql,
+                new SqlParameter("@playerName",     playerData.Name),
+                new SqlParameter("@fullName",        playerData.FullName),
+                new SqlParameter("@nickname",        (object?)playerData.NickName       ?? DBNull.Value),
+                new SqlParameter("@battingStyle",    playerData.BattingStyle),
+                new SqlParameter("@bowlingStyle",    playerData.BowlingStyle),
+                new SqlParameter("@firstName",       playerData.FirstName),
+                new SqlParameter("@lastName",        playerData.Surname),
+                new SqlParameter("@middleInitials",  (object?)playerData.MiddleInitials ?? DBNull.Value),
+                new SqlParameter("@active",          Convert.ToInt16(playerData.IsActive)),
+                new SqlParameter("@ringerOf",        (object?)playerData.RingerOf       ?? DBNull.Value),
+                new SqlParameter("@isRhb",           Convert.ToInt16(playerData.IsRightHandBat)),
+                new SqlParameter("@playerId",        playerData.ID));
         }
 
         public List<BattingCardLineData> GetPlayerBattingStatsData(int playerId)

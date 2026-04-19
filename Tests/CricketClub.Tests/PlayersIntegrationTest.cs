@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Linq;
+using CricketClubDAL;
+using CricketClubDomain;
 using CricketClubMiddle;
 using log4net;
 using NUnit.Framework;
@@ -9,6 +11,37 @@ namespace CricketClub.Tests
     [Category("RequiresDatabase")]
     public class PlayersIntegrationTest : IntegrationTestSupport
     {
+        [Test]
+        public void UpdatePlayer_WithNullNickname_DoesNotThrow()
+        {
+            // Regression test: Dao.UpdatePlayer was passing null as a SqlParameter value for
+            // nullable string fields, causing SQL Server to report the parameter was "not supplied".
+            // Fix: nullable fields now pass DBNull.Value when null.
+            //
+            // Uses the first active player found; updates with their existing data (no net change)
+            // but with nickname explicitly null to exercise the fixed code path.
+            var dao = new Dao();
+            var players = dao.GetAllPlayers();
+            var existing = players.First(p => p.IsActive && p.ID > 0);
+
+            var testData = new PlayerData
+            {
+                ID              = existing.ID,
+                Name            = existing.Name,
+                FullName        = existing.FullName,
+                NickName        = null,           // the field that previously caused the SQL error
+                BattingStyle    = existing.BattingStyle,
+                BowlingStyle    = existing.BowlingStyle,
+                FirstName       = existing.FirstName,
+                Surname         = existing.Surname,
+                MiddleInitials  = existing.MiddleInitials,
+                IsActive        = existing.IsActive,
+                RingerOf        = existing.RingerOf,
+                IsRightHandBat  = existing.IsRightHandBat
+            };
+
+            Assert.DoesNotThrow(() => dao.UpdatePlayer(testData));
+        }
         [Test, Ignore("Slow Test - for manual performance testing only")]
         public void GetAllPlayersWithHydration()
         {
