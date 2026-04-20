@@ -14,12 +14,15 @@ namespace CricketClub.WebApi.Domain
         public InningsScoreCardV1 OurInnings { get; set; }
         public InningsScoreCardV1 TheirInnings { get; set; }
         public MatchConditionsV1 MatchConditions { get; set; }
+        public MatchReportV1 MatchReport { get; set; }
 
         public MatchScorecardV1(BattingCard ourBatting, BowlingStats theirBowling, FoWStats ourFoW, BattingCard theirBatting, BowlingStats ourBowling, FoWStats theirFoW, Extras ourExtras, Extras theirExtras, Match match)
         {
             OurInnings = new InningsScoreCardV1(ourBatting, theirBowling, ourFoW, ourExtras,  match.OurInningsLength);
             TheirInnings = new InningsScoreCardV1(theirBatting, ourBowling, theirFoW, theirExtras, match.TheirInningsLength);
             MatchConditions = new MatchConditionsV1(match);
+            var report = match.GetMatchReport();
+            MatchReport = new MatchReportV1(report.Conditions, report.Report, report.ReportImage);
         }
 
         // Deserialize

@@ -107,6 +107,15 @@ namespace CricketClub.WebApi.Controllers
             match.TossWinnerBatted = unsavedScorecard.MatchConditions.TossWinnerBatted;
             match.Save();
 
+            if (unsavedScorecard.MatchReport != null)
+            {
+                database.CreateOrUpdateMatchReport(
+                    id,
+                    unsavedScorecard.MatchReport.Conditions,
+                    unsavedScorecard.MatchReport.Report,
+                    unsavedScorecard.MatchReport.Base64EncodedImage ?? string.Empty);
+            }
+
             if (unsavedScorecard.OurInnings?.Bowling?.Entries?.Any() == true)
             {
                 var theirBowlingStats = unsavedScorecard.OurInnings.Bowling.ToInternal(match, ThemOrUs.Them);

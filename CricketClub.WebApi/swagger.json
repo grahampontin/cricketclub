@@ -3003,6 +3003,9 @@
           },
           "matchConditions": {
             "$ref": "#/components/schemas/MatchConditionsV1"
+          },
+          "matchReport": {
+            "$ref": "#/components/schemas/MatchReportV1"
           }
         },
         "additionalProperties": false

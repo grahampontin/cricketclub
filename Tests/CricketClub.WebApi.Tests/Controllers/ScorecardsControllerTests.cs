@@ -32,6 +32,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             mockDao.Setup(d => d.GetBowlingStats(It.IsAny<int>(), It.IsAny<ThemOrUs>())).Returns(new List<BowlingStatsEntryData>());
             mockDao.Setup(d => d.GetFoWData(It.IsAny<int>(), It.IsAny<ThemOrUs>())).Returns(new List<FoWDataLine>());
             mockDao.Setup(d => d.GetExtras(It.IsAny<int>(), It.IsAny<ThemOrUs>())).Returns(new ExtrasData());
+            mockDao.Setup(d => d.GetMatchReport(It.IsAny<int>())).Returns(MatchReportAndConditions.None);
         }
 
         [Fact]
@@ -71,6 +72,53 @@ namespace CricketClub.WebApi.Tests.Controllers
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(result);
+        }
+
+        [Fact]
+        public void SaveScorecard_WithMatchReport_PersistsMatchReport()
+        {
+            // Arrange
+            mockDao.Setup(d => d.GetMatchData(1)).Returns(new MatchData
+            {
+                ID = 1,
+                Date = DateTime.Today,
+                OppositionID = 1,
+                VenueID = 1,
+                MatchType = 1,
+                HomeOrAway = "H",
+                CaptainID = 1,
+                WicketKeeperID = 2,
+                Overs = 40,
+                WonToss = true,
+                Batted = true
+            });
+
+            var scorecard = new MatchScorecardV1
+            {
+                MatchConditions = new MatchConditionsV1
+                {
+                    Abandoned = false,
+                    CaptainId = 1,
+                    WicketKeeperId = 2,
+                    Overs = 40,
+                    Declaration = false,
+                    WeWonTheToss = true,
+                    TossWinnerBatted = true
+                },
+                MatchReport = new MatchReportV1
+                {
+                    Conditions = "Sunny",
+                    Report = "Great match.",
+                    Base64EncodedImage = null
+                }
+            };
+
+            // Act
+            var result = controller.SaveScorecard(1, scorecard);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+            mockDao.Verify(d => d.CreateOrUpdateMatchReport(1, "Sunny", "Great match.", string.Empty), Times.Once);
         }
     }
 }

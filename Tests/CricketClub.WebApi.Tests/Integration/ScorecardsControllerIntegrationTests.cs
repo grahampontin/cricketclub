@@ -55,6 +55,7 @@ namespace CricketClub.WebApi.Tests.Integration
             mockDao.Setup(d => d.GetBowlingStats(It.IsAny<int>(), It.IsAny<ThemOrUs>())).Returns(new List<BowlingStatsEntryData>());
             mockDao.Setup(d => d.GetFoWData(It.IsAny<int>(), It.IsAny<ThemOrUs>())).Returns(new List<FoWDataLine>());
             mockDao.Setup(d => d.GetExtras(It.IsAny<int>(), It.IsAny<ThemOrUs>())).Returns(new ExtrasData());
+            mockDao.Setup(d => d.GetMatchReport(It.IsAny<int>())).Returns(MatchReportAndConditions.None);
 
             var client = this.factory.CreateClient();
 
