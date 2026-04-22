@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using CricketClubDAL;
 using CricketClubDomain;
 using Moq;
@@ -120,6 +121,9 @@ namespace CricketClub.Tests
             mockDao.Setup(dao => dao.GetMatchData(1))
                 .Returns(matchData);
             mockDao.Setup(dao => dao.UpdateMatch(It.IsAny<MatchData>()));
+            mockDao.Setup(dao => dao.GetAllMatchScoreSummaries())
+                .Returns(new List<CricketClubDomain.MatchScoreSummaryData>());
+            mockDao.Setup(dao => dao.UpsertTeamStatsCache(It.IsAny<CricketClubDomain.TeamStatsCacheData>()));
             
             // Act
             var match = new CricketClubMiddle.Match(1, mockDao.Object);

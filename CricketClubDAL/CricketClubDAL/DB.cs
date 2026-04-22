@@ -414,6 +414,16 @@ namespace CricketClubDAL
             return Convert.ToBoolean(value);
         }
         
+        public int? GetNullableInt(string columnName)
+        {
+            var value = dataRow[columnName];
+            if (value is DBNull)
+            {
+                return null;
+            }
+            return Convert.ToInt32(value);
+        }
+
         public double GetDouble(string columnName, double defaultValue=0.0)
         {
             var value = dataRow[columnName];

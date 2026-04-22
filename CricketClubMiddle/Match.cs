@@ -511,6 +511,8 @@ namespace CricketClubMiddle
             return data.Select(a => new Match(a, dao));
         }
 
+        public static Match FromData(MatchData data, IDao dao) => new Match(data, dao);
+
         public static IList<Match> GetAll(DateTime fromDate, DateTime toDate, List<MatchType> matchTypes, Venue venue, IDao dao)
         {
             var q = BuildMatchQuery(dao);
@@ -547,6 +549,8 @@ namespace CricketClubMiddle
             {
                 var myDao = dao ?? new Dao();
                 myDao.UpdateMatch(data);
+                // Keep the team stats cache current — only recalculates the one affected team
+                TeamStatsRecalculator.RecalculateForTeam(data.OppositionID, myDao);
             }
             else
             {

@@ -6,6 +6,7 @@
     <AssemblyName>CricketClubMiddle</AssemblyName>
     <Platforms>AnyCPU;x86</Platforms>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

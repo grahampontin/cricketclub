@@ -8,19 +8,32 @@ namespace CricketClub.WebApi.Domain
     public class TeamV1
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
+        /// <summary>URL to the team's logo image (served from /images/teams/{teamId}.png). Falls back to /images/teams/0.png.</summary>
+        public string? LogoUrl { get; set; }
+        public string? WebsiteUrl { get; set; }
+        public int? HomeVenueId { get; set; }
 
-        public TeamV1()
-        {
-        }
+        public TeamV1() { }
 
+        /// <summary>Maps from internal Team. LogoUrl must be resolved separately via ResolveLogoUrl.</summary>
         public static TeamV1 FromInternal(Team team)
         {
-            return new TeamV1()
+            return new TeamV1
             {
-                Id =team.ID,
-                Name =  team.Name
+                Id = team.ID,
+                Name = team.Name,
+                WebsiteUrl = team.WebsiteUrl,
+                HomeVenueId = team.HomeVenueId
             };
+        }
+
+        /// <summary>Maps from internal Team and resolves the logo URL using the provided resolver (mirrors player image pattern).</summary>
+        public static TeamV1 FromInternal(Team team, Func<int, string> logoUrlResolver)
+        {
+            var v1 = FromInternal(team);
+            v1.LogoUrl = logoUrlResolver(team.ID);
+            return v1;
         }
     }
 }

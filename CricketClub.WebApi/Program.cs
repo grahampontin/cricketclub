@@ -85,6 +85,17 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/images/players"
 });
 
+// Serve team logos from /Assets/TeamImages at /images/teams/
+// Files are named {teamId}.png; 0.png is the placeholder used when no logo exists.
+var teamImagesPath = Path.Combine(app.Environment.ContentRootPath, "Assets", "TeamImages");
+Directory.CreateDirectory(teamImagesPath);
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(teamImagesPath),
+    RequestPath = "/images/teams"
+});
+
 // Configure the HTTP request pipeline
 app.UseSwagger();
 app.UseSwaggerUI(c =>

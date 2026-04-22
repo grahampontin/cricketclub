@@ -51,14 +51,20 @@ namespace CricketClubMiddle
 
         public string Name
         {
-            get
-            {
-                return _teamData.Name;
-            }
-            set
-            {
-                _teamData.Name = value;
-            }
+            get => _teamData.Name;
+            set => _teamData.Name = value;
+        }
+
+        public string? WebsiteUrl
+        {
+            get => _teamData.WebsiteUrl;
+            set => _teamData.WebsiteUrl = value;
+        }
+
+        public int? HomeVenueId
+        {
+            get => _teamData.HomeVenueId;
+            set => _teamData.HomeVenueId = value;
         }
 
         public int ID
@@ -75,6 +81,13 @@ namespace CricketClubMiddle
         {
             var myDao = dao ?? new Dao();
             myDao.UpdateTeam(_teamData);
+        }
+
+        public List<Match> GetMatches()
+        {
+            return dao.GetMatchesByTeam(ID)
+                .Select(md => Match.FromData(md, dao))
+                .ToList();
         }
 
 

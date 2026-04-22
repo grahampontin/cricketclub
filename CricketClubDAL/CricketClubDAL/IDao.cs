@@ -22,9 +22,15 @@ namespace CricketClubDAL
         // Teams
         TeamData GetTeamData(int teamId);
         int CreateNewTeam(string teamName);
-        void UpdateTeam(TeamData data);
+        void UpdateTeam(TeamData teamData);
         IEnumerable<TeamData> GetAllTeamData();
         void DeleteTeam(int teamId);
+        List<MatchData> GetMatchesByTeam(int teamId);
+
+        // Team stats cache
+        List<MatchScoreSummaryData> GetAllMatchScoreSummaries();
+        Dictionary<int, TeamStatsCacheData> GetAllTeamStatsCache();
+        void UpsertTeamStatsCache(TeamStatsCacheData data);
 
         // Venues
         VenueData GetVenueData(int venueId);

@@ -229,7 +229,9 @@ namespace CricketClubDAL
             return new TeamData
             {
                 ID = row.GetInt("team_id"),
-                Name = row.GetString("team")
+                Name = row.GetString("team"),
+                WebsiteUrl = row.GetString("website_url"),
+                HomeVenueId = row.GetNullableInt("home_venue_id")
             };
         }
 
@@ -262,9 +264,90 @@ namespace CricketClubDAL
 
         public void UpdateTeam(TeamData data)
         {
-            db.ExecuteInsertOrUpdate("update thevilla_admin.teams set team = @team where team_id = @teamId",
+            db.ExecuteInsertOrUpdate(
+                "update thevilla_admin.teams set team = @team, website_url = @websiteUrl, home_venue_id = @homeVenueId where team_id = @teamId",
                 new SqlParameter("@team", data.Name),
+                new SqlParameter("@websiteUrl", (object?)data.WebsiteUrl ?? DBNull.Value),
+                new SqlParameter("@homeVenueId", (object?)data.HomeVenueId ?? DBNull.Value),
                 new SqlParameter("@teamId", data.ID));
+        }
+
+        public List<MatchData> GetMatchesByTeam(int teamId)
+        {
+            var sql = "select * from thevilla_admin.matches where opposition_id = @teamId order by match_date desc";
+            return db.ExecuteSqlAndReturnAllRows(sql, MatchDataFromRow, new SqlParameter("@teamId", teamId)).ToList();
+        }
+
+        public List<MatchScoreSummaryData> GetAllMatchScoreSummaries()
+        {
+            const string sql = @"
+                SELECT
+                    m.match_id,
+                    m.opposition_id,
+                    m.match_date,
+                    m.abandoned,
+                    ISNULL(us.our_score,   0) AS our_score,
+                    ISNULL(them.their_score, 0) AS their_score
+                FROM thevilla_admin.matches m
+                LEFT JOIN (
+                    SELECT match_id, SUM(score) AS our_score
+                    FROM thevilla_admin.batting_scorecards
+                    GROUP BY match_id
+                ) us   ON us.match_id   = m.match_id
+                LEFT JOIN (
+                    SELECT match_id, SUM(score) AS their_score
+                    FROM thevilla_admin.bowling_scorecards
+                    GROUP BY match_id
+                ) them ON them.match_id = m.match_id
+                WHERE m.match_date <= GETDATE()
+                  AND m.opposition_id <> 0";
+
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new MatchScoreSummaryData
+            {
+                MatchId      = row.GetInt("match_id"),
+                OppositionId = row.GetInt("opposition_id"),
+                MatchDate    = row.GetDateTime("match_date"),
+                Abandoned    = row.GetBool("abandoned"),
+                OurScore     = row.GetInt("our_score"),
+                TheirScore   = row.GetInt("their_score")
+            }).ToList();
+        }
+
+        public Dictionary<int, TeamStatsCacheData> GetAllTeamStatsCache()
+        {
+            const string sql = "SELECT * FROM thevilla_admin.team_stats_cache";
+            return db.ExecuteSqlAndReturnAllRows(sql, row => new TeamStatsCacheData
+            {
+                TeamId      = row.GetInt("team_id"),
+                Played      = row.GetInt("played"),
+                Won         = row.GetInt("won"),
+                Lost        = row.GetInt("lost"),
+                Drawn       = row.GetInt("drawn"),
+                Abandoned   = row.GetInt("abandoned"),
+                LastUpdated = row.GetDateTime("last_updated")
+            }).ToDictionary(r => r.TeamId);
+        }
+
+        public void UpsertTeamStatsCache(TeamStatsCacheData data)
+        {
+            const string sql = @"
+                MERGE thevilla_admin.team_stats_cache AS target
+                USING (SELECT @teamId AS team_id) AS source ON target.team_id = source.team_id
+                WHEN MATCHED THEN
+                    UPDATE SET played = @played, won = @won, lost = @lost,
+                               drawn = @drawn, abandoned = @abandoned, last_updated = @lastUpdated
+                WHEN NOT MATCHED THEN
+                    INSERT (team_id, played, won, lost, drawn, abandoned, last_updated)
+                    VALUES (@teamId, @played, @won, @lost, @drawn, @abandoned, @lastUpdated);";
+
+            db.ExecuteInsertOrUpdate(sql,
+                new SqlParameter("@teamId",      data.TeamId),
+                new SqlParameter("@played",      data.Played),
+                new SqlParameter("@won",         data.Won),
+                new SqlParameter("@lost",        data.Lost),
+                new SqlParameter("@drawn",       data.Drawn),
+                new SqlParameter("@abandoned",   data.Abandoned),
+                new SqlParameter("@lastUpdated", data.LastUpdated));
         }
 
         public IEnumerable<TeamData> GetAllTeamData()

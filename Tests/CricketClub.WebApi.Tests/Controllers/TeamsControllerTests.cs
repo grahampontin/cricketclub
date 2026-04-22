@@ -1,8 +1,8 @@
-#nullable disable
 using CricketClub.WebApi.Controllers;
 using CricketClub.WebApi.Domain;
 using CricketClubDAL;
 using CricketClubDomain;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -22,7 +22,12 @@ namespace CricketClub.WebApi.Tests.Controllers
             mockDao = new Mock<IDao>();
             TestDefaults.SetupSafeVenueAndTeamLookups(mockDao);
 
-            controller = new TeamsController(mockDao.Object);
+            // Mock IWebHostEnvironment — ContentRootPath points to a temp dir (no logo files exist, so fallback 0.png is used)
+            var mockEnv = new Mock<IWebHostEnvironment>();
+            mockEnv.Setup(e => e.ContentRootPath).Returns(Path.GetTempPath());
+
+            controller = new TeamsController(mockDao.Object, mockEnv.Object);
+            TestDefaults.SetupHttpContext(controller);
         }
 
         [Fact]

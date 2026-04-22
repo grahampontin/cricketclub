@@ -1,0 +1,109 @@
+﻿# AGENTS.md — Coding Agent Guide for cricketclub
+
+## Overview
+
+This document serves as a comprehensive guide for coding agents working on the cricket club management system. It covers architecture, conventions, key patterns, and critical files to ensure consistency and maintainability across the codebase.
+
+The system exposes a RESTful API which is consumed by a React frontend (not included in this codebase). The front end relies on the swagger.json file for API contract, so any changes to API endpoints or DTOs must be reflected in the swagger.json (auto-generated on build) and committed to source control.
+
+A development database is available with connection string `Server=localhost;Database=thevilla_admin;Trusted_Connection=True;` (SQL Server). The database schema includes tables for matches, players, venues, teams, and related entities. Tests using this database should be annotated with '[Category("RequiresDatabase")]' to exclude them from CI pipelines that do not have access to the database.
+
+Compilation should always succeed before completing a task and all unit tests must pass. Code should adhere to the conventions outlined in this document, and any significant architectural changes should be discussed with the team before implementation.
+
+## Database & SQL conventions
+
+- **Prefer C# over SQL stored procedures** for business logic. Keep computation in the application layer (e.g. `CricketClubMiddle`) so it is readable, testable, and version-controlled alongside the code.
+- SQL in `DAO.cs` should be limited to: plain SELECT/INSERT/UPDATE/DELETE, simple JOINs, and aggregations needed for efficient bulk reads. Avoid triggers, computed columns, and stored procedures.
+- When adding new DB columns or tables, create a numbered migration SQL file under `database/migrations/` (e.g. `003_my_feature.sql`). Include idempotency guards (`IF NOT EXISTS`).
+- **Tests annotated `[Category("RequiresDatabase")]`** use the dev SQL Server (`Server=localhost;Database=thevilla_admin;Trusted_Connection=True;`). All other tests must work without a database (use Moq for `IDao`).
+
+## Architecture Overview
+
+A layered .NET 9 cricket club management system:
+
+```
+CricketClub.WebApi (ASP.NET Core 9)
+    └── CricketClubMiddle   ← business logic, domain objects (Match, Player, Venue, Team)
+        └── CricketClubDAL  ← data access: IDao / Dao (SQL Server via Db helper)
+            └── CricketClubDomain  ← plain data-transfer objects (MatchData, VenueData, …)
+```
+
+- **Controllers** call `CricketClubMiddle` classes (e.g. `Match`, `Player`, `Venue`).
+- **`CricketClubMiddle`** reads/writes via `IDao` and caches aggressively in the global singleton `InternalCache`.
+- **`CricketClubDAL.Dao`** executes raw SQL against SQL Server (`thevilla_admin` / `dbo` schemas).
+- **`CricketClub.WebApi/Domain/`** contains versioned API DTOs (`MatchV1`, `VenueV1`, `ResultV1`, …) with `static FromInternal(…)` factory methods that convert from `CricketClubMiddle` types.
+
+## Build & Run
+
+```powershell
+# One-time: restore local .NET tools (Swashbuckle CLI for swagger.json generation)
+dotnet tool restore
+
+# Build – also regenerates CricketClub.WebApi/swagger.json
+dotnet build
+
+# Run API (http://localhost:5000, https://localhost:5001, /swagger in Dev)
+cd CricketClub.WebApi; dotnet run
+
+# Run all tests
+dotnet test
+
+# Run only non-database tests (safe for CI without SQL Server)
+dotnet test --filter "Category!=RequiresDatabase"
+```
+
+**Agents must always run `dotnet build` and `dotnet test --filter "Category!=RequiresDatabase"` before completing any task. Both must succeed with zero errors and zero non-RequiresDatabase test failures.**
+
+Packages for `CricketClubAccounts`, `CricketClubDAL`, `CricketClubDomain`, and `CricketClubMiddle` are restored from a private Azure DevOps NuGet feed configured in `nuget.config`.
+
+## C# Conventions
+
+- **Nullable enabled** in all production projects — never add `#nullable disable`.
+- Naming: `camelCase` private fields, `PascalCase` properties/methods, `camelCase` locals/parameters.
+- All controller actions require explicit ASP.NET Core annotations: `[HttpGet]`, `[HttpPost]`, `[ProducesResponseType]`, etc.
+- All routes use `[Route("api/[controller]")]`; no legacy `/handler` style paths.
+
+## Test Conventions (critical)
+
+`CricketClubMiddle.InternalCache` is a **process-wide singleton**. Failure to reset it causes cross-test pollution.
+
+**Every test constructor/fixture must:**
+```csharp
+TestDefaults.ResetInternalCache();   // always
+TestDefaults.SetupSafeVenueAndTeamLookups(mockDao);  // when MatchV1/VenueV1 mapping occurs
+```
+
+- `TestDefaults` lives in `Tests/CricketClub.WebApi.Tests/Utils/TestDefaults.cs`.
+- `SetupSafeVenueAndTeamLookups` ensures `VenueData.Coordinates` is non-null and pre-populates team cache entries, preventing NullReferenceExceptions in `VenueV1.FromInternal` and `Team.OurTeam`.
+- Controller unit tests call action methods directly and assert on `OkObjectResult`, `CreatedAtActionResult`, etc.
+- Integration tests use `WebApplicationFactory<Program>` with `.WithDao(mockDao.Object)` to override `IDao` in DI.
+- Test frameworks: **xUnit** + **Moq** (WebApi.Tests), **NUnit** + **Moq** (CricketClub.Tests).
+
+## Key Patterns
+
+### DTO Mapping
+API DTOs in `CricketClub.WebApi/Domain/` expose a `static FromInternal(InternalType x)` factory:
+```csharp
+VenueV1.FromInternal(venue)   // venue.Coordinates must be non-null
+MatchV1.FromInternal(match)   // calls VenueV1.FromInternal internally
+ResultV1.FromInternal(match, matchReport)
+```
+Enum conversion goes through `EnumMappers` (`ToV1` / `ToInternal` / `ParseMatchType`).
+
+### InternalCache
+`InternalCache.GetInstance()` is used throughout `CricketClubMiddle` to cache expensive DB reads (matches, venues, stats). Cache keys are string-based (e.g. `"VenueMatchData_" + id`, `"team0"`). Never assume a fresh cache in tests.
+
+### Logging
+Log4net throughout. Never log secrets or connection string credentials.
+
+## Key Files
+
+| Path | Purpose |
+|------|---------|
+| `CricketClub.WebApi/Program.cs` | DI setup, middleware, CORS, Swagger |
+| `CricketClub.WebApi/Domain/` | All V1 DTOs and mappers |
+| `CricketClubMiddle/InternalCache.cs` | Process-wide cache singleton |
+| `CricketClubDAL/CricketClubDAL/IDao.cs` | Full data-access contract |
+| `Tests/CricketClub.WebApi.Tests/Utils/TestDefaults.cs` | Shared test bootstrap helpers |
+| `CricketClub.WebApi/swagger.json` | Auto-generated on build; commit changes |
+

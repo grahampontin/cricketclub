@@ -2,6 +2,8 @@
 using CricketClubDAL;
 using CricketClubDomain;
 using CricketClubMiddle;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 
 namespace CricketClub.WebApi.Tests.Utils
@@ -17,6 +19,18 @@ namespace CricketClub.WebApi.Tests.Utils
         public static void ResetInternalCache()
         {
             InternalCache.GetInstance().Clear();
+        }
+
+        /// <summary>
+        /// Sets Request.Scheme/Host/PathBase on a controller so tests that build URLs don't get NullReferenceExceptions.
+        /// </summary>
+        public static void SetupHttpContext(ControllerBase controller)
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Scheme = "http";
+            httpContext.Request.Host = new HostString("localhost");
+            httpContext.Request.PathBase = PathString.Empty;
+            controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
         }
 
         public static void SetupSafeVenueAndTeamLookups(Mock<IDao> dao)
@@ -52,6 +66,23 @@ namespace CricketClub.WebApi.Tests.Utils
             dao
                 .Setup(d => d.GetAllFieldingStatsData())
                 .Returns(new Dictionary<int, List<BattingCardLineData>>());
+
+            // Team stats cache — return empty collections so Match.Save() and GetTeamDetails work without a real DB.
+            dao
+                .Setup(d => d.GetAllMatchScoreSummaries())
+                .Returns(new List<MatchScoreSummaryData>());
+
+            dao
+                .Setup(d => d.GetAllTeamStatsCache())
+                .Returns(new Dictionary<int, TeamStatsCacheData>());
+
+            dao
+                .Setup(d => d.UpsertTeamStatsCache(It.IsAny<TeamStatsCacheData>()));
+
+            // Match lookups used by GetMatchesByTeam
+            dao
+                .Setup(d => d.GetMatchesByTeam(It.IsAny<int>()))
+                .Returns(new List<MatchData>());
 
             // Some production code paths (e.g., ResultV1.FromInternal) call Team.OurTeam which uses new Dao().
             // To keep unit tests isolated from the real database, pre-populate the global cache with common team IDs.

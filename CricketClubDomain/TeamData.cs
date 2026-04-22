@@ -17,5 +17,8 @@ namespace CricketClubDomain
         public string Name { get; set; }
 
 
+        public string? WebsiteUrl { get; set; }
+
+        public int? HomeVenueId { get; set; }
     }
 }
