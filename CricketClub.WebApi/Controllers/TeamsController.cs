@@ -103,6 +103,52 @@ namespace CricketClub.WebApi.Controllers
         }
 
         /// <summary>
+        /// Returns a lightweight summary for every opposition team in a single response.
+        /// Includes pre-computed stats (played, won, lost, noResult, winPercentage) and a
+        /// traffic-light difficulty rating, suitable for a public landing page without
+        /// requiring per-team requests.
+        /// </summary>
+        [HttpGet("summaries")]
+        [ProducesResponseType(typeof(List<TeamSummaryV1>), StatusCodes.Status200OK)]
+        public IActionResult GetTeamSummaries()
+        {
+            var allStats    = _database.GetAllTeamStatsCache();
+            var difficultyMap = BuildDifficultyMap(allStats);
+
+            // Build a venue-name lookup in a single bulk call to avoid per-team queries.
+            var venueNames = _database.GetAllVenueData()
+                .ToDictionary(v => v.ID, v => v.Name);
+
+            var summaries = Team.GetAll(_database)
+                .Where(t => !t.IsUs)
+                .Select(t =>
+                {
+                    string? homeVenueName = null;
+                    if (t.HomeVenueId.HasValue)
+                        venueNames.TryGetValue(t.HomeVenueId.Value, out homeVenueName);
+
+                    allStats.TryGetValue(t.ID, out var stats);
+
+                    return new TeamSummaryV1
+                    {
+                        Id               = t.ID,
+                        Name             = t.Name,
+                        HomeVenueName    = homeVenueName,
+                        DifficultyRating = difficultyMap.TryGetValue(t.ID, out var diff) ? diff : "green",
+                        WinPercentage    = stats != null ? stats.WinPercentage / 100.0 : 0.0,
+                        Played           = stats?.Played   ?? 0,
+                        Won              = stats?.Won      ?? 0,
+                        Lost             = stats?.Lost     ?? 0,
+                        NoResult         = stats?.Abandoned ?? 0
+                    };
+                })
+                .OrderBy(s => s.Name)
+                .ToList();
+
+            return Ok(summaries);
+        }
+
+        /// <summary>
         /// Admin endpoint: forces a full recalculation of team_stats_cache for all teams.
         /// Normally kept current by Match.Save(); use this after bulk data imports or manual DB edits.
         /// </summary>

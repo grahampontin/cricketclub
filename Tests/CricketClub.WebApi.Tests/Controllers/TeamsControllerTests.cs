@@ -86,6 +86,88 @@ namespace CricketClub.WebApi.Tests.Controllers
         }
 
         [Fact]
+        public void GetTeamSummaries_ReturnsSummaryForEachOppositionTeam()
+        {
+            // Arrange
+            mockDao.Setup(d => d.GetAllTeamData()).Returns(new[]
+            {
+                new TeamData { ID = 0, Name = "Us" },
+                new TeamData { ID = 5, Name = "Riverside CC", HomeVenueId = 10 },
+                new TeamData { ID = 6, Name = "Oakwood CC", HomeVenueId = null }
+            });
+
+            mockDao.Setup(d => d.GetAllTeamStatsCache()).Returns(new Dictionary<int, TeamStatsCacheData>
+            {
+                [5] = new TeamStatsCacheData { TeamId = 5, Played = 10, Won = 7, Lost = 2, Abandoned = 1 },
+                [6] = new TeamStatsCacheData { TeamId = 6, Played = 5,  Won = 1, Lost = 4, Abandoned = 0 }
+            });
+
+            mockDao.Setup(d => d.GetAllVenueData()).Returns(new List<VenueData>
+            {
+                new VenueData { ID = 10, Name = "Riverside Ground", Coordinates = new Tuple<decimal?, decimal?>(51m, 0m) }
+            });
+
+            // Act
+            var result = controller.GetTeamSummaries();
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var summaries = Assert.IsAssignableFrom<List<TeamSummaryV1>>(ok.Value);
+
+            // "Us" (ID=0) must be excluded
+            Assert.DoesNotContain(summaries, s => s.Id == 0);
+            Assert.Equal(2, summaries.Count);
+
+            // Ordered by name: Oakwood CC first, Riverside CC second
+            Assert.Equal("Oakwood CC",   summaries[0].Name);
+            Assert.Equal("Riverside CC", summaries[1].Name);
+
+            // Stats for Riverside CC
+            var riverside = summaries.Single(s => s.Id == 5);
+            Assert.Equal(10, riverside.Played);
+            Assert.Equal(7,  riverside.Won);
+            Assert.Equal(2,  riverside.Lost);
+            Assert.Equal(1,  riverside.NoResult);
+            Assert.Equal("Riverside Ground", riverside.HomeVenueName);
+            // WinPercentage should be fraction (7/10 = 0.7)
+            Assert.Equal(0.7, riverside.WinPercentage, 5);
+
+            // Team with no stats gets zeroes
+            var oakwood = summaries.Single(s => s.Id == 6);
+            Assert.Null(oakwood.HomeVenueName);
+        }
+
+        [Fact]
+        public void GetTeamSummaries_DifficultyRating_AssignedCorrectly()
+        {
+            // Arrange — three teams ranked low/mid/high by win rate so all three bands are exercised
+            mockDao.Setup(d => d.GetAllTeamData()).Returns(new[]
+            {
+                new TeamData { ID = 1, Name = "A" },
+                new TeamData { ID = 2, Name = "B" },
+                new TeamData { ID = 3, Name = "C" }
+            });
+
+            mockDao.Setup(d => d.GetAllTeamStatsCache()).Returns(new Dictionary<int, TeamStatsCacheData>
+            {
+                [1] = new TeamStatsCacheData { TeamId = 1, Played = 10, Won = 1  },  // lowest  → red
+                [2] = new TeamStatsCacheData { TeamId = 2, Played = 10, Won = 5  },  // middle  → amber
+                [3] = new TeamStatsCacheData { TeamId = 3, Played = 10, Won = 9  }   // highest → green
+            });
+
+            mockDao.Setup(d => d.GetAllVenueData()).Returns(new List<VenueData>());
+
+            // Act
+            var result = controller.GetTeamSummaries();
+            var ok       = Assert.IsType<OkObjectResult>(result);
+            var summaries = Assert.IsAssignableFrom<List<TeamSummaryV1>>(ok.Value);
+
+            Assert.Equal("red",   summaries.Single(s => s.Id == 1).DifficultyRating);
+            Assert.Equal("amber", summaries.Single(s => s.Id == 2).DifficultyRating);
+            Assert.Equal("green", summaries.Single(s => s.Id == 3).DifficultyRating);
+        }
+
+        [Fact]
         public void UpdateTeam_CallsDaoUpdateTeam()
         {
             // Arrange
