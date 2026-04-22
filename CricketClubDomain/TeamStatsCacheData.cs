@@ -16,7 +16,7 @@ namespace CricketClubDomain
         public int Drawn { get; set; }
         public int Abandoned { get; set; }
         public DateTime LastUpdated { get; set; }
-        /// <summary>Win percentage over completed matches (0-100). Returns 0 if no matches played.</summary>
-        public double WinPercentage => Played > 0 ? (double)Won / Played * 100.0 : 0.0;
+        /// <summary>Win percentage over completed matches as a fraction (0–1). Returns 0 if no matches played.</summary>
+        public double WinPercentage => Played > 0 ? (double)Won / Played : 0.0;
     }
 }

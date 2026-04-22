@@ -29,7 +29,7 @@ namespace CricketClub.WebApi.Domain
         /// <summary>Traffic-light difficulty rating: "red" (hardest), "amber", or "green" (easiest).</summary>
         public string DifficultyRating { get; set; } = "green";
 
-        /// <summary>Win percentage against this team (0–100).</summary>
+        /// <summary>Win percentage against this team as a fraction (0–1).</summary>
         public double WinPercentage { get; set; }
 
         /// <summary>Past results against this team.</summary>

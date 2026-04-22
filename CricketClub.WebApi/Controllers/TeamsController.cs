@@ -135,7 +135,7 @@ namespace CricketClub.WebApi.Controllers
                         Name             = t.Name,
                         HomeVenueName    = homeVenueName,
                         DifficultyRating = difficultyMap.TryGetValue(t.ID, out var diff) ? diff : "green",
-                        WinPercentage    = stats != null ? stats.WinPercentage / 100.0 : 0.0,
+                        WinPercentage    = stats?.WinPercentage ?? 0.0,
                         Played           = stats?.Played   ?? 0,
                         Won              = stats?.Won      ?? 0,
                         Lost             = stats?.Lost     ?? 0,
