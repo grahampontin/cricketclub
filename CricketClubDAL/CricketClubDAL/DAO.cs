@@ -274,7 +274,7 @@ namespace CricketClubDAL
 
         public List<MatchData> GetMatchesByTeam(int teamId)
         {
-            var sql = "select * from thevilla_admin.matches where opposition_id = @teamId order by match_date desc";
+            var sql = "select * from thevilla_admin.matches where oppo_id = @teamId order by match_date desc";
             return db.ExecuteSqlAndReturnAllRows(sql, MatchDataFromRow, new SqlParameter("@teamId", teamId)).ToList();
         }
 
@@ -283,7 +283,7 @@ namespace CricketClubDAL
             const string sql = @"
                 SELECT
                     m.match_id,
-                    m.opposition_id,
+                    m.oppo_id,
                     m.match_date,
                     m.abandoned,
                     ISNULL(us.our_score,   0) AS our_score,
@@ -300,12 +300,12 @@ namespace CricketClubDAL
                     GROUP BY match_id
                 ) them ON them.match_id = m.match_id
                 WHERE m.match_date <= GETDATE()
-                  AND m.opposition_id <> 0";
+                  AND m.oppo_id <> 0";
 
             return db.ExecuteSqlAndReturnAllRows(sql, row => new MatchScoreSummaryData
             {
                 MatchId      = row.GetInt("match_id"),
-                OppositionId = row.GetInt("opposition_id"),
+                OppositionId = row.GetInt("oppo_id"),
                 MatchDate    = row.GetDateTime("match_date"),
                 Abandoned    = row.GetBool("abandoned"),
                 OurScore     = row.GetInt("our_score"),
