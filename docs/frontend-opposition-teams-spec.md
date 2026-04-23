@@ -254,6 +254,29 @@ Include a small info icon (ⓘ) next to the "Difficulty" column header. Tooltip 
 
 ---
 
+## 8  `difficultyScore` — precise sorting field
+
+Both `GET /api/Teams/summaries` and `GET /api/Teams/{id}/details` now include a `difficultyScore` field alongside `difficultyRating`.
+
+| Field | Type | Purpose |
+|---|---|---|
+| `difficultyRating` | `"red" \| "amber" \| "green" \| "unknown" \| null` | Display (badge colour/label) |
+| `difficultyScore` | `number \| null` | Sorting (continuous, precise) |
+
+`difficultyScore` is `null` for teams with fewer than 3 completed matches (same condition as `"unknown"` rating). Otherwise it ranges from −1 (we dominated every match) to +1 (they dominated every match).
+
+**Sort nulls last:**
+```js
+teams.sort((a, b) => {
+  if (a.difficultyScore == null && b.difficultyScore == null) return 0;
+  if (a.difficultyScore == null) return 1;   // unknowns sink to bottom
+  if (b.difficultyScore == null) return -1;
+  return b.difficultyScore - a.difficultyScore; // descending = hardest first
+});
+```
+
+---
+
 ## 7  Migration notes for existing code
 
 If the frontend previously called `GET /api/Teams/{id}/details` in a loop to build a teams list, **replace that pattern** entirely with a single call to `GET /api/Teams/summaries`. The summaries endpoint returns all ~800 teams at once with pre-computed stats.

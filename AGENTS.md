@@ -15,7 +15,19 @@ Compilation should always succeed before completing a task and all unit tests mu
 - **Prefer C# over SQL stored procedures** for business logic. Keep computation in the application layer (e.g. `CricketClubMiddle`) so it is readable, testable, and version-controlled alongside the code.
 - SQL in `DAO.cs` should be limited to: plain SELECT/INSERT/UPDATE/DELETE, simple JOINs, and aggregations needed for efficient bulk reads. Avoid triggers, computed columns, and stored procedures.
 - When adding new DB columns or tables, create a numbered migration SQL file under `database/migrations/` (e.g. `003_my_feature.sql`). Include idempotency guards (`IF NOT EXISTS`).
+- One-off/manual SQL cleanup scripts that are **not** schema migrations should go under `scripts/` (for example `scripts/cleanup-test-teams.sql`), not under `database/migrations/`.
 - **Tests annotated `[Category("RequiresDatabase")]`** use the dev SQL Server (`Server=localhost;Database=thevilla_admin;Trusted_Connection=True;`). All other tests must work without a database (use Moq for `IDao`).
+
+## File placement & solution item conventions
+
+- **DB schema/data migrations** always go in `database/migrations/` and should use the next numeric prefix (`004_...`, `005_...`, etc.).
+- **Spec / design / handoff documents** for agents or frontend/backend implementation notes should go in `docs/`.
+- **Operational helper scripts** (cleanup scripts, maintenance scripts, ad-hoc SQL, PowerShell helpers) should go in `scripts/`.
+- When you add a new file in any of these categories, also add it to `CricketClub.sln` as a **Solution Item** so it is visible in the IDE:
+  - add new spec/docs files under the `Docs` solution folder
+  - add new migration SQL files under the `SQL` solution folder
+  - add non-migration SQL helper scripts under the `SQL` solution folder as well
+- Do not leave newly created `.md` or `.sql` files unlisted in the solution. If you create one, update the corresponding `ProjectSection(SolutionItems)` entry in `CricketClub.sln` in the same change.
 
 ## Architecture Overview
 
@@ -106,4 +118,7 @@ Log4net throughout. Never log secrets or connection string credentials.
 | `CricketClubDAL/CricketClubDAL/IDao.cs` | Full data-access contract |
 | `Tests/CricketClub.WebApi.Tests/Utils/TestDefaults.cs` | Shared test bootstrap helpers |
 | `CricketClub.WebApi/swagger.json` | Auto-generated on build; commit changes |
+| `database/migrations/` | Numbered SQL schema/data migrations |
+| `docs/` | Specs, design notes, and agent handoff docs |
+| `scripts/` | One-off maintenance and helper scripts |
 
