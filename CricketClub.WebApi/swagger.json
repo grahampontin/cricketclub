@@ -3802,6 +3802,11 @@
             "type": "string",
             "nullable": true
           },
+          "difficultyScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
           "winPercentage": {
             "type": "number",
             "format": "double"
@@ -3833,6 +3838,11 @@
           },
           "difficultyRating": {
             "type": "string",
+            "nullable": true
+          },
+          "difficultyScore": {
+            "type": "number",
+            "format": "double",
             "nullable": true
           },
           "winPercentage": {

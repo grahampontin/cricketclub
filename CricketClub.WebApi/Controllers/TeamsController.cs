@@ -98,6 +98,7 @@ namespace CricketClub.WebApi.Controllers
                 HomeVenueName    = homeVenueName,
                 WinPercentage    = myStats?.WinPercentage ?? 0.0,
                 DifficultyRating = difficultyMap.TryGetValue(id, out var diff) ? diff : "unknown",
+                DifficultyScore  = myStats is { Played: >= 3 } ? myStats.DifficultyScore : null,
                 Matches          = resultList
             });
         }
@@ -135,6 +136,7 @@ namespace CricketClub.WebApi.Controllers
                         Name             = t.Name,
                         HomeVenueName    = homeVenueName,
                         DifficultyRating = difficultyMap.TryGetValue(t.ID, out var diff) ? diff : "unknown",
+                        DifficultyScore  = stats is { Played: >= 3 } ? stats.DifficultyScore : null,
                         WinPercentage    = stats?.WinPercentage ?? 0.0,
                         Played           = stats?.Played   ?? 0,
                         Won              = stats?.Won      ?? 0,
