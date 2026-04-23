@@ -134,5 +134,21 @@ namespace CricketClubMiddle
             get => _data.Coordinates;
             set => _data.Coordinates = value;
         }
+
+        /// <summary>Returns all matches played at this venue, ordered by date descending.</summary>
+        public List<Match> GetMatches()
+        {
+            return myDAO.GetMatchesByVenue(_data.ID)
+                .Select(md => Match.FromData(md, myDAO))
+                .ToList();
+        }
+
+        /// <summary>Returns the pre-computed stats for this venue from the cache table, or null if none recorded yet.</summary>
+        public VenueStatsCacheData? GetCachedStats()
+        {
+            var allStats = myDAO.GetAllVenueStatsCache();
+            allStats.TryGetValue(_data.ID, out var stats);
+            return stats;
+        }
     }
 }

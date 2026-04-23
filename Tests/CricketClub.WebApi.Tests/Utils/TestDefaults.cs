@@ -79,6 +79,19 @@ namespace CricketClub.WebApi.Tests.Utils
             dao
                 .Setup(d => d.UpsertTeamStatsCache(It.IsAny<TeamStatsCacheData>()));
 
+            // Venue stats cache — return empty collections so VenueStatsRecalculator works without a real DB.
+            dao
+                .Setup(d => d.GetAllVenueStatsCache())
+                .Returns(new Dictionary<int, VenueStatsCacheData>());
+
+            dao
+                .Setup(d => d.UpsertVenueStatsCache(It.IsAny<VenueStatsCacheData>()));
+
+            // Match lookups used by GetMatchesByVenue
+            dao
+                .Setup(d => d.GetMatchesByVenue(It.IsAny<int>()))
+                .Returns(new List<MatchData>());
+
             // Match lookups used by GetMatchesByTeam
             dao
                 .Setup(d => d.GetMatchesByTeam(It.IsAny<int>()))

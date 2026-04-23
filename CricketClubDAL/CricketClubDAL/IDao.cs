@@ -38,6 +38,11 @@ namespace CricketClubDAL
         void UpdateVenue(VenueData data);
         IEnumerable<VenueData> GetAllVenueData();
         void DeleteVenue(int venueId);
+        List<MatchData> GetMatchesByVenue(int venueId);
+
+        // Venue stats cache
+        Dictionary<int, VenueStatsCacheData> GetAllVenueStatsCache();
+        void UpsertVenueStatsCache(VenueStatsCacheData data);
 
         // Awards
         AwardData GetAwardData(int awardId);

@@ -1949,6 +1949,80 @@
           }
         }
       }
+    },
+    "/api/Venues/summaries": {
+      "get": {
+        "tags": [
+          "Venues"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VenueSummaryV1"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Venues/{id}/details": {
+      "get": {
+        "tags": [
+          "Venues"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueDetailV1"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Venues/recalculate-stats": {
+      "post": {
+        "tags": [
+          "Venues"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3891,6 +3965,106 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "VenueDetailV1": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "mapUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "stats": {
+            "$ref": "#/components/schemas/VenueStatsV1"
+          },
+          "matches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResultV1"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "VenueStatsV1": {
+        "type": "object",
+        "properties": {
+          "matchesPlayed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "averageRunsPerInnings": {
+            "type": "number",
+            "format": "double"
+          },
+          "difficultyScore": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "difficultyLabel": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "VenueSummaryV1": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "mapUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "stats": {
+            "$ref": "#/components/schemas/VenueStatsV1"
           }
         },
         "additionalProperties": false

@@ -549,8 +549,9 @@ namespace CricketClubMiddle
             {
                 var myDao = dao ?? new Dao();
                 myDao.UpdateMatch(data);
-                // Keep the team stats cache current — only recalculates the one affected team
+                // Keep stats caches current — only recalculates the one affected team/venue
                 TeamStatsRecalculator.RecalculateForTeam(data.OppositionID, myDao);
+                VenueStatsRecalculator.RecalculateForVenue(data.VenueID, myDao);
             }
             else
             {

@@ -9,6 +9,7 @@ namespace CricketClubDomain
     {
         public int MatchId { get; set; }
         public int OppositionId { get; set; }
+        public int VenueId { get; set; }
         public DateTime MatchDate { get; set; }
         public bool Abandoned { get; set; }
         /// <summary>Sum of all rows in batting_scorecards for this match (includes extras row).</summary>

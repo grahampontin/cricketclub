@@ -1,6 +1,6 @@
-#nullable disable
 using CricketClub.WebApi.Domain;
 using CricketClubDAL;
+using CricketClubDomain;
 using CricketClubMiddle;
 using Microsoft.AspNetCore.Mvc;
 
@@ -117,6 +117,88 @@ namespace CricketClub.WebApi.Controllers
             }
             
             return NoContent();
+        }
+
+        /// <summary>
+        /// Gets a lightweight summary for every venue including batting-difficulty stats.
+        /// Uses venue_stats_cache for efficiency — no per-venue match queries.
+        /// </summary>
+        [HttpGet("summaries")]
+        [ProducesResponseType(typeof(List<VenueSummaryV1>), StatusCodes.Status200OK)]
+        public IActionResult GetVenueSummaries()
+        {
+            var allStats = _database.GetAllVenueStatsCache();
+
+            var summaries = Venue.GetAll(_database)
+                .Select(v =>
+                {
+                    allStats.TryGetValue(v.ID, out var stats);
+                    return new VenueSummaryV1
+                    {
+                        Id          = v.ID,
+                        Name        = v.Name,
+                        Description = v.Description,
+                        Latitude    = v.Coordinates.Item1,
+                        Longitude   = v.Coordinates.Item2,
+                        MapUrl      = v.GoogleMapsLocationURL,
+                        Stats       = VenueStatsV1.FromCache(stats)
+                    };
+                })
+                .OrderBy(v => v.Name)
+                .ToList();
+
+            return Ok(summaries);
+        }
+
+        /// <summary>
+        /// Gets detailed information for a specific venue including all past matches and batting-difficulty rating.
+        /// DifficultyScore 0 = minefield (batsmen struggle); 100 = road (batsmen make loads of runs).
+        /// </summary>
+        [HttpGet("{id}/details")]
+        [ProducesResponseType(typeof(VenueDetailV1), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult GetVenueDetails(int id)
+        {
+            var venue = new Venue(id, _database);
+            if (string.IsNullOrEmpty(venue.Name))
+                return NotFound();
+
+            var stats = venue.GetCachedStats();
+            var venueMatches = venue.GetMatches()
+                .Where(m => m.MatchDate <= DateTime.Today)
+                .OrderByDescending(m => m.MatchDate)
+                .ToList();
+
+            var matchReports = _database.GetAllMatchReports();
+            var resultList = venueMatches.Select(m =>
+            {
+                matchReports.TryGetValue(m.ID, out var report);
+                return ResultV1.FromInternal(m, report);
+            }).ToList();
+
+            return Ok(new VenueDetailV1
+            {
+                Id          = venue.ID,
+                Name        = venue.Name,
+                Description = venue.Description,
+                Latitude    = venue.Coordinates.Item1,
+                Longitude   = venue.Coordinates.Item2,
+                MapUrl      = venue.GoogleMapsLocationURL,
+                Stats       = VenueStatsV1.FromCache(stats),
+                Matches     = resultList
+            });
+        }
+
+        /// <summary>
+        /// Admin endpoint: forces a full recalculation of venue_stats_cache for all venues.
+        /// Normally kept current by Match.Save(); use this after bulk data imports or manual DB edits.
+        /// </summary>
+        [HttpPost("recalculate-stats")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult RecalculateStats()
+        {
+            VenueStatsRecalculator.RecalculateAll(_database);
+            return Ok(new { message = "Venue stats cache recalculated successfully." });
         }
     }
 }
