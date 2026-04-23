@@ -28,6 +28,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CricketClub.WebApi", "Crick
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CricketClub.WebApi.Tests", "Tests\CricketClub.WebApi.Tests\CricketClub.WebApi.Tests.csproj", "{00D3909D-3F43-4186-9E54-BDDEEC5A931B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{EEF21053-F795-4D99-A96B-D5509ACE836D}"
+	ProjectSection(SolutionItems) = preProject
+		docs\frontend-opposition-teams-spec.md = docs\frontend-opposition-teams-spec.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL", "SQL", "{B2F7F315-1224-4E71-ABDD-0C409A340F5B}"
+	ProjectSection(SolutionItems) = preProject
+		database\migrations\002_team_stats_cache.sql = database\migrations\002_team_stats_cache.sql
+		database\migrations\003_difficulty_score.sql = database\migrations\003_difficulty_score.sql
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Ad-Hoc|Any CPU = Ad-Hoc|Any CPU
@@ -399,6 +410,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{B3ECCD1D-3EF7-4928-86B4-29817E6BADFD} = {9721E4B0-26D2-4950-A369-71D68D63562D}
 		{00D3909D-3F43-4186-9E54-BDDEEC5A931B} = {9721E4B0-26D2-4950-A369-71D68D63562D}
+		{EEF21053-F795-4D99-A96B-D5509ACE836D} = {24F3D34B-78B7-4C23-B2A8-A68D86E10985}
+		{B2F7F315-1224-4E71-ABDD-0C409A340F5B} = {24F3D34B-78B7-4C23-B2A8-A68D86E10985}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1AB52F91-7BAE-44C2-9CD5-D43948781D74}

@@ -208,5 +208,16 @@ namespace CricketClub.WebApi.Tests.Controllers
             Assert.IsType<OkObjectResult>(result);
             mockDao.Verify(d => d.UpdateTeam(It.Is<TeamData>(t => t.ID == 2 && t.Name == "Updated")), Times.Once);
         }
+
+        [Fact]
+        public void DeleteTeam_CallsDaoDeleteTeamAndReturnsNoContent()
+        {
+            mockDao.Setup(d => d.DeleteTeam(3));
+
+            var result = controller.DeleteTeam(3);
+
+            Assert.IsType<NoContentResult>(result);
+            mockDao.Verify(d => d.DeleteTeam(3), Times.Once);
+        }
     }
 }

@@ -1698,8 +1698,15 @@
           "204": {
             "description": "No Content"
           },
-          "501": {
-            "description": "Not Implemented"
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           }
         }
       }

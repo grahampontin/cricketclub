@@ -197,14 +197,23 @@ namespace CricketClub.WebApi.Controllers
         }
 
         /// <summary>
-        /// Deletes a team by ID
+        /// Deletes a team by ID. The team must have no associated matches.
         /// </summary>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status501NotImplemented)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public IActionResult DeleteTeam(int id)
         {
-            return StatusCode(StatusCodes.Status501NotImplemented, "Team deletion is not implemented");
+            try
+            {
+                _database.DeleteTeam(id);
+                InternalCache.GetInstance().Remove($"team{id}");
+                return NoContent();
+            }
+            catch (Exception ex) when (ex.Message.Contains("REFERENCE") || ex.Message.Contains("FK") || ex.Message.Contains("foreign key"))
+            {
+                return Conflict(new { message = $"Team {id} cannot be deleted because it has associated matches or other records." });
+            }
         }
 
         // ── private helpers ──────────────────────────────────────────────────────
