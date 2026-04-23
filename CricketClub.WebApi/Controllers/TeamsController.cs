@@ -97,7 +97,7 @@ namespace CricketClub.WebApi.Controllers
                 HomeVenueId      = team.HomeVenueId,
                 HomeVenueName    = homeVenueName,
                 WinPercentage    = myStats?.WinPercentage ?? 0.0,
-                DifficultyRating = difficultyMap.TryGetValue(id, out var diff) ? diff : "green",
+                DifficultyRating = difficultyMap.TryGetValue(id, out var diff) ? diff : "unknown",
                 Matches          = resultList
             });
         }
@@ -134,7 +134,7 @@ namespace CricketClub.WebApi.Controllers
                         Id               = t.ID,
                         Name             = t.Name,
                         HomeVenueName    = homeVenueName,
-                        DifficultyRating = difficultyMap.TryGetValue(t.ID, out var diff) ? diff : "green",
+                        DifficultyRating = difficultyMap.TryGetValue(t.ID, out var diff) ? diff : "unknown",
                         WinPercentage    = stats?.WinPercentage ?? 0.0,
                         Played           = stats?.Played   ?? 0,
                         Won              = stats?.Won      ?? 0,
@@ -223,20 +223,29 @@ namespace CricketClub.WebApi.Controllers
 
         private static Dictionary<int, string> BuildDifficultyMap(Dictionary<int, TeamStatsCacheData> allStats)
         {
+            var map = new Dictionary<int, string>();
+
+            // Teams with fewer than 3 completed matches do not have enough data to rate.
+            foreach (var s in allStats.Values.Where(s => s.Played < 3))
+                map[s.TeamId] = "unknown";
+
+            // Rank eligible teams by DifficultyScore (ascending = easiest first).
+            // The score is the mean normalised run margin in the opposition's favour:
+            //   negative → we regularly outscored them (easier)
+            //   positive → they regularly outscored us (harder)
             var ranked = allStats.Values
-                .Where(s => s.Played > 0)
-                .OrderBy(s => s.WinPercentage)
+                .Where(s => s.Played >= 3)
+                .OrderBy(s => s.DifficultyScore)
                 .ToList();
 
-            var map = new Dictionary<int, string>();
             if (ranked.Count == 0) return map;
 
             var third = ranked.Count / 3;
             for (int i = 0; i < ranked.Count; i++)
             {
-                map[ranked[i].TeamId] = i < third     ? "red"   :
-                                        i < third * 2 ? "amber" :
-                                                        "green";
+                map[ranked[i].TeamId] = i < third     ? "green"  :   // easiest third
+                                        i < third * 2 ? "amber"  :   // middle third
+                                                        "red";        // hardest third
             }
             return map;
         }

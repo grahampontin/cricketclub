@@ -140,7 +140,9 @@ namespace CricketClub.WebApi.Tests.Controllers
         [Fact]
         public void GetTeamSummaries_DifficultyRating_AssignedCorrectly()
         {
-            // Arrange — three teams ranked low/mid/high by win rate so all three bands are exercised
+            // Arrange — three teams with explicit DifficultyScores so all three bands are exercised.
+            // Low DifficultyScore (we dominated) → green (easy);
+            // High DifficultyScore (they dominated) → red (hard).
             mockDao.Setup(d => d.GetAllTeamData()).Returns(new[]
             {
                 new TeamData { ID = 1, Name = "A" },
@@ -150,21 +152,46 @@ namespace CricketClub.WebApi.Tests.Controllers
 
             mockDao.Setup(d => d.GetAllTeamStatsCache()).Returns(new Dictionary<int, TeamStatsCacheData>
             {
-                [1] = new TeamStatsCacheData { TeamId = 1, Played = 10, Won = 1  },  // lowest  → red
-                [2] = new TeamStatsCacheData { TeamId = 2, Played = 10, Won = 5  },  // middle  → amber
-                [3] = new TeamStatsCacheData { TeamId = 3, Played = 10, Won = 9  }   // highest → green
+                [1] = new TeamStatsCacheData { TeamId = 1, Played = 5, DifficultyScore = -0.30 },  // easy  → green
+                [2] = new TeamStatsCacheData { TeamId = 2, Played = 5, DifficultyScore =  0.05 },  // mid   → amber
+                [3] = new TeamStatsCacheData { TeamId = 3, Played = 5, DifficultyScore =  0.40 }   // hard  → red
             });
 
             mockDao.Setup(d => d.GetAllVenueData()).Returns(new List<VenueData>());
 
             // Act
-            var result = controller.GetTeamSummaries();
-            var ok       = Assert.IsType<OkObjectResult>(result);
+            var result    = controller.GetTeamSummaries();
+            var ok        = Assert.IsType<OkObjectResult>(result);
             var summaries = Assert.IsAssignableFrom<List<TeamSummaryV1>>(ok.Value);
 
-            Assert.Equal("red",   summaries.Single(s => s.Id == 1).DifficultyRating);
+            Assert.Equal("green", summaries.Single(s => s.Id == 1).DifficultyRating);
             Assert.Equal("amber", summaries.Single(s => s.Id == 2).DifficultyRating);
-            Assert.Equal("green", summaries.Single(s => s.Id == 3).DifficultyRating);
+            Assert.Equal("red",   summaries.Single(s => s.Id == 3).DifficultyRating);
+        }
+
+        [Fact]
+        public void GetTeamSummaries_DifficultyRating_UnknownWhenFewerThanThreeMatches()
+        {
+            // Teams with < 3 completed matches should be rated "unknown".
+            mockDao.Setup(d => d.GetAllTeamData()).Returns(new[]
+            {
+                new TeamData { ID = 1, Name = "NewTeam" },  // in cache but only 2 played
+                new TeamData { ID = 2, Name = "NoRecord" }  // not in cache at all
+            });
+
+            mockDao.Setup(d => d.GetAllTeamStatsCache()).Returns(new Dictionary<int, TeamStatsCacheData>
+            {
+                [1] = new TeamStatsCacheData { TeamId = 1, Played = 2, DifficultyScore = 0.5 }
+            });
+
+            mockDao.Setup(d => d.GetAllVenueData()).Returns(new List<VenueData>());
+
+            var result    = controller.GetTeamSummaries();
+            var ok        = Assert.IsType<OkObjectResult>(result);
+            var summaries = Assert.IsAssignableFrom<List<TeamSummaryV1>>(ok.Value);
+
+            Assert.Equal("unknown", summaries.Single(s => s.Id == 1).DifficultyRating);
+            Assert.Equal("unknown", summaries.Single(s => s.Id == 2).DifficultyRating);
         }
 
         [Fact]

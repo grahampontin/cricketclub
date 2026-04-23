@@ -15,7 +15,7 @@
         /// <summary>Name of this team's home venue, or null if unknown.</summary>
         public string? HomeVenueName { get; set; }
 
-        /// <summary>Traffic-light difficulty rating: "red" (hardest), "amber", or "green" (easiest).</summary>
+        /// <summary>Traffic-light difficulty rating: "red" (hardest), "amber", "green" (easiest), or "unknown" (fewer than 3 completed matches).</summary>
         public string DifficultyRating { get; set; } = "green";
 
         /// <summary>Win percentage as a fraction (0–1). Returns 0 if no matches played.</summary>

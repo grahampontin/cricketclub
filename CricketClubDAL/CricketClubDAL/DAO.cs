@@ -280,36 +280,60 @@ namespace CricketClubDAL
 
         public List<MatchScoreSummaryData> GetAllMatchScoreSummaries()
         {
+            // Dismissal IDs to exclude when counting wickets (not genuinely out):
+            //   0 = NotOut, 7 = DidNotBat, 9 = RetiredHurt
+            // [batting at] = 11 (0-indexed) is the extras row — must also be excluded.
+            // WeBattedFirst: won_toss = batted (both true → we batted; both false → they fielded → we batted).
             const string sql = @"
                 SELECT
                     m.match_id,
                     m.oppo_id,
                     m.match_date,
                     m.abandoned,
-                    ISNULL(us.our_score,   0) AS our_score,
-                    ISNULL(them.their_score, 0) AS their_score
+                    ISNULL(us.our_score,      0) AS our_score,
+                    ISNULL(them.their_score,  0) AS their_score,
+                    ISNULL(uw.our_wickets,    0) AS our_wickets,
+                    ISNULL(tw.their_wickets,  0) AS their_wickets,
+                    CASE WHEN m.won_toss = m.batted THEN 1 ELSE 0 END AS we_batted_first
                 FROM thevilla_admin.matches m
                 LEFT JOIN (
                     SELECT match_id, SUM(score) AS our_score
                     FROM thevilla_admin.batting_scorecards
                     GROUP BY match_id
-                ) us   ON us.match_id   = m.match_id
+                ) us ON us.match_id = m.match_id
                 LEFT JOIN (
                     SELECT match_id, SUM(score) AS their_score
                     FROM thevilla_admin.bowling_scorecards
                     GROUP BY match_id
                 ) them ON them.match_id = m.match_id
+                LEFT JOIN (
+                    SELECT match_id, COUNT(*) AS our_wickets
+                    FROM thevilla_admin.batting_scorecards
+                    WHERE dismissal_id NOT IN (0, 7, 9)
+                      AND [batting at] != 11
+                    GROUP BY match_id
+                ) uw ON uw.match_id = m.match_id
+                LEFT JOIN (
+                    SELECT match_id, COUNT(*) AS their_wickets
+                    FROM thevilla_admin.bowling_scorecards
+                    WHERE dismissal_id NOT IN (0, 7, 9)
+                      AND [batting at] != 11
+                    GROUP BY match_id
+                ) tw ON tw.match_id = m.match_id
                 WHERE m.match_date <= GETDATE()
                   AND m.oppo_id <> 0";
 
             return db.ExecuteSqlAndReturnAllRows(sql, row => new MatchScoreSummaryData
             {
-                MatchId      = row.GetInt("match_id"),
-                OppositionId = row.GetInt("oppo_id"),
-                MatchDate    = row.GetDateTime("match_date"),
-                Abandoned    = row.GetBool("abandoned"),
-                OurScore     = row.GetInt("our_score"),
-                TheirScore   = row.GetInt("their_score")
+                MatchId        = row.GetInt("match_id"),
+                OppositionId   = row.GetInt("oppo_id"),
+                MatchDate      = row.GetDateTime("match_date"),
+                Abandoned      = row.GetBool("abandoned"),
+                OurScore       = row.GetInt("our_score"),
+                TheirScore     = row.GetInt("their_score"),
+                OurWickets     = row.GetInt("our_wickets"),
+                TheirWickets   = row.GetInt("their_wickets"),
+                WeBattedFirst  = row.GetBool("we_batted_first")
             }).ToList();
         }
 
@@ -318,13 +342,14 @@ namespace CricketClubDAL
             const string sql = "SELECT * FROM thevilla_admin.team_stats_cache";
             return db.ExecuteSqlAndReturnAllRows(sql, row => new TeamStatsCacheData
             {
-                TeamId      = row.GetInt("team_id"),
-                Played      = row.GetInt("played"),
-                Won         = row.GetInt("won"),
-                Lost        = row.GetInt("lost"),
-                Drawn       = row.GetInt("drawn"),
-                Abandoned   = row.GetInt("abandoned"),
-                LastUpdated = row.GetDateTime("last_updated")
+                TeamId          = row.GetInt("team_id"),
+                Played          = row.GetInt("played"),
+                Won             = row.GetInt("won"),
+                Lost            = row.GetInt("lost"),
+                Drawn           = row.GetInt("drawn"),
+                Abandoned       = row.GetInt("abandoned"),
+                DifficultyScore = row.GetDouble("difficulty_score", 0.0),
+                LastUpdated     = row.GetDateTime("last_updated")
             }).ToDictionary(r => r.TeamId);
         }
 
@@ -335,19 +360,21 @@ namespace CricketClubDAL
                 USING (SELECT @teamId AS team_id) AS source ON target.team_id = source.team_id
                 WHEN MATCHED THEN
                     UPDATE SET played = @played, won = @won, lost = @lost,
-                               drawn = @drawn, abandoned = @abandoned, last_updated = @lastUpdated
+                               drawn = @drawn, abandoned = @abandoned,
+                               difficulty_score = @difficultyScore, last_updated = @lastUpdated
                 WHEN NOT MATCHED THEN
-                    INSERT (team_id, played, won, lost, drawn, abandoned, last_updated)
-                    VALUES (@teamId, @played, @won, @lost, @drawn, @abandoned, @lastUpdated);";
+                    INSERT (team_id, played, won, lost, drawn, abandoned, difficulty_score, last_updated)
+                    VALUES (@teamId, @played, @won, @lost, @drawn, @abandoned, @difficultyScore, @lastUpdated);";
 
             db.ExecuteInsertOrUpdate(sql,
-                new SqlParameter("@teamId",      data.TeamId),
-                new SqlParameter("@played",      data.Played),
-                new SqlParameter("@won",         data.Won),
-                new SqlParameter("@lost",        data.Lost),
-                new SqlParameter("@drawn",       data.Drawn),
-                new SqlParameter("@abandoned",   data.Abandoned),
-                new SqlParameter("@lastUpdated", data.LastUpdated));
+                new SqlParameter("@teamId",          data.TeamId),
+                new SqlParameter("@played",          data.Played),
+                new SqlParameter("@won",             data.Won),
+                new SqlParameter("@lost",            data.Lost),
+                new SqlParameter("@drawn",           data.Drawn),
+                new SqlParameter("@abandoned",       data.Abandoned),
+                new SqlParameter("@difficultyScore", data.DifficultyScore),
+                new SqlParameter("@lastUpdated",     data.LastUpdated));
         }
 
         public IEnumerable<TeamData> GetAllTeamData()
