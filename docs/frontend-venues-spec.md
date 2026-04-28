@@ -246,7 +246,7 @@ Recommended: pill/badge shape, 14 px font, accessible `aria-label="Pitch rating:
 
 Include an info icon (ⓘ) next to the "Pitch rating" column header on the listing page and near the badge on the detail page. Tooltip / popover text:
 
-> Pitch rating measures how batting-friendly a venue is, based on the average runs scored per innings there across all recorded matches. **Road** venues see high scores from both teams; **Minefield** venues regularly produce low totals. Venues with fewer than 3 completed matches are marked **New** — not enough data to rate.
+> Pitch rating measures how batting-friendly a venue is, based on the average runs scored **per wicket** (batting average) there across all recorded matches. **Road** venues see batsmen dominate and wickets fall rarely; **Minefield** venues produce cheap dismissals and low totals. Venues with fewer than 3 completed matches are marked **New** — not enough data to rate.
 
 ---
 

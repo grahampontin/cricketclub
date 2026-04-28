@@ -33,6 +33,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{EEF21053-F
 		docs\frontend-opposition-teams-spec.md = docs\frontend-opposition-teams-spec.md
 		docs\frontend-venues-spec.md = docs\frontend-venues-spec.md
 		docs\ui-agent-opposition-teams.md = docs\ui-agent-opposition-teams.md
+		docs\ui-agent-venues.md = docs\ui-agent-venues.md
 		AGENTS.md = AGENTS.md
 	EndProjectSection
 EndProject
