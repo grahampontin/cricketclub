@@ -99,6 +99,9 @@ namespace CricketClubMiddle
             {
                 VenueId               = venueId,
                 MatchesPlayed         = completed.Count,
+                Won                   = completed.Count(m => m.OurScore > m.TheirScore),
+                Lost                  = completed.Count(m => m.OurScore < m.TheirScore),
+                NoResult              = completed.Count(m => m.OurScore == m.TheirScore),
                 TotalOurInningsRuns   = totalOurRuns,
                 TotalTheirInningsRuns = totalTheirRuns,
                 TotalOurWickets       = totalOurWkts,

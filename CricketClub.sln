@@ -42,6 +42,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL", "SQL", "{B2F7F315-122
 		database\migrations\002_team_stats_cache.sql = database\migrations\002_team_stats_cache.sql
 		database\migrations\003_difficulty_score.sql = database\migrations\003_difficulty_score.sql
 		database\migrations\004_venue_stats_cache.sql = database\migrations\004_venue_stats_cache.sql
+		database\migrations\005_venue_stats_won_lost.sql = database\migrations\005_venue_stats_won_lost.sql
 		scripts\cleanup-test-teams.sql = scripts\cleanup-test-teams.sql
 		scripts\cleanup-test-venues.sql = scripts\cleanup-test-venues.sql
 	EndProjectSection

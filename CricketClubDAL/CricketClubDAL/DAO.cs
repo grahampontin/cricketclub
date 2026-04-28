@@ -475,6 +475,9 @@ namespace CricketClubDAL
             {
                 VenueId               = row.GetInt("venue_id"),
                 MatchesPlayed         = row.GetInt("matches_played"),
+                Won                   = row.GetInt("won"),
+                Lost                  = row.GetInt("lost"),
+                NoResult              = row.GetInt("no_result"),
                 TotalOurInningsRuns   = row.GetInt("total_our_innings_runs"),
                 TotalTheirInningsRuns = row.GetInt("total_their_innings_runs"),
                 TotalOurWickets       = row.GetInt("total_our_wickets"),
@@ -492,6 +495,9 @@ namespace CricketClubDAL
                 USING (SELECT @venueId AS venue_id) AS source ON target.venue_id = source.venue_id
                 WHEN MATCHED THEN
                     UPDATE SET matches_played           = @matchesPlayed,
+                               won                     = @won,
+                               lost                    = @lost,
+                               no_result               = @noResult,
                                total_our_innings_runs   = @totalOurRuns,
                                total_their_innings_runs = @totalTheirRuns,
                                total_our_wickets        = @totalOurWickets,
@@ -500,16 +506,21 @@ namespace CricketClubDAL
                                difficulty_score         = @difficultyScore,
                                last_updated             = @lastUpdated
                 WHEN NOT MATCHED THEN
-                    INSERT (venue_id, matches_played, total_our_innings_runs, total_their_innings_runs,
+                    INSERT (venue_id, matches_played, won, lost, no_result,
+                            total_our_innings_runs, total_their_innings_runs,
                             total_our_wickets, total_their_wickets, completed_innings_count,
                             difficulty_score, last_updated)
-                    VALUES (@venueId, @matchesPlayed, @totalOurRuns, @totalTheirRuns,
+                    VALUES (@venueId, @matchesPlayed, @won, @lost, @noResult,
+                            @totalOurRuns, @totalTheirRuns,
                             @totalOurWickets, @totalTheirWickets, @completedInningsCount,
                             @difficultyScore, @lastUpdated);";
 
             db.ExecuteInsertOrUpdate(sql,
                 new SqlParameter("@venueId",               data.VenueId),
                 new SqlParameter("@matchesPlayed",         data.MatchesPlayed),
+                new SqlParameter("@won",                   data.Won),
+                new SqlParameter("@lost",                  data.Lost),
+                new SqlParameter("@noResult",              data.NoResult),
                 new SqlParameter("@totalOurRuns",          data.TotalOurInningsRuns),
                 new SqlParameter("@totalTheirRuns",        data.TotalTheirInningsRuns),
                 new SqlParameter("@totalOurWickets",       data.TotalOurWickets),

@@ -22,6 +22,9 @@ namespace CricketClub.Tests
 
             Assert.AreEqual(1, result.VenueId);
             Assert.AreEqual(0, result.MatchesPlayed);
+            Assert.AreEqual(0, result.Won);
+            Assert.AreEqual(0, result.Lost);
+            Assert.AreEqual(0, result.NoResult);
             Assert.AreEqual(0.0, result.DifficultyScore, 1e-9);
         }
 
@@ -169,6 +172,52 @@ namespace CricketClub.Tests
             double rpw      = (300.0 + 285.0) / (18.0 + 15.0);
             double expected = Math.Max(0.0, Math.Min(100.0, (rpw - 13.0) / 23.0 * 100.0));
             Assert.AreEqual(expected, result.DifficultyScore, 1e-6);
+        }
+
+        [Test]
+        public void ComputeForVenue_WonLostNoResult_CalculatedCorrectly()
+        {
+            // 2 wins, 1 loss, 1 draw (no result)
+            var matches = new List<MatchScoreSummaryData>
+            {
+                Match(venueId: 8, abandoned: false, ourScore: 180, theirScore: 150), // win
+                Match(venueId: 8, abandoned: false, ourScore: 200, theirScore: 180), // win
+                Match(venueId: 8, abandoned: false, ourScore: 120, theirScore: 160), // loss
+                Match(venueId: 8, abandoned: false, ourScore: 150, theirScore: 150), // no result (draw)
+            };
+
+            var result = VenueStatsRecalculator.ComputeForVenue(8, matches);
+
+            Assert.AreEqual(4, result.MatchesPlayed);
+            Assert.AreEqual(2, result.Won);
+            Assert.AreEqual(1, result.Lost);
+            Assert.AreEqual(1, result.NoResult);
+            Assert.AreEqual(0.5, result.WinPercentage, 1e-9);
+        }
+
+        [Test]
+        public void ComputeForVenue_AbandonedExcludedFromWinLost()
+        {
+            var matches = new List<MatchScoreSummaryData>
+            {
+                Match(venueId: 9, abandoned: false, ourScore: 160, theirScore: 140), // win
+                Match(venueId: 9, abandoned: true,  ourScore: 0,   theirScore: 0),   // abandoned — excluded
+            };
+
+            var result = VenueStatsRecalculator.ComputeForVenue(9, matches);
+
+            Assert.AreEqual(1, result.MatchesPlayed);
+            Assert.AreEqual(1, result.Won);
+            Assert.AreEqual(0, result.Lost);
+            Assert.AreEqual(0, result.NoResult);
+        }
+
+        [Test]
+        public void ComputeForVenue_WinPercentage_ZeroWhenNoMatches()
+        {
+            var result = VenueStatsRecalculator.ComputeForVenue(10, new List<MatchScoreSummaryData>());
+
+            Assert.AreEqual(0.0, result.WinPercentage, 1e-9);
         }
 
         // ── helpers ──────────────────────────────────────────────────────────────

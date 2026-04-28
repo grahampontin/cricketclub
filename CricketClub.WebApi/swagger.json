@@ -4018,6 +4018,22 @@
             "type": "integer",
             "format": "int32"
           },
+          "won": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lost": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "noResult": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "winPercentage": {
+            "type": "number",
+            "format": "double"
+          },
           "averageRunsPerWicket": {
             "type": "number",
             "format": "double"

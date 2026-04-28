@@ -25,12 +25,21 @@ namespace CricketClubDomain
         public int TotalTheirWickets { get; set; }
         /// <summary>Number of innings where at least one run was scored (used for average runs per innings).</summary>
         public int CompletedInningsCount { get; set; }
+        /// <summary>Completed matches where we scored more than the opposition.</summary>
+        public int Won { get; set; }
+        /// <summary>Completed matches where the opposition scored more than us.</summary>
+        public int Lost { get; set; }
+        /// <summary>Completed matches with equal scores (draws, ties, no result).</summary>
+        public int NoResult { get; set; }
         /// <summary>
         /// Batting-friendliness score 0–100.
         /// 0 = minefield, 100 = road. Based on average runs per wicket across all completed matches.
         /// </summary>
         public double DifficultyScore { get; set; }
         public DateTime LastUpdated { get; set; }
+
+        /// <summary>Win percentage over completed matches as a fraction (0–1). Returns 0 if no matches played.</summary>
+        public double WinPercentage => MatchesPlayed > 0 ? (double)Won / MatchesPlayed : 0.0;
 
         /// <summary>Average runs per wicket (batting average) at this venue. 0 if no wickets recorded.</summary>
         public double AverageRunsPerWicket
