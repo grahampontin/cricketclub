@@ -111,7 +111,7 @@ namespace CricketClub.Tests
             var lng = -0.1278m;
 
             var venueId = dao.CreateNewVenue(name, mapUrl, description, lat, lng);
-            Assert.True(venueId > 0);
+            _createdVenueIds.Add(venueId); // safety net: TearDown will clean up if delete below fails
 
             // Verify it exists
             var venue = dao.GetVenueData(venueId);

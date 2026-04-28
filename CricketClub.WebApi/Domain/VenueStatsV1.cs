@@ -4,27 +4,34 @@ namespace CricketClub.WebApi.Domain
 {
     /// <summary>
     /// Venue batting-friendliness statistics derived from venue_stats_cache.
-    /// Score 0 = minefield (batsmen struggle); Score 100 = road (batsmen make loads of runs).
+    /// Metric: average runs per wicket (batting average at the venue).
+    ///   Score 0 = minefield (batsmen dismissed cheaply); Score 100 = road (batsmen dominant).
     /// </summary>
     public class VenueStatsV1
     {
         /// <summary>Completed matches played at this venue.</summary>
         public int MatchesPlayed { get; set; }
 
-        /// <summary>Average runs per innings across all completed innings at this venue.</summary>
+        /// <summary>
+        /// Average runs per wicket (batting average) across all completed innings at this venue.
+        /// This is the primary difficulty metric: low = batsmen struggle, high = batsmen dominate.
+        /// </summary>
+        public double AverageRunsPerWicket { get; set; }
+
+        /// <summary>Average runs per innings — supplementary context alongside runs-per-wicket.</summary>
         public double AverageRunsPerInnings { get; set; }
 
         /// <summary>
-        /// Batting-friendliness score normalised 0–100.
-        /// 0 = minefield, 100 = road.
-        /// Null if fewer than 3 completed matches (insufficient data).
+        /// Batting-friendliness score 0–100. Null when fewer than 3 completed matches (insufficient data).
+        /// Formula: clamp((runsPerWicket - 13) / 23 × 100, 0, 100).
+        /// Calibrated against historical club data: balanced ≈ rpw 24.5 → score 50.
         /// </summary>
         public double? DifficultyScore { get; set; }
 
         /// <summary>
-        /// Human-readable label for the difficulty score:
-        /// "minefield" (&lt;=20), "difficult" (&lt;=40), "balanced" (&lt;=60), "batting-friendly" (&lt;=80), "road" (&gt;80).
-        /// "unknown" when insufficient data.
+        /// Human-readable pitch rating:
+        /// "minefield" (≤20) | "difficult" (≤40) | "balanced" (≤60) | "batting-friendly" (≤80) | "road" (&gt;80).
+        /// "unknown" when fewer than 3 completed matches.
         /// </summary>
         public string DifficultyLabel { get; set; } = "unknown";
 
@@ -34,16 +41,18 @@ namespace CricketClub.WebApi.Domain
             {
                 return new VenueStatsV1
                 {
-                    MatchesPlayed       = cache?.MatchesPlayed ?? 0,
+                    MatchesPlayed         = cache?.MatchesPlayed ?? 0,
+                    AverageRunsPerWicket  = cache?.AverageRunsPerWicket ?? 0.0,
                     AverageRunsPerInnings = cache?.AverageRunsPerInnings ?? 0.0,
-                    DifficultyScore     = null,
-                    DifficultyLabel     = "unknown"
+                    DifficultyScore       = null,
+                    DifficultyLabel       = "unknown"
                 };
             }
 
             return new VenueStatsV1
             {
                 MatchesPlayed         = cache.MatchesPlayed,
+                AverageRunsPerWicket  = cache.AverageRunsPerWicket,
                 AverageRunsPerInnings = cache.AverageRunsPerInnings,
                 DifficultyScore       = cache.DifficultyScore,
                 DifficultyLabel       = BuildLabel(cache.DifficultyScore)

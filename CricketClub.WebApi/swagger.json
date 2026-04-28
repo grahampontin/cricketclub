@@ -4018,6 +4018,10 @@
             "type": "integer",
             "format": "int32"
           },
+          "averageRunsPerWicket": {
+            "type": "number",
+            "format": "double"
+          },
           "averageRunsPerInnings": {
             "type": "number",
             "format": "double"

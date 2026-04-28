@@ -473,13 +473,15 @@ namespace CricketClubDAL
             const string sql = "SELECT * FROM thevilla_admin.venue_stats_cache";
             return db.ExecuteSqlAndReturnAllRows(sql, row => new VenueStatsCacheData
             {
-                VenueId                = row.GetInt("venue_id"),
-                MatchesPlayed          = row.GetInt("matches_played"),
-                TotalOurInningsRuns    = row.GetInt("total_our_innings_runs"),
-                TotalTheirInningsRuns  = row.GetInt("total_their_innings_runs"),
-                CompletedInningsCount  = row.GetInt("completed_innings_count"),
-                DifficultyScore        = row.GetDouble("difficulty_score", 0.0),
-                LastUpdated            = row.GetDateTime("last_updated")
+                VenueId               = row.GetInt("venue_id"),
+                MatchesPlayed         = row.GetInt("matches_played"),
+                TotalOurInningsRuns   = row.GetInt("total_our_innings_runs"),
+                TotalTheirInningsRuns = row.GetInt("total_their_innings_runs"),
+                TotalOurWickets       = row.GetInt("total_our_wickets"),
+                TotalTheirWickets     = row.GetInt("total_their_wickets"),
+                CompletedInningsCount = row.GetInt("completed_innings_count"),
+                DifficultyScore       = row.GetDouble("difficulty_score", 0.0),
+                LastUpdated           = row.GetDateTime("last_updated")
             }).ToDictionary(r => r.VenueId);
         }
 
@@ -489,23 +491,29 @@ namespace CricketClubDAL
                 MERGE thevilla_admin.venue_stats_cache AS target
                 USING (SELECT @venueId AS venue_id) AS source ON target.venue_id = source.venue_id
                 WHEN MATCHED THEN
-                    UPDATE SET matches_played = @matchesPlayed,
+                    UPDATE SET matches_played           = @matchesPlayed,
                                total_our_innings_runs   = @totalOurRuns,
                                total_their_innings_runs = @totalTheirRuns,
+                               total_our_wickets        = @totalOurWickets,
+                               total_their_wickets      = @totalTheirWickets,
                                completed_innings_count  = @completedInningsCount,
-                               difficulty_score = @difficultyScore,
-                               last_updated = @lastUpdated
+                               difficulty_score         = @difficultyScore,
+                               last_updated             = @lastUpdated
                 WHEN NOT MATCHED THEN
                     INSERT (venue_id, matches_played, total_our_innings_runs, total_their_innings_runs,
-                            completed_innings_count, difficulty_score, last_updated)
+                            total_our_wickets, total_their_wickets, completed_innings_count,
+                            difficulty_score, last_updated)
                     VALUES (@venueId, @matchesPlayed, @totalOurRuns, @totalTheirRuns,
-                            @completedInningsCount, @difficultyScore, @lastUpdated);";
+                            @totalOurWickets, @totalTheirWickets, @completedInningsCount,
+                            @difficultyScore, @lastUpdated);";
 
             db.ExecuteInsertOrUpdate(sql,
                 new SqlParameter("@venueId",               data.VenueId),
                 new SqlParameter("@matchesPlayed",         data.MatchesPlayed),
                 new SqlParameter("@totalOurRuns",          data.TotalOurInningsRuns),
                 new SqlParameter("@totalTheirRuns",        data.TotalTheirInningsRuns),
+                new SqlParameter("@totalOurWickets",       data.TotalOurWickets),
+                new SqlParameter("@totalTheirWickets",     data.TotalTheirWickets),
                 new SqlParameter("@completedInningsCount", data.CompletedInningsCount),
                 new SqlParameter("@difficultyScore",       data.DifficultyScore),
                 new SqlParameter("@lastUpdated",           data.LastUpdated));
