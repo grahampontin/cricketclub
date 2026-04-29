@@ -465,7 +465,7 @@ namespace CricketClub.WebApi.Stats
             return data1;
         }
 
-        private static StatsDataV1 GetMatchStatsForPlayer(int playerId)
+        private static StatsDataV1 GetMatchStatsForPlayer(int playerId, Func<int, string> teamLogoUrlResolver)
         {
             var player = new Player(playerId);
             var bowlingStatsByMatch = player.GetBowlingStatsByMatch().ToArray();
@@ -481,7 +481,7 @@ namespace CricketClub.WebApi.Stats
                 statsType = "Matches",
                 gridOptions = new AGGridOptions()
                 {
-                    rowData = allMatches.Select(m => new PlayerMatchStatsV1(MatchV1.FromInternal(m),
+                    rowData = allMatches.Select(m => new PlayerMatchStatsV1(MatchV1.FromInternal(m, teamLogoUrlResolver),
                         new BattingStatsRowData(player, s => s.MatchID == m.ID, ""),
                         new BowlingStatsRowData(player, s => s.MatchID == m.ID, ""))).Cast<object>().ToList(),
                     columnDefs = PlayerMatchStatsV1.ColumnDefs
@@ -489,9 +489,9 @@ namespace CricketClub.WebApi.Stats
             };
         }
 
-        public static StatsDataV1 QueryPlayerMatches(int playerId)
+        public static StatsDataV1 QueryPlayerMatches(int playerId, Func<int, string> teamLogoUrlResolver)
         {
-            return GetMatchStatsForPlayer(playerId);
+            return GetMatchStatsForPlayer(playerId, teamLogoUrlResolver);
         }
     }
 }

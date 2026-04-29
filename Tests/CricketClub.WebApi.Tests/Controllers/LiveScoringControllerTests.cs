@@ -22,7 +22,8 @@ namespace CricketClub.WebApi.Tests.Controllers
             mockDao = new Mock<IDao>();
             TestDefaults.SetupSafeVenueAndTeamLookups(mockDao);
 
-            controller = new LiveScoringController(mockDao.Object);
+            controller = new LiveScoringController(mockDao.Object, TestDefaults.MockEnvironment().Object);
+            TestDefaults.SetupHttpContext(controller);
         }
 
         [Fact]

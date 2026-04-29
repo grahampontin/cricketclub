@@ -17,10 +17,18 @@ namespace CricketClub.WebApi.Controllers
     public class MatchesController : Microsoft.AspNetCore.Mvc.ControllerBase
     {
         private readonly IDao _database;
+        private readonly IWebHostEnvironment _environment;
 
-        public MatchesController(IDao database)
+        public MatchesController(IDao database, IWebHostEnvironment environment)
         {
             _database = database;
+            _environment = environment;
+        }
+
+        private MatchV1 ToV1(Match match)
+        {
+            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+            return MatchV1.FromInternal(match, id => Utils.ResolveTeamLogoUrl(id, _environment.ContentRootPath, baseUrl));
         }
 
         /// <summary>
@@ -37,7 +45,7 @@ namespace CricketClub.WebApi.Controllers
                     new DateTime(season.Value, 12, 31),
                     null, null, _database)
                     .OrderBy(m => m.MatchDate)
-                    .Select(MatchV1.FromInternal)
+                    .Select(ToV1)
                     .ToList();
                 
                 return Ok(matches);
@@ -45,7 +53,7 @@ namespace CricketClub.WebApi.Controllers
 
             var allMatches = Match.GetAll(_database)
                 .OrderBy(m => m.MatchDate)
-                .Select(MatchV1.FromInternal)
+                .Select(ToV1)
                 .ToList();
 
             return Ok(allMatches);
@@ -60,7 +68,7 @@ namespace CricketClub.WebApi.Controllers
         public IActionResult GetMatch(int id)
         {
             var match = new Match(id, _database);
-            return Ok(MatchV1.FromInternal(match));
+            return Ok(ToV1(match));
         }
 
         /// <summary>
@@ -88,7 +96,7 @@ namespace CricketClub.WebApi.Controllers
                 homeOrAway,
                 _database);
             
-            var result = MatchV1.FromInternal(match);
+            var result = ToV1(match);
             return CreatedAtAction(nameof(GetMatch), new { id = match.ID }, result);
         }
 

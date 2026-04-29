@@ -61,7 +61,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             // This is essentially a smoke-test for the internal-domain-type guard,
             // focusing on the previously problematic controller.
             var dao = new Mock<IDao>(MockBehavior.Strict);
-            var controller = new LiveScoringController(dao.Object);
+            var controller = new LiveScoringController(dao.Object, TestDefaults.MockEnvironment().Object);
             Assert.NotNull(controller);
         }
     }

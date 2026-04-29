@@ -19,11 +19,19 @@ namespace CricketClub.WebApi.Controllers
     public class LiveScoringController : Microsoft.AspNetCore.Mvc.ControllerBase
     {
         private readonly IDao _database;
+        private readonly IWebHostEnvironment _environment;
         private static readonly ILog Log = LogManager.GetLogger(typeof(LiveScoringController));
 
-        public LiveScoringController(IDao database)
+        public LiveScoringController(IDao database, IWebHostEnvironment environment)
         {
             _database = database;
+            _environment = environment;
+        }
+
+        private MatchV1 ToV1(Match match)
+        {
+            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+            return MatchV1.FromInternal(match, id => Utils.ResolveTeamLogoUrl(id, _environment.ContentRootPath, baseUrl));
         }
 
         /// <summary>
@@ -39,7 +47,7 @@ namespace CricketClub.WebApi.Controllers
                 {
                     var matchDescriptors = Match.GetAll(new DateTime(season.Value, 1, 1), new DateTime(season.Value, 12, 31), null, null, _database)
                         .OrderBy(m => m.MatchDate)
-                        .Select(MatchV1.FromInternal)
+                        .Select(ToV1)
                         .Select(LiveScoringMatchSummaryV1.FromMatch)
                         .ToList();
 
@@ -284,7 +292,7 @@ namespace CricketClub.WebApi.Controllers
             var matchReportAndConditions = match.GetMatchReport();
             return new LiveScorecardV1
             {
-                MatchData = MatchV1.FromInternal(match),
+                MatchData = ToV1(match),
                 InPlayData = MatchStateMapper.MapToInPlayScorecardV1(match.GetLiveScorecard()),
                 FinalScorecard = MatchScorecardV1.GetExternalScorecard(match),
                 MatchReport = new MatchReportV1(matchReportAndConditions.Conditions, matchReportAndConditions.Report, matchReportAndConditions.ReportImage),

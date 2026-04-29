@@ -224,13 +224,8 @@ namespace CricketClub.WebApi.Controllers
         /// Mirrors the player image pattern: looks for Assets/TeamImages/{teamId}.png;
         /// falls back to Assets/TeamImages/0.png (placeholder) if the file does not exist.
         /// </summary>
-        private string ResolveTeamLogoUrl(int teamId, string baseUrl)
-        {
-            var imageRoot = Path.Combine(_environment.ContentRootPath, "Assets", "TeamImages");
-            var imagePath = Path.Combine(imageRoot, $"{teamId}.png");
-            var resolvedId = System.IO.File.Exists(imagePath) ? teamId : 0;
-            return new Uri(new Uri(baseUrl), $"/images/teams/{resolvedId}.png").ToString();
-        }
+        private string ResolveTeamLogoUrl(int teamId, string baseUrl) =>
+            Utils.ResolveTeamLogoUrl(teamId, _environment.ContentRootPath, baseUrl);
 
         private static Dictionary<int, string> BuildDifficultyMap(Dictionary<int, TeamStatsCacheData> allStats)
         {

@@ -67,7 +67,10 @@ namespace CricketClub.WebApi.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public IActionResult GetPlayerMatches(int playerId)
         {
-            var data = StatsProvider.QueryPlayerMatches(playerId);
+            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+            var data = StatsProvider.QueryPlayerMatches(
+                playerId,
+                id => Utils.ResolveTeamLogoUrl(id, environment.ContentRootPath, baseUrl));
             return Ok(data);
         }
 

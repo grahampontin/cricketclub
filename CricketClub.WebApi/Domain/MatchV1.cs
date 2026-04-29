@@ -28,6 +28,14 @@ namespace CricketClub.WebApi.Domain
             };
         }
 
+        /// <summary>Maps from internal Match and resolves the opposition team's logo URL.</summary>
+        public static MatchV1 FromInternal(Match match, Func<int, string> logoUrlResolver)
+        {
+            var v1 = FromInternal(match);
+            v1.Opposition.LogoUrl = logoUrlResolver(match.Opposition.ID);
+            return v1;
+        }
+
         public bool IsHome { get; set; }
 
         public string Type { get; set; }

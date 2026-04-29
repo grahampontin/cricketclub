@@ -16,10 +16,12 @@ namespace CricketClub.WebApi.Controllers
     public class FixturesController : Microsoft.AspNetCore.Mvc.ControllerBase
     {
         private readonly IDao _database;
+        private readonly IWebHostEnvironment _environment;
 
-        public FixturesController(IDao database)
+        public FixturesController(IDao database, IWebHostEnvironment environment)
         {
             _database = database;
+            _environment = environment;
         }
 
         /// <summary>
@@ -40,7 +42,10 @@ namespace CricketClub.WebApi.Controllers
                 matches = matches.Where(m => m.MatchDate >= startDate && m.MatchDate <= endDate).ToList();
             }
 
-            var fixtures = matches.Select(MatchV1.FromInternal).ToList();
+            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+            var fixtures = matches
+                .Select(m => MatchV1.FromInternal(m, id => Utils.ResolveTeamLogoUrl(id, _environment.ContentRootPath, baseUrl)))
+                .ToList();
             return Ok(fixtures);
         }
     }

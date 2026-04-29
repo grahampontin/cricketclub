@@ -2,6 +2,7 @@
 using CricketClubDAL;
 using CricketClubDomain;
 using CricketClubMiddle;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -109,6 +110,18 @@ namespace CricketClub.WebApi.Tests.Utils
             var mockDao = new Mock<IDao>();
             SetupSafeVenueAndTeamLookups(mockDao);
             return mockDao;
+        }
+
+        /// <summary>
+        /// Returns a mock IWebHostEnvironment whose ContentRootPath points to a temp folder.
+        /// Sufficient for tests where logo files do not need to physically exist
+        /// (ResolveTeamLogoUrl will fall back to the 0.png placeholder URL).
+        /// </summary>
+        public static Mock<IWebHostEnvironment> MockEnvironment()
+        {
+            var env = new Mock<IWebHostEnvironment>();
+            env.Setup(e => e.ContentRootPath).Returns(Path.GetTempPath());
+            return env;
         }
 
         public static void SetupPlayerLookups(Mock<IDao> dao, params (int id, string name)[] players)

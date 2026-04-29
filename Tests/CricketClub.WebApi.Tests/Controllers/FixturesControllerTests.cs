@@ -22,7 +22,8 @@ namespace CricketClub.WebApi.Tests.Controllers
             _mockDao = new Mock<IDao>();
             TestDefaults.SetupSafeVenueAndTeamLookups(_mockDao);
 
-            _controller = new FixturesController(_mockDao.Object);
+            _controller = new FixturesController(_mockDao.Object, TestDefaults.MockEnvironment().Object);
+            TestDefaults.SetupHttpContext(_controller);
         }
 
         [Fact]
