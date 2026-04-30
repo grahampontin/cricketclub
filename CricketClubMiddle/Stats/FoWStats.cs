@@ -18,7 +18,7 @@ namespace CricketClubMiddle.Stats
         {
             this.dao = dao;
             Who = who;
-            Data = dao.GetFoWData(MatchID, who).Select(a => new FoWStatsLine(a)).ToList();
+            Data = dao.GetFoWData(MatchID, who).Select(a => new FoWStatsLine(a, dao)).ToList();
         }
 
         public ThemOrUs Who { get; set; }

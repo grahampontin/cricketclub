@@ -1,8 +1,6 @@
 #nullable disable
-using System.Text.Json;
 using CricketClub.WebApi.Domain;
-using CricketClubDAL;
-using CricketClubMiddle;
+using CricketClub.WebApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CricketClub.WebApi.Controllers
@@ -15,37 +13,36 @@ namespace CricketClub.WebApi.Controllers
     [Produces("application/json")]
     public class FixturesController : Microsoft.AspNetCore.Mvc.ControllerBase
     {
-        private readonly IDao _database;
+        private readonly IMatchService _matchService;
         private readonly IWebHostEnvironment _environment;
 
-        public FixturesController(IDao database, IWebHostEnvironment environment)
+        public FixturesController(IMatchService matchService, IWebHostEnvironment environment)
         {
-            _database = database;
-            _environment = environment;
+            _matchService = matchService;
+            _environment  = environment;
         }
 
         /// <summary>
         /// Gets upcoming fixtures, optionally filtered by season
         /// </summary>
-        /// <param name="season">Season year to filter by (optional)</param>
-        /// <returns>List of upcoming fixtures</returns>
         [HttpGet]
         [ProducesResponseType(typeof(List<MatchV1>), StatusCodes.Status200OK)]
         public IActionResult GetFixtures([FromQuery] int? season)
         {
-            var matches = Match.GetFixtures(_database);
-
-            if (season.HasValue)
-            {
-                var startDate = new DateTime(season.Value, 1, 1);
-                var endDate = new DateTime(season.Value, 12, 31);
-                matches = matches.Where(m => m.MatchDate >= startDate && m.MatchDate <= endDate).ToList();
-            }
-
             var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+
+            var matches = season.HasValue
+                ? _matchService.GetBySeason(season.Value).Where(m => m.Date >= DateTime.Today)
+                : _matchService.GetFixtures();
+
             var fixtures = matches
-                .Select(m => MatchV1.FromInternal(m, id => Utils.ResolveTeamLogoUrl(id, _environment.ContentRootPath, baseUrl)))
+                .Select(m => MatchV1.FromData(
+                    m,
+                    _matchService.GetTeam(m.OppositionID),
+                    _matchService.GetVenue(m.VenueID),
+                    id => Utils.ResolveTeamLogoUrl(id, _environment.ContentRootPath, baseUrl)))
                 .ToList();
+
             return Ok(fixtures);
         }
     }

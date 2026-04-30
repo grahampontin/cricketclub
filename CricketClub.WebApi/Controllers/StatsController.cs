@@ -49,7 +49,7 @@ namespace CricketClub.WebApi.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public IActionResult GetPlayerStats(int playerId, string statsType)
         {
-            var dataCollection = StatsProvider.GetPlayerStatsBreakDown(playerId, statsType);
+            var dataCollection = StatsProvider.GetPlayerStatsBreakDown(playerId, statsType, database);
             return Ok(dataCollection);
         }
 
@@ -70,7 +70,8 @@ namespace CricketClub.WebApi.Controllers
             var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
             var data = StatsProvider.QueryPlayerMatches(
                 playerId,
-                id => Utils.ResolveTeamLogoUrl(id, environment.ContentRootPath, baseUrl));
+                id => Utils.ResolveTeamLogoUrl(id, environment.ContentRootPath, baseUrl),
+                database);
             return Ok(data);
         }
 

@@ -1,5 +1,6 @@
 #nullable disable
 using CricketClub.WebApi.Domain;
+using CricketClub.WebApi.Services;
 using CricketClubDAL;
 using CricketClubDomain;
 using CricketClubMiddle;
@@ -17,18 +18,24 @@ namespace CricketClub.WebApi.Controllers
     public class MatchesController : Microsoft.AspNetCore.Mvc.ControllerBase
     {
         private readonly IDao _database;
+        private readonly IMatchService _matchService;
         private readonly IWebHostEnvironment _environment;
 
-        public MatchesController(IDao database, IWebHostEnvironment environment)
+        public MatchesController(IDao database, IWebHostEnvironment environment, IMatchService matchService)
         {
-            _database = database;
-            _environment = environment;
+            _database     = database;
+            _environment  = environment;
+            _matchService = matchService;
         }
 
-        private MatchV1 ToV1(Match match)
+        private MatchV1 ToV1(MatchData m)
         {
             var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
-            return MatchV1.FromInternal(match, id => Utils.ResolveTeamLogoUrl(id, _environment.ContentRootPath, baseUrl));
+            return MatchV1.FromData(
+                m,
+                _matchService.GetTeam(m.OppositionID),
+                _matchService.GetVenue(m.VenueID),
+                id => Utils.ResolveTeamLogoUrl(id, _environment.ContentRootPath, baseUrl));
         }
 
         /// <summary>
@@ -38,25 +45,11 @@ namespace CricketClub.WebApi.Controllers
         [ProducesResponseType(typeof(List<MatchV1>), StatusCodes.Status200OK)]
         public IActionResult GetAllMatches([FromQuery] int? season)
         {
-            if (season.HasValue)
-            {
-                var matches = Match.GetAll(
-                    new DateTime(season.Value, 1, 1),
-                    new DateTime(season.Value, 12, 31),
-                    null, null, _database)
-                    .OrderBy(m => m.MatchDate)
-                    .Select(ToV1)
-                    .ToList();
-                
-                return Ok(matches);
-            }
+            var matches = season.HasValue
+                ? _matchService.GetBySeason(season.Value)
+                : _matchService.GetAll();
 
-            var allMatches = Match.GetAll(_database)
-                .OrderBy(m => m.MatchDate)
-                .Select(ToV1)
-                .ToList();
-
-            return Ok(allMatches);
+            return Ok(matches.OrderBy(m => m.Date).Select(ToV1).ToList());
         }
 
         /// <summary>
@@ -67,8 +60,9 @@ namespace CricketClub.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult GetMatch(int id)
         {
-            var match = new Match(id, _database);
-            return Ok(ToV1(match));
+            var m = _matchService.GetById(id);
+            if (m == null) return NotFound();
+            return Ok(ToV1(m));
         }
 
         /// <summary>
@@ -85,19 +79,14 @@ namespace CricketClub.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var matchType = EnumMappers.ParseMatchType(matchData.Type);
+            var matchType  = EnumMappers.ParseMatchType(matchData.Type);
             var homeOrAway = matchData.IsHome ? HomeOrAway.Home : HomeOrAway.Away;
-            
-            var match = Match.CreateNewMatch(
-                new Team(matchData.Opposition.Id, _database),
-                DateTime.Parse(matchData.Date),
-                new Venue(matchData.Venue.Id, _database),
-                matchType,
-                homeOrAway,
-                _database);
-            
-            var result = ToV1(match);
-            return CreatedAtAction(nameof(GetMatch), new { id = match.ID }, result);
+
+            var newId  = _matchService.Create(matchData.Opposition.Id, DateTime.Parse(matchData.Date),
+                matchData.Venue.Id, (int)matchType, homeOrAway);
+            var created = _matchService.GetById(newId)!;
+
+            return CreatedAtAction(nameof(GetMatch), new { id = newId }, ToV1(created));
         }
 
         /// <summary>
@@ -114,16 +103,17 @@ namespace CricketClub.WebApi.Controllers
                 return BadRequest(ModelState);
             }
 
-            var match = new Match(matchData.Id, _database)
+            var data = new MatchData
             {
+                ID          = matchData.Id,
                 OppositionID = matchData.Opposition.Id,
-                VenueID = matchData.Venue.Id,
-                MatchDate = DateTime.Parse(matchData.Date),
-                HomeOrAway = matchData.IsHome ? HomeOrAway.Home : HomeOrAway.Away,
-                Type = EnumMappers.ParseMatchType(matchData.Type)
+                VenueID     = matchData.Venue.Id,
+                Date        = DateTime.Parse(matchData.Date),
+                HomeOrAway  = matchData.IsHome ? "H" : "A",
+                MatchType   = (int)EnumMappers.ParseMatchType(matchData.Type)
             };
-            match.Save();
-            
+            _matchService.Update(data);
+
             return Ok(matchData);
         }
 
@@ -162,7 +152,7 @@ namespace CricketClub.WebApi.Controllers
                 return Conflict($"Cannot delete match {id} because there {verb} {reasons} associated with it. Please remove this data first if you really want to delete the match.");
             }
 
-            _database.DeleteMatch(id);
+            _matchService.Delete(id);
             return NoContent();
         }
     }

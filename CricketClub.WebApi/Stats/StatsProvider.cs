@@ -316,22 +316,25 @@ namespace CricketClub.WebApi.Stats
         }
 
         public static IEnumerable<StatsDataV1> GetPlayerStatsBreakDown(int playerId, string statsType)
+            => GetPlayerStatsBreakDown(playerId, statsType, new CricketClubDAL.Dao());
+
+        public static IEnumerable<StatsDataV1> GetPlayerStatsBreakDown(int playerId, string statsType, IDao dao)
         {
-            var player = new Player(playerId);
+            var player = new Player(playerId, dao);
             switch (statsType.ToUpper())
             {
                 case "BATTING":
-                    return GetPlayerBattingStatsBreakDown(player);
+                    return GetPlayerBattingStatsBreakDown(player, dao);
                 case "BOWLING":
-                    return GetPlayerBowlingStatsBreakDown(player);
+                    return GetPlayerBowlingStatsBreakDown(player, dao);
                 default:
                     throw new ArgumentOutOfRangeException("Must supply Batting or Bowling, not " + statsType);
             }
         }
 
-        private static IEnumerable<StatsDataV1> GetPlayerBattingStatsBreakDown(Player player)
+        private static IEnumerable<StatsDataV1> GetPlayerBattingStatsBreakDown(Player player, IDao dao)
         {
-            var dataByMatch = player.GetBattingStatsByMatch().ToList();
+            var dataByMatch = player.GetBattingStatsByMatch(dao).ToList();
 
             yield return PlayerBattingDataWithPivot("Vs Opposition", k => k.Key.Opposition.Name, dataByMatch, player,
                 new StatsColumnDefinitionV1("", "tableKey"));
@@ -359,9 +362,9 @@ namespace CricketClub.WebApi.Stats
                 dataByMatch, player, new StatsColumnDefinitionV1("", "tableKey"));
         }
 
-        private static IEnumerable<StatsDataV1> GetPlayerBowlingStatsBreakDown(Player player)
+        private static IEnumerable<StatsDataV1> GetPlayerBowlingStatsBreakDown(Player player, IDao dao)
         {
-            List<KeyValuePair<Match, BowlingStatsEntryData>> dataByMatch = player.GetBowlingStatsByMatch().ToList();
+            List<KeyValuePair<Match, BowlingStatsEntryData>> dataByMatch = player.GetBowlingStatsByMatch(dao).ToList();
 
             yield return PlayerBowlingDataWithPivot("Vs Opposition", k => k.Key.Opposition.Name, dataByMatch, player,
                 new StatsColumnDefinitionV1("", "tableKey"));
@@ -465,11 +468,11 @@ namespace CricketClub.WebApi.Stats
             return data1;
         }
 
-        private static StatsDataV1 GetMatchStatsForPlayer(int playerId, Func<int, string> teamLogoUrlResolver)
+        private static StatsDataV1 GetMatchStatsForPlayer(int playerId, Func<int, string> teamLogoUrlResolver, IDao dao)
         {
-            var player = new Player(playerId);
-            var bowlingStatsByMatch = player.GetBowlingStatsByMatch().ToArray();
-            var battingStatsByMatch = player.GetBattingStatsByMatch().ToArray();
+            var player = new Player(playerId, dao);
+            var bowlingStatsByMatch = player.GetBowlingStatsByMatch(dao).ToArray();
+            var battingStatsByMatch = player.GetBattingStatsByMatch(dao).ToArray();
             var allMatches = bowlingStatsByMatch.Select(k => k.Key)
                 .Union(battingStatsByMatch.Select(k => k.Key), new IsTheSameFreakingMatch()).OrderBy(m => m.MatchDate);
 
@@ -490,8 +493,11 @@ namespace CricketClub.WebApi.Stats
         }
 
         public static StatsDataV1 QueryPlayerMatches(int playerId, Func<int, string> teamLogoUrlResolver)
+            => QueryPlayerMatches(playerId, teamLogoUrlResolver, new CricketClubDAL.Dao());
+
+        public static StatsDataV1 QueryPlayerMatches(int playerId, Func<int, string> teamLogoUrlResolver, IDao dao)
         {
-            return GetMatchStatsForPlayer(playerId, teamLogoUrlResolver);
+            return GetMatchStatsForPlayer(playerId, teamLogoUrlResolver, dao);
         }
     }
 }

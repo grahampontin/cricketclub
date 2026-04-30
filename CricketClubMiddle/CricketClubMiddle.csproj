@@ -10,8 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.0" />
-    <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,13 +18,5 @@
     <ProjectReference Include="..\CricketClubDomain\CricketClubDomain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Logging\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- Exclude Web Forms specific files that don't work in .NET 8 -->
-    <Compile Remove="Web\**" />
-  </ItemGroup>
 
 </Project>

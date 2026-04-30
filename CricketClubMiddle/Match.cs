@@ -549,9 +549,10 @@ namespace CricketClubMiddle
             {
                 var myDao = dao ?? new Dao();
                 myDao.UpdateMatch(data);
-                // Keep stats caches current — only recalculates the one affected team/venue
-                TeamStatsRecalculator.RecalculateForTeam(data.OppositionID, myDao);
-                VenueStatsRecalculator.RecalculateForVenue(data.VenueID, myDao);
+                // Fetch summaries once and share across both recalculator calls (saves one DB round-trip)
+                var allSummaries = myDao.GetAllMatchScoreSummaries();
+                TeamStatsRecalculator.RecalculateForTeam(data.OppositionID, myDao, allSummaries);
+                VenueStatsRecalculator.RecalculateForVenue(data.VenueID, myDao, allSummaries);
             }
             else
             {
@@ -672,10 +673,6 @@ namespace CricketClubMiddle
             theirBowling = null;
         }
 
-        public MatchReport GetMatchReport(string folder)
-        {
-            return new MatchReport(ID, folder);
-        }
 
         public void CreateOrUpdateMatchReport(string conditions, string report, string reportImage)
         {
@@ -719,7 +716,7 @@ namespace CricketClubMiddle
 
         public BallByBallMatch GetCurrentBallByBallState()
         {
-            return BallByBallMatch.Load(ID, this);
+            return BallByBallMatch.Load(ID, this, dao ?? new Dao());
         }
 
         public void UpdateCurrentBallByBallState(MatchState stateFromClient)

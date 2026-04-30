@@ -19,7 +19,17 @@ namespace CricketClubMiddle
         /// </summary>
         public static void RecalculateForTeam(int teamId, IDao dao)
         {
-            var summaries = dao.GetAllMatchScoreSummaries()
+            var allSummaries = dao.GetAllMatchScoreSummaries();
+            RecalculateForTeam(teamId, dao, allSummaries);
+        }
+
+        /// <summary>
+        /// Same as <see cref="RecalculateForTeam(int,IDao)"/> but accepts pre-fetched summaries
+        /// so the caller can share a single DB round-trip across multiple recalculations.
+        /// </summary>
+        public static void RecalculateForTeam(int teamId, IDao dao, IList<MatchScoreSummaryData> allSummaries)
+        {
+            var summaries = allSummaries
                 .Where(s => s.OppositionId == teamId)
                 .ToList();
 

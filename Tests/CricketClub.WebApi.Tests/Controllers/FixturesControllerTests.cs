@@ -1,28 +1,26 @@
 #nullable disable
 using CricketClub.WebApi.Controllers;
 using CricketClub.WebApi.Domain;
-using CricketClubDAL;
+using CricketClub.WebApi.Services;
+using CricketClub.WebApi.Tests.Utils;
 using CricketClubDomain;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
-using CricketClub.WebApi.Tests.Utils;
 
 namespace CricketClub.WebApi.Tests.Controllers
 {
     public class FixturesControllerTests
     {
-        private readonly Mock<IDao> _mockDao;
+        private readonly Mock<IMatchService> _mockMatchService;
         private readonly FixturesController _controller;
 
         public FixturesControllerTests()
         {
             TestDefaults.ResetInternalCache();
 
-            _mockDao = new Mock<IDao>();
-            TestDefaults.SetupSafeVenueAndTeamLookups(_mockDao);
-
-            _controller = new FixturesController(_mockDao.Object, TestDefaults.MockEnvironment().Object);
+            _mockMatchService = TestDefaults.MockMatchService();
+            _controller = new FixturesController(_mockMatchService.Object, TestDefaults.MockEnvironment().Object);
             TestDefaults.SetupHttpContext(_controller);
         }
 
@@ -39,7 +37,7 @@ namespace CricketClub.WebApi.Tests.Controllers
                 MatchType = 1,
                 HomeOrAway = "Home"
             };
-            _mockDao.Setup(d => d.GetAllMatches()).Returns(new List<MatchData> { matchData });
+            _mockMatchService.Setup(s => s.GetFixtures()).Returns(new List<MatchData> { matchData });
 
             // Act
             var result = _controller.GetFixtures(null);
@@ -56,10 +54,10 @@ namespace CricketClub.WebApi.Tests.Controllers
             // Arrange - use current year (2026) for fixtures
             var matches = new List<MatchData>
             {
-                new MatchData { ID = 1, Date = new DateTime(2026, 8, 15), OppositionID = 1, VenueID = 1, MatchType = 1, HomeOrAway = "Home" },
-                new MatchData { ID = 2, Date = new DateTime(2027, 8, 15), OppositionID = 1, VenueID = 1, MatchType = 1, HomeOrAway = "Home" }
+                new MatchData { ID = 1, Date = new DateTime(2026, 8, 15), OppositionID = 1, VenueID = 1, MatchType = 1, HomeOrAway = "Home" }
             };
-            _mockDao.Setup(d => d.GetAllMatches()).Returns(matches);
+            // GetBySeason will filter by year; "future only" is applied in the controller using Date >= today
+            _mockMatchService.Setup(s => s.GetBySeason(2026)).Returns(matches);
 
             // Act
             var result = _controller.GetFixtures(2026);
@@ -74,7 +72,7 @@ namespace CricketClub.WebApi.Tests.Controllers
         public void GetFixtures_WithNoMatchesInSeason_ReturnsEmptyList()
         {
             // Arrange
-            _mockDao.Setup(d => d.GetAllMatches()).Returns(new List<MatchData>());
+            _mockMatchService.Setup(s => s.GetBySeason(2025)).Returns(new List<MatchData>());
 
             // Act
             var result = _controller.GetFixtures(2025);
@@ -88,40 +86,17 @@ namespace CricketClub.WebApi.Tests.Controllers
         [Fact]
         public void GetFixtures_FiltersCorrectly_ByDateRange()
         {
-            // Arrange
-            // Fixtures are typically defined as matches in the future. Keep all "in-season" matches in the future
-            // relative to today, while still verifying that next-season matches are excluded.
+            // Arrange - all in-season matches are in the future; one next-season match also in future
             var season = DateTime.Today.Year;
 
-            var inSeasonFuture1 = DateTime.Today.AddDays(7);
-            var inSeasonFuture2 = DateTime.Today.AddDays(30);
-            var inSeasonFuture3 = DateTime.Today.AddDays(90);
-
-            var inSeasonList = new[] { inSeasonFuture1, inSeasonFuture2, inSeasonFuture3 }
-                .Select((d, index) => new MatchData
-                {
-                    ID = index + 1,
-                    Date = new DateTime(season, d.Month, d.Day),
-                    OppositionID = 1,
-                    VenueID = 1,
-                    MatchType = 1,
-                    HomeOrAway = "Home"
-                })
-                .ToList();
-
-            // One match in the next season, also in the future, which should be excluded by the season filter.
-            var nextSeasonFuture = DateTime.Today.AddDays(14);
-            inSeasonList.Add(new MatchData
+            var inSeasonList = new List<MatchData>
             {
-                ID = 99,
-                Date = new DateTime(season + 1, nextSeasonFuture.Month, nextSeasonFuture.Day),
-                OppositionID = 1,
-                VenueID = 1,
-                MatchType = 1,
-                HomeOrAway = "Home"
-            });
-
-            _mockDao.Setup(d => d.GetAllMatches()).Returns(inSeasonList);
+                new MatchData { ID = 1, Date = DateTime.Today.AddDays(7),  OppositionID = 1, VenueID = 1, MatchType = 1, HomeOrAway = "Home" },
+                new MatchData { ID = 2, Date = DateTime.Today.AddDays(30), OppositionID = 1, VenueID = 1, MatchType = 1, HomeOrAway = "Home" },
+                new MatchData { ID = 3, Date = DateTime.Today.AddDays(90), OppositionID = 1, VenueID = 1, MatchType = 1, HomeOrAway = "Home" },
+            };
+            // The season filter is applied by GetBySeason, so only in-season matches come back
+            _mockMatchService.Setup(s => s.GetBySeason(season)).Returns(inSeasonList);
 
             // Act
             var result = _controller.GetFixtures(season);

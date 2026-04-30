@@ -1,4 +1,5 @@
 #nullable disable
+using CricketClub.WebApi.Services;
 using CricketClubDAL;
 using log4net;
 using log4net.Config;
@@ -46,6 +47,12 @@ builder.Services.AddControllers()
 
 // Register IDao for dependency injection
 builder.Services.AddScoped<IDao, Dao>();
+
+// Register IMemoryCache (used by MatchService and available system-wide)
+builder.Services.AddMemoryCache();
+
+// Register application services
+builder.Services.AddScoped<IMatchService, MatchService>();
 
 // Add Swagger/OpenAPI support
 builder.Services.AddEndpointsApiExplorer();

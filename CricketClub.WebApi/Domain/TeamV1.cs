@@ -1,4 +1,5 @@
-﻿using CricketClubMiddle;
+﻿using CricketClubDomain;
+using CricketClubMiddle;
 
 namespace CricketClub.WebApi.Domain
 {
@@ -34,6 +35,19 @@ namespace CricketClub.WebApi.Domain
             var v1 = FromInternal(team);
             v1.LogoUrl = logoUrlResolver(team.ID);
             return v1;
+        }
+
+        /// <summary>Maps directly from <see cref="TeamData"/> — no domain object required.</summary>
+        public static TeamV1 FromData(TeamData data, Func<int, string>? logoUrlResolver = null)
+        {
+            return new TeamV1
+            {
+                Id = data.ID,
+                Name = data.Name,
+                WebsiteUrl = data.WebsiteUrl,
+                HomeVenueId = data.HomeVenueId > 0 ? data.HomeVenueId : null,
+                LogoUrl = logoUrlResolver?.Invoke(data.ID)
+            };
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using CricketClubMiddle;
+﻿using CricketClubDomain;
+using CricketClubMiddle;
 
 namespace CricketClub.WebApi.Domain
 {
@@ -28,6 +29,20 @@ namespace CricketClub.WebApi.Domain
                 Description = venue.Description,
                 Latitude = venue.Coordinates.Item1,
                 Longitude = venue.Coordinates.Item2
+            };
+        }
+
+        /// <summary>Maps directly from <see cref="VenueData"/> — no domain object required.</summary>
+        public static VenueV1 FromData(VenueData data)
+        {
+            return new VenueV1
+            {
+                Id = data.ID,
+                Name = data.Name,
+                MapUrl = data.MapUrl,
+                Description = data.Description,
+                Latitude = data.Coordinates?.Item1,
+                Longitude = data.Coordinates?.Item2
             };
         }
     }

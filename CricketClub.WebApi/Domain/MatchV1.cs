@@ -36,6 +36,27 @@ namespace CricketClub.WebApi.Domain
             return v1;
         }
 
+        /// <summary>
+        /// Maps directly from data objects — no domain objects required.
+        /// This avoids per-match DB calls for Venue and Team lookups.
+        /// </summary>
+        public static MatchV1 FromData(
+            MatchData match,
+            TeamData opposition,
+            VenueData venue,
+            Func<int, string>? logoUrlResolver = null)
+        {
+            return new MatchV1
+            {
+                Id = match.ID,
+                Date = match.Date.ToString("yyyy-MM-ddTHH:mm:ssK"),
+                Type = ((CricketClubDomain.MatchType)match.MatchType).ToString(),
+                IsHome = match.HomeOrAway?.ToUpper() is "H" or "HOME",
+                Opposition = TeamV1.FromData(opposition, logoUrlResolver),
+                Venue = VenueV1.FromData(venue)
+            };
+        }
+
         public bool IsHome { get; set; }
 
         public string Type { get; set; }

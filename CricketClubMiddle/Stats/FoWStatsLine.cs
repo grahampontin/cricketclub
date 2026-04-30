@@ -10,29 +10,33 @@ namespace CricketClubMiddle.Stats
     public class FoWStatsLine
     {
         internal FoWDataLine _data;
-        private Match match;
-        private BattingCard bCard;
-            
+        private readonly IDao? _dao;
+        private Match? _match;
+        private BattingCard? _bCard;
 
-        public FoWStatsLine(FoWDataLine data)
+        /// <summary>Creates a FoWStatsLine without a pre-supplied DAO (uses new Dao() lazily).</summary>
+        public FoWStatsLine(FoWDataLine data) : this(data, null) { }
+
+        /// <summary>Creates a FoWStatsLine with an injected DAO. Match and batting card are loaded lazily on first property access.</summary>
+        public FoWStatsLine(FoWDataLine data, IDao? dao)
         {
             _data = data;
-            match = new Match(_data.MatchID);
-            if (_data.Who == ThemOrUs.Us)
-            {
-                bCard = match.GetOurBattingScoreCard();
-            }
-            else
-            {
-                bCard = match.GetTheirBattingScoreCard();
-            }
+            _dao  = dao;
+        }
+
+        private BattingCard EnsureBattingCard()
+        {
+            if (_bCard != null) return _bCard;
+            _match = _dao != null ? new Match(_data.MatchID, _dao) : new Match(_data.MatchID);
+            _bCard = _data.Who == ThemOrUs.Us ? _match.GetOurBattingScoreCard() : _match.GetTheirBattingScoreCard();
+            return _bCard;
         }
 
         public Player OutgoingBatsman
         {
             get
             {
-                return (from a in bCard.ScorecardData
+                return (from a in EnsureBattingCard().ScorecardData
                         where a.BattingAt == _data.OutgoingBatsman
                         select a.Batsman).FirstOrDefault(); 
             }
@@ -75,7 +79,7 @@ namespace CricketClubMiddle.Stats
         {
             get
             {
-                return (from a in bCard.ScorecardData
+                return (from a in EnsureBattingCard().ScorecardData
                             where a.BattingAt == _data.NotOutBatsman
                             select a.Batsman).FirstOrDefault(); 
             }

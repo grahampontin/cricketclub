@@ -54,8 +54,8 @@ namespace CricketClub.WebApi.Controllers
                     return Ok(matchDescriptors);
                 }
 
-                var matchDescriptors2 = Match.GetInProgressGames()
-                    .Union(Match.GetFixtures().Where(m =>
+                var matchDescriptors2 = Match.GetInProgressGames(_database)
+                    .Union(Match.GetFixtures(_database).Where(m =>
                         m.MatchDate < DateTime.Today.AddDays(14) &&
                         !m.GetCurrentBallByBallState().IsMatchComplete()))
                     .Select(BallByBallMatchDescriptorV1.FromInternal)

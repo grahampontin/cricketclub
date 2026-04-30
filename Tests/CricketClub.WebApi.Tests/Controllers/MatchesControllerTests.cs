@@ -1,18 +1,20 @@
 #nullable disable
 using CricketClub.WebApi.Controllers;
 using CricketClub.WebApi.Domain;
+using CricketClub.WebApi.Services;
+using CricketClub.WebApi.Tests.Utils;
 using CricketClubDAL;
 using CricketClubDomain;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
-using CricketClub.WebApi.Tests.Utils;
 
 namespace CricketClub.WebApi.Tests.Controllers
 {
     public class MatchesControllerTests
     {
         private readonly Mock<IDao> mockDao;
+        private readonly Mock<IMatchService> mockMatchService;
         private readonly MatchesController controller;
 
         public MatchesControllerTests()
@@ -22,7 +24,9 @@ namespace CricketClub.WebApi.Tests.Controllers
             mockDao = new Mock<IDao>();
             TestDefaults.SetupSafeVenueAndTeamLookups(mockDao);
 
-            controller = new MatchesController(mockDao.Object, TestDefaults.MockEnvironment().Object);
+            mockMatchService = TestDefaults.MockMatchService();
+
+            controller = new MatchesController(mockDao.Object, TestDefaults.MockEnvironment().Object, mockMatchService.Object);
             TestDefaults.SetupHttpContext(controller);
         }
 
@@ -30,11 +34,12 @@ namespace CricketClub.WebApi.Tests.Controllers
         public void GetAllMatches_NoSeason_ReturnsAll()
         {
             // Arrange
-            mockDao.Setup(d => d.GetAllMatches()).Returns(new List<MatchData>
+            var matchDataList = new List<MatchData>
             {
                 new MatchData { ID = 1, Date = DateTime.Today, OppositionID = 1, VenueID = 1, MatchType = 1, HomeOrAway = "Home" },
                 new MatchData { ID = 2, Date = DateTime.Today.AddDays(1), OppositionID = 2, VenueID = 2, MatchType = 1, HomeOrAway = "Away" }
-            });
+            };
+            mockMatchService.Setup(s => s.GetAll()).Returns(matchDataList);
 
             // Act
             var result = controller.GetAllMatches(null);
@@ -49,11 +54,11 @@ namespace CricketClub.WebApi.Tests.Controllers
         public void GetAllMatches_WithSeason_Filters()
         {
             // Arrange
-            mockDao.Setup(d => d.GetAllMatches()).Returns(new List<MatchData>
+            var matchDataList = new List<MatchData>
             {
-                new MatchData { ID = 1, Date = new DateTime(2025, 6, 1), OppositionID = 1, VenueID = 1, MatchType = 1, HomeOrAway = "Home" },
                 new MatchData { ID = 2, Date = new DateTime(2026, 6, 1), OppositionID = 1, VenueID = 1, MatchType = 1, HomeOrAway = "Home" }
-            });
+            };
+            mockMatchService.Setup(s => s.GetBySeason(2026)).Returns(matchDataList);
 
             // Act
             var result = controller.GetAllMatches(2026);
@@ -69,7 +74,8 @@ namespace CricketClub.WebApi.Tests.Controllers
         public void GetMatch_ReturnsMatch()
         {
             // Arrange
-            mockDao.Setup(d => d.GetMatchData(5)).Returns(new MatchData { ID = 5, Date = DateTime.Today, OppositionID = 1, VenueID = 1, MatchType = 1, HomeOrAway = "Home" });
+            mockMatchService.Setup(s => s.GetById(5))
+                .Returns(new MatchData { ID = 5, Date = DateTime.Today, OppositionID = 1, VenueID = 1, MatchType = 1, HomeOrAway = "Home" });
 
             // Act
             var result = controller.GetMatch(5);
@@ -101,7 +107,7 @@ namespace CricketClub.WebApi.Tests.Controllers
 
             // Assert
             Assert.IsType<NoContentResult>(result);
-            mockDao.Verify(d => d.DeleteMatch(42), Times.Once);
+            mockMatchService.Verify(s => s.Delete(42), Times.Once);
         }
 
         [Fact]
@@ -121,7 +127,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             var conflict = Assert.IsType<ConflictObjectResult>(result);
             Assert.Contains("scorecard data", conflict.Value.ToString());
             Assert.Contains("10", conflict.Value.ToString());
-            mockDao.Verify(d => d.DeleteMatch(It.IsAny<int>()), Times.Never);
+            mockMatchService.Verify(s => s.Delete(It.IsAny<int>()), Times.Never);
         }
 
         [Fact]
@@ -138,7 +144,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             var conflict = Assert.IsType<ConflictObjectResult>(result);
             Assert.Contains("ball by ball data", conflict.Value.ToString());
             Assert.Contains("20", conflict.Value.ToString());
-            mockDao.Verify(d => d.DeleteMatch(It.IsAny<int>()), Times.Never);
+            mockMatchService.Verify(s => s.Delete(It.IsAny<int>()), Times.Never);
         }
 
         [Fact]
@@ -155,7 +161,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             var conflict = Assert.IsType<ConflictObjectResult>(result);
             Assert.Contains("a match report", conflict.Value.ToString());
             Assert.Contains("30", conflict.Value.ToString());
-            mockDao.Verify(d => d.DeleteMatch(It.IsAny<int>()), Times.Never);
+            mockMatchService.Verify(s => s.Delete(It.IsAny<int>()), Times.Never);
         }
 
         [Fact]
@@ -179,7 +185,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             Assert.Contains("scorecard data", message);
             Assert.Contains("ball by ball data", message);
             Assert.Contains("a match report", message);
-            mockDao.Verify(d => d.DeleteMatch(It.IsAny<int>()), Times.Never);
+            mockMatchService.Verify(s => s.Delete(It.IsAny<int>()), Times.Never);
         }
     }
 }

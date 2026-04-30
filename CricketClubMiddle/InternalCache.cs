@@ -1,101 +1,42 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Collections;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace CricketClubMiddle
 {
+    /// <summary>
+    /// Process-wide in-process cache backed by <see cref="MemoryCache"/>.
+    /// Keeps the same singleton API that existing code relies on so callers need no changes.
+    /// Using MemoryCache instead of a hand-rolled Hashtable gives us proper memory-pressure
+    /// eviction, accurate TTL enforcement, and thread-safe atomic GetOrCreate semantics.
+    /// </summary>
     public class InternalCache
     {
-        private static InternalCache instance = new InternalCache();
-        private static Hashtable thisCache = Hashtable.Synchronized(new Hashtable());
+        private static readonly InternalCache _instance = new InternalCache();
+        private readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
 
         private InternalCache() { }
 
-        public static InternalCache GetInstance()
-        {
-            return instance;
-        }
+        public static InternalCache GetInstance() => _instance;
 
         public void Insert(string key, object value, TimeSpan timeToLive)
         {
-            lock (thisCache)
-            {
-                if (thisCache.ContainsKey(key))
-                    thisCache.Remove(key);
-                thisCache[key] = new CacheObject(value, DateTime.UtcNow.Add(timeToLive));
-            }
+            _cache.Set(key, value, timeToLive);
         }
 
         public object Get(string key)
         {
-            var thisItem = (CacheObject)thisCache[key];
-            if (thisItem != null && !thisItem.HasExpired)
-            {
-                return thisItem.Value;
-            }
-            else
-            {
-                thisCache.Remove(key);
-                return null;
-            }
-            
+            _cache.TryGetValue(key, out var value);
+            return value;
         }
 
         public void Remove(string key)
         {
-            thisCache.Remove(key);
+            _cache.Remove(key);
         }
-        
+
         public void Clear()
         {
-            thisCache.Clear();
-        }
-
-    }
-
-    class CacheObject
-    {
-        DateTime _utcExpires { get; set; }
-        object _value { get; set; }
-
-        public CacheObject(object value, DateTime utcExpires)
-        {
-            _utcExpires = utcExpires;
-            _value = value;
-        }
-
-        public bool HasExpired
-        {
-            get
-            {
-                if (_utcExpires > DateTime.UtcNow)
-                {
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
-            }
-
-        }
-
-        public object Value
-        {
-            get
-            {
-                return _value;
-            }
-        }
-
-        public DateTime UtcExpires
-        {
-            get
-            {
-                return _utcExpires;
-            }
+            _cache.Clear();
         }
     }
 }

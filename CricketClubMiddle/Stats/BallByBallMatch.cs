@@ -49,10 +49,16 @@ namespace CricketClubMiddle.Stats
         public int OppositionWickets => oppositionInnings.Details.Any() ? LastOppositionOver.Wickets : 0;
 
         public static BallByBallMatch Load(int matchId, Match match)
-        {
-            var dao = new Dao();
-            return new BallByBallMatch(dao.GetAllBallsForMatch(matchId), dao.GetPlayerStates(matchId), matchId, dao.GetOppositionInnings(matchId), dao.GetInningsStatus(matchId), match);
-        }
+            => Load(matchId, match, new Dao());
+
+        public static BallByBallMatch Load(int matchId, Match match, IDao dao)
+            => new BallByBallMatch(
+                dao.GetAllBallsForMatch(matchId),
+                dao.GetPlayerStates(matchId),
+                matchId,
+                dao.GetOppositionInnings(matchId),
+                dao.GetInningsStatus(matchId),
+                match);
 
         public Dictionary<int, int> GetPlayerScores(HashSet<int> playerIds)
         {

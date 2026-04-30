@@ -1,4 +1,5 @@
 #nullable disable
+using CricketClub.WebApi.Services;
 using CricketClubDAL;
 using CricketClubDomain;
 using CricketClubMiddle;
@@ -132,6 +133,38 @@ namespace CricketClub.WebApi.Tests.Utils
                     .Setup(d => d.GetPlayerData(id))
                     .Returns(new PlayerData { ID = id, Name = name });
             }
+        }
+
+        /// <summary>
+        /// Creates a mock <see cref="IMatchService"/> that returns the given matches and resolves
+        /// teams/venues from the standard safe test data (matching SetupSafeVenueAndTeamLookups).
+        /// </summary>
+        public static Mock<IMatchService> MockMatchService(IEnumerable<MatchData> matches = null)
+        {
+            var matchList = (matches ?? Enumerable.Empty<MatchData>()).ToList();
+            var mock = new Mock<IMatchService>();
+
+            mock.Setup(s => s.GetAll()).Returns(matchList);
+            mock.Setup(s => s.GetFixtures())
+                .Returns(matchList.Where(m => m.Date >= DateTime.Today).ToList());
+            mock.Setup(s => s.GetResults())
+                .Returns(matchList.Where(m => m.Date < DateTime.Today).ToList());
+            mock.Setup(s => s.GetBySeason(It.IsAny<int>()))
+                .Returns((int y) => matchList.Where(m => m.Date.Year == y).ToList());
+            mock.Setup(s => s.GetById(It.IsAny<int>()))
+                .Returns((int id) => matchList.FirstOrDefault(m => m.ID == id));
+
+            mock.Setup(s => s.GetTeam(It.IsAny<int>()))
+                .Returns((int id) => new TeamData { ID = id, Name = id == 0 ? "The Village" : $"Team {id}" });
+            mock.Setup(s => s.GetVenue(It.IsAny<int>()))
+                .Returns((int id) => new VenueData
+                {
+                    ID = id,
+                    Name = $"Venue {id}",
+                    Coordinates = new Tuple<decimal?, decimal?>(51.5m, -0.1m)
+                });
+
+            return mock;
         }
     }
 }

@@ -99,7 +99,7 @@ namespace CricketClubMiddle.Stats
                                                    FielderID = line.Fielder.Id,
                                                    FielderName = line.Fielder.Name,
                                                    MatchID = MatchId,
-                                                   MatchDate = new Match(MatchId).MatchDate,
+                                                   MatchDate = new Match(MatchId, myDao).MatchDate,
                                                    ModeOfDismissal = (int) line.Dismissal,
                                                    PlayerID = line.Batsman.Id,
                                                    PlayerName = line.PlayerName,

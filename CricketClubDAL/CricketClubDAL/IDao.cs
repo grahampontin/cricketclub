@@ -53,6 +53,7 @@ namespace CricketClubDAL
 
         // Matches
         MatchData GetMatchData(int matchId);
+        Dictionary<int, MatchData> GetMatchDataBulk(IEnumerable<int> ids);
         int CreateNewMatch(int opponentId, DateTime matchDate, int venueId, int matchTypeId, HomeOrAway homeAway);
         void UpdateMatch(MatchData data);
         void DeleteMatch(int matchId);
@@ -70,26 +71,6 @@ namespace CricketClubDAL
         ExtrasData GetExtras(int matchId, ThemOrUs who);
         void UpdateExtras(ExtrasData data, ThemOrUs who);
 
-        // News
-        void SaveNewsStory(NewsData data);
-        List<NewsData> GetTopXStories(int x);
-
-        // Chat
-        void SubmitChatComment(ChatData data);
-        List<ChatData> GetChatBetween(DateTime startDate, DateTime endDate);
-        List<ChatData> GetChatAfter(int commentId);
-        MatchReportData GetMatchReportData(int matchId);
-        void SaveMatchReport(MatchReportData data);
-
-        // Accounts
-        List<AccountEntryData> GetAllAccountData();
-        void UpdateAccountEntry(AccountEntryData data);
-        int CreateNewAccountEntry(int playerId, string description, double amount, int creditDebit, int type, int matchId, int status, DateTime transactionDate);
-
-        // Users
-        List<UserData> GetAllUsers();
-        int CreateNewUser(string name, string emailaddress, string password, string displayname);
-        void UpdateUser(UserData userData);
 
         // Committee
         CommitteeData GetCommitteeData(int committeeId);
@@ -98,16 +79,6 @@ namespace CricketClubDAL
         void UpdateCommittee(CommitteeData data);
         void DeleteCommittee(int committeeId);
 
-        // Photos
-        List<PhotoData> GetAllPhotos();
-        int AddOrUpdatePhoto(PhotoData photo);
-        List<PhotoCommentData> GetAllPhotoComments();
-        int SubmitPhotoComment(PhotoCommentData data);
-
-        // Utility
-        string GetSetting(string settingName);
-        void SetSetting(string settingName, string value, string description);
-        List<SettingData> GetAllSettings();
 
         // Logging
         void LogMessage(string message, string stack, string level, DateTime when, string innerExceptionText);

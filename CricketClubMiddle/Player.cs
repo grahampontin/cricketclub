@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using CricketClubDAL;
 using CricketClubDomain;
-using CricketClubMiddle.Interactive;
-using CricketClubMiddle.Utility;
 using MatchType = CricketClubDomain.MatchType;
 
 namespace CricketClubMiddle
@@ -32,10 +29,20 @@ namespace CricketClubMiddle
 
         public IEnumerable<KeyValuePair<Match, int>> GetAllScores()
         {
-            return
-                BattingStatsData.Where(a => a.ModeOfDismissal != (int)ModesOfDismissal.DidNotBat)
-                    .Select(a => new KeyValuePair<Match, int>(new Match(a.MatchID), a.Score))
-                    .OrderBy(a => a.Key.MatchDate);
+            return GetAllScores(dao ?? new Dao());
+        }
+
+        public IEnumerable<KeyValuePair<Match, int>> GetAllScores(IDao loadDao)
+        {
+            var ids = BattingStatsData
+                .Where(a => a.ModeOfDismissal != (int)ModesOfDismissal.DidNotBat)
+                .Select(a => a.MatchID).Distinct();
+            var matchMap = loadDao.GetMatchDataBulk(ids);
+            return BattingStatsData
+                .Where(a => a.ModeOfDismissal != (int)ModesOfDismissal.DidNotBat)
+                .Where(a => matchMap.ContainsKey(a.MatchID))
+                .Select(a => new KeyValuePair<Match, int>(Match.FromData(matchMap[a.MatchID], loadDao), a.Score))
+                .OrderBy(a => a.Key.MatchDate);
         }
 
         public bool WasNotOutIn(Match match)
@@ -48,38 +55,64 @@ namespace CricketClubMiddle
 
         public IEnumerable<KeyValuePair<Match, BattingCardLineData>> GetBattingStatsByMatch()
         {
-            return
-                BattingStatsData.Select(a => new KeyValuePair<Match, BattingCardLineData>(new Match(a.MatchID), a))
-                    .OrderBy(a => a.Key.MatchDate);
+            return GetBattingStatsByMatch(dao ?? new Dao());
+        }
+
+        public IEnumerable<KeyValuePair<Match, BattingCardLineData>> GetBattingStatsByMatch(IDao loadDao)
+        {
+            var ids = BattingStatsData.Select(a => a.MatchID).Distinct();
+            var matchMap = loadDao.GetMatchDataBulk(ids);
+            return BattingStatsData
+                .Where(a => matchMap.ContainsKey(a.MatchID))
+                .Select(a => new KeyValuePair<Match, BattingCardLineData>(Match.FromData(matchMap[a.MatchID], loadDao), a))
+                .OrderBy(a => a.Key.MatchDate);
         }
 
         public IEnumerable<KeyValuePair<Match, FieldingStats>> GetFieldingStatsByMatch()
         {
-            return
-                FieldingStatsData.Select(a =>
-                    {
-                        var match = new Match(a.MatchID);
-                        return new KeyValuePair<Match, FieldingStats>(match,
-                            new FieldingStats(GetCatchesTaken(a.MatchID), GetRunOuts(a.MatchID),
-                                GetStumpings(a.MatchID), match, this));
-                    })
-                    .OrderBy(a => a.Key.MatchDate);
+            return GetFieldingStatsByMatch(dao ?? new Dao());
+        }
+
+        public IEnumerable<KeyValuePair<Match, FieldingStats>> GetFieldingStatsByMatch(IDao loadDao)
+        {
+            var ids = FieldingStatsData.Select(a => a.MatchID).Distinct();
+            var matchMap = loadDao.GetMatchDataBulk(ids);
+            return FieldingStatsData
+                .Where(a => matchMap.ContainsKey(a.MatchID))
+                .Select(a =>
+                {
+                    var match = Match.FromData(matchMap[a.MatchID], loadDao);
+                    return new KeyValuePair<Match, FieldingStats>(match,
+                        new FieldingStats(GetCatchesTaken(a.MatchID), GetRunOuts(a.MatchID),
+                            GetStumpings(a.MatchID), match, this));
+                })
+                .OrderBy(a => a.Key.MatchDate);
         }
 
         public IEnumerable<KeyValuePair<Match, BowlingStatsEntryData>> GetBowlingStatsByMatch()
         {
-            return BowlingStatsData.Select(a =>
-                new KeyValuePair<Match, BowlingStatsEntryData>(new Match(a.MatchID), a));
+            return GetBowlingStatsByMatch(dao ?? new Dao());
+        }
+
+        public IEnumerable<KeyValuePair<Match, BowlingStatsEntryData>> GetBowlingStatsByMatch(IDao loadDao)
+        {
+            var ids = BowlingStatsData.Select(a => a.MatchID).Distinct();
+            var matchMap = loadDao.GetMatchDataBulk(ids);
+            return BowlingStatsData
+                .Where(a => matchMap.ContainsKey(a.MatchID))
+                .Select(a => new KeyValuePair<Match, BowlingStatsEntryData>(Match.FromData(matchMap[a.MatchID], loadDao), a));
         }
 
         public Dictionary<Match, List<BattingCardLineData>> GetDismissedBatsmenData()
         {
             var myDao = dao ?? new Dao();
             var playerFieldingStatsData = myDao.GetPlayerFieldingStatsData(Id);
-            return
-                playerFieldingStatsData.Where(d => d.BowlerID == Id)
-                    .GroupBy(d => d.MatchID)
-                    .ToDictionary(g => new Match(g.Key), g => g.ToList());
+            var ids = playerFieldingStatsData.Select(d => d.MatchID).Distinct();
+            var matchMap = myDao.GetMatchDataBulk(ids);
+            return playerFieldingStatsData
+                .Where(d => d.BowlerID == Id && matchMap.ContainsKey(d.MatchID))
+                .GroupBy(d => d.MatchID)
+                .ToDictionary(g => Match.FromData(matchMap[g.Key], myDao), g => g.ToList());
         }
 
         #region Constructors
@@ -357,45 +390,6 @@ namespace CricketClubMiddle
             set { playerData.IsRightHandBat = value; }
         }
 
-        public string Bio
-        {
-            get
-            {
-                var filename = FirstName + "_" + Surname + "_BIO.html";
-                var bioFolder = SettingsWrapper.GetSettingString("BioFolder", "/Players/bios/");
-                // Handle both absolute and relative paths
-                var path = Path.IsPathRooted(bioFolder) 
-                    ? Path.Combine(bioFolder, filename)
-                    : Path.Combine(Directory.GetCurrentDirectory(), bioFolder.TrimStart('/'), filename);
-                    
-                if (File.Exists(path))
-                {
-                    var stream = new StreamReader(path);
-                    var temp = stream.ReadToEnd();
-                    stream.Close();
-                    return temp;
-                }
-
-                return "No player bio has been created.";
-            }
-            set
-            {
-                var filename = FirstName + "_" + Surname + "_BIO.html";
-                var bioFolder = SettingsWrapper.GetSettingString("BioFolder", "/Players/bios/");
-                // Handle both absolute and relative paths
-                var path = Path.IsPathRooted(bioFolder) 
-                    ? Path.Combine(bioFolder, filename)
-                    : Path.Combine(Directory.GetCurrentDirectory(), bioFolder.TrimStart('/'), filename);
-                    
-                if (File.Exists(path))
-                {
-                    File.Move(path, path + File.GetLastWriteTime(path).ToString("ddMMyyyyHHmmss"));
-                    File.Delete(path);
-                }
-
-                File.WriteAllText(path, value);
-            }
-        }
 
         #endregion
 
