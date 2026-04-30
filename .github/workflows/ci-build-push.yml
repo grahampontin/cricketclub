@@ -28,11 +28,14 @@ jobs:
       - name: Restore
         run: dotnet restore
 
+      - name: Build
+        run: dotnet build --no-restore
+
       # -------------------------
       # 2. Run tests (excluding RequiresDatabase)
       # -------------------------
       - name: Run tests (no DB tests)
-        run: dotnet test --no-build --verbosity normal --filter "TestCategory!=RequiresDatabase"
+        run: dotnet test --no-build --verbosity normal --filter "Category!=RequiresDatabase"
 
       # -------------------------
       # 3. Set up Docker Buildx
