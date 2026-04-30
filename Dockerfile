@@ -12,7 +12,6 @@ COPY CricketClub.WebApi/CricketClub.WebApi.csproj CricketClub.WebApi/
 COPY CricketClubDAL/CricketClubDAL/CricketClubDAL.csproj CricketClubDAL/CricketClubDAL/
 COPY CricketClubDomain/CricketClubDomain.csproj CricketClubDomain/
 COPY CricketClubMiddle/CricketClubMiddle.csproj CricketClubMiddle/
-COPY CricketClubAccounts/CricketClubAccounts.csproj CricketClubAccounts/
 
 # If there are additional projects referenced by the solution, they will be restored once sources are copied.
 RUN dotnet restore CricketClub.WebApi/CricketClub.WebApi.csproj
