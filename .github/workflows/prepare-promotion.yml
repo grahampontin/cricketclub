@@ -1,0 +1,29 @@
+name: Prepare Promotion Options
+
+on:
+  workflow_dispatch:
+
+jobs:
+  collect-shas:
+    runs-on: ubuntu-latest
+    outputs:
+      sha_list: ${{ steps.shas.outputs.sha_list }}
+
+    steps:
+      - name: Fetch last 10 successful CI SHAs
+        id: shas
+        run: |
+          SHAS=$(gh run list \
+            --workflow "CI Build and Push to GHCR" \
+            --branch main \
+            --json headSha,conclusion \
+            --jq '[.[] | select(.conclusion=="success") | .headSha][0:10]')
+          echo "sha_list=$SHAS" >> $GITHUB_OUTPUT
+
+      - name: Trigger Promote to Prod workflow
+        uses: peter-evans/workflow-dispatch@v3
+        with:
+          workflow: Promote to Prod.yml
+          ref: main
+          inputs: |
+            sha_list=${{ steps.shas.outputs.sha_list }}
