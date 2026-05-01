@@ -1,21 +1,44 @@
 name: Promote to Prod
 
 on:
-  workflow_call:
-    inputs:
-      sha_list:
-        required: true
-        type: string
-
   workflow_dispatch:
-    inputs:
-      sha:
-        type: choice
-        description: "Select a build to promote"
-        options: []
 
 jobs:
-  promote:
+  select-sha:
+    runs-on: ubuntu-latest
+    outputs:
+      selected_sha: ${{ steps.user_select.outputs.sha }}
+
+    steps:
+      - name: Fetch last 10 successful CI SHAs
+        id: fetch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SHAS=$(gh run list \
+            --workflow "CI Build and Push to GHCR" \
+            --branch main \
+            --json headSha,conclusion \
+            --jq '[.[] | select(.conclusion=="success") | .headSha][0:10]')
+          echo "sha_list=$SHAS" >> $GITHUB_OUTPUT
+
+      - name: Ask user to choose SHA
+        id: user_select
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const shas = JSON.parse(process.env.SHA_LIST);
+            const choice = await core.prompt({
+              type: 'select',
+              message: 'Select a build to promote to PROD',
+              options: shas
+            });
+            core.setOutput('sha', choice);
+        env:
+          SHA_LIST: ${{ steps.fetch.outputs.sha_list }}
+
+  deploy:
+    needs: select-sha
     runs-on: ubuntu-latest
 
     permissions:
@@ -23,13 +46,6 @@ jobs:
       contents: read
 
     steps:
-      - name: Convert SHA list into dropdown
-        id: convert
-        run: |
-          echo "options<<EOF" >> $GITHUB_OUTPUT
-          echo "${{ inputs.sha_list }}" | jq -r '.[]' >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -39,7 +55,7 @@ jobs:
 
       - name: Deploy to Prod ACA
         run: |
-          IMAGE="ghcr.io/grahampontin/thevillagecc-api:${{ github.event.inputs.sha }}"
+          IMAGE="ghcr.io/grahampontin/thevillagecc-api:${{ needs.select-sha.outputs.selected_sha }}"
           echo "Deploying image: $IMAGE"
 
           az containerapp update \

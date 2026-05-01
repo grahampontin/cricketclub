@@ -23,7 +23,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.github\copilot-instructions.md = .github\copilot-instructions.md
 		.github\workflows\ci-build-push.yml = .github\workflows\ci-build-push.yml
 		.github\workflows\promote-to-prod.yml = .github\workflows\promote-to-prod.yml
-		.github\workflows\prepare-promotion.yml = .github\workflows\prepare-promotion.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CricketClub.WebApi", "CricketClub.WebApi\CricketClub.WebApi.csproj", "{C2F5DC0E-8D14-4704-B455-BD731D793507}"
