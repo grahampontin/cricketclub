@@ -4,44 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  select-sha:
-    runs-on: ubuntu-latest
-    outputs:
-      selected_sha: ${{ steps.user_select.outputs.sha }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Fetch last 10 successful CI SHAs
-        id: fetch
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          SHAS=$(gh run list \
-            --workflow "CI Build and Push to GHCR" \
-            --branch main \
-            --json headSha,conclusion \
-            --jq '[.[] | select(.conclusion=="success") | .headSha][0:10]')
-          echo "sha_list=$SHAS" >> $GITHUB_OUTPUT
-
-      - name: Ask user to choose SHA
-        id: user_select
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const shas = JSON.parse(process.env.SHA_LIST);
-            const choice = await core.prompt({
-              type: 'select',
-              message: 'Select a build to promote to PROD',
-              options: shas
-            });
-            core.setOutput('sha', choice);
-        env:
-          SHA_LIST: ${{ steps.fetch.outputs.sha_list }}
-
-  deploy:
-    needs: select-sha
+  promote:
     runs-on: ubuntu-latest
 
     permissions:
@@ -49,6 +12,21 @@ jobs:
       contents: read
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch latest successful CI SHA
+        id: fetch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SHA=$(gh run list \
+            --workflow "CI Build and Push to GHCR" \
+            --branch main \
+            --json headSha,conclusion \
+            --jq '[.[] | select(.conclusion=="success") | .headSha][0]' )
+          echo "sha=$SHA" >> $GITHUB_OUTPUT
+
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -58,7 +36,7 @@ jobs:
 
       - name: Deploy to Prod ACA
         run: |
-          IMAGE="ghcr.io/grahampontin/thevillagecc-api:${{ needs.select-sha.outputs.selected_sha }}"
+          IMAGE="ghcr.io/grahampontin/thevillagecc-api:${{ steps.fetch.outputs.sha }}"
           echo "Deploying image: $IMAGE"
 
           az containerapp update \
