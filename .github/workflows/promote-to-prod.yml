@@ -10,6 +10,9 @@ jobs:
       selected_sha: ${{ steps.user_select.outputs.sha }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Fetch last 10 successful CI SHAs
         id: fetch
         env:
