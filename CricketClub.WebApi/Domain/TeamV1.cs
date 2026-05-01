@@ -10,7 +10,7 @@ namespace CricketClub.WebApi.Domain
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        /// <summary>URL to the team's logo image (served from /images/teams/{teamId}.png). Falls back to /images/teams/0.png.</summary>
+        /// <summary>URL to the team's logo image (served from /images/teams/{teamId}.png), or null if no logo exists.</summary>
         public string? LogoUrl { get; set; }
         public string? WebsiteUrl { get; set; }
         public int? HomeVenueId { get; set; }
@@ -30,7 +30,7 @@ namespace CricketClub.WebApi.Domain
         }
 
         /// <summary>Maps from internal Team and resolves the logo URL using the provided resolver (mirrors player image pattern).</summary>
-        public static TeamV1 FromInternal(Team team, Func<int, string> logoUrlResolver)
+        public static TeamV1 FromInternal(Team team, Func<int, string?> logoUrlResolver)
         {
             var v1 = FromInternal(team);
             v1.LogoUrl = logoUrlResolver(team.ID);
@@ -38,7 +38,7 @@ namespace CricketClub.WebApi.Domain
         }
 
         /// <summary>Maps directly from <see cref="TeamData"/> — no domain object required.</summary>
-        public static TeamV1 FromData(TeamData data, Func<int, string>? logoUrlResolver = null)
+        public static TeamV1 FromData(TeamData data, Func<int, string?>? logoUrlResolver = null)
         {
             return new TeamV1
             {

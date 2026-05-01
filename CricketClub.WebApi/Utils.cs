@@ -16,16 +16,17 @@ namespace CricketClub.WebApi
         }
 
         /// <summary>
-        /// Returns the URL for a team's logo image.
-        /// Looks for Assets/TeamImages/{teamId}.png; falls back to 0.png when no file exists.
+        /// Returns the URL for a team's logo image, or null if no logo file exists.
+        /// Looks for Assets/TeamImages/{teamId}.png; returns null when no file exists.
         /// Mirrors the player image pattern used in TeamsController and StatsProvider.
         /// </summary>
-        public static string ResolveTeamLogoUrl(int teamId, string contentRootPath, string baseUrl)
+        public static string? ResolveTeamLogoUrl(int teamId, string contentRootPath, string baseUrl)
         {
             var imageRoot = Path.Combine(contentRootPath, "Assets", "TeamImages");
             var imagePath = Path.Combine(imageRoot, $"{teamId}.png");
-            var resolvedId = File.Exists(imagePath) ? teamId : 0;
-            return new Uri(new Uri(baseUrl), $"/images/teams/{resolvedId}.png").ToString();
+            if (!File.Exists(imagePath))
+                return null;
+            return new Uri(new Uri(baseUrl), $"/images/teams/{teamId}.png").ToString();
         }
     }
 }

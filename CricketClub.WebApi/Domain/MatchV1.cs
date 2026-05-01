@@ -29,7 +29,7 @@ namespace CricketClub.WebApi.Domain
         }
 
         /// <summary>Maps from internal Match and resolves the opposition team's logo URL.</summary>
-        public static MatchV1 FromInternal(Match match, Func<int, string> logoUrlResolver)
+        public static MatchV1 FromInternal(Match match, Func<int, string?> logoUrlResolver)
         {
             var v1 = FromInternal(match);
             v1.Opposition.LogoUrl = logoUrlResolver(match.Opposition.ID);
@@ -44,7 +44,7 @@ namespace CricketClub.WebApi.Domain
             MatchData match,
             TeamData opposition,
             VenueData venue,
-            Func<int, string>? logoUrlResolver = null)
+            Func<int, string?>? logoUrlResolver = null)
         {
             return new MatchV1
             {
