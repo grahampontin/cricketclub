@@ -1,6 +1,12 @@
 name: Promote to Prod
 
 on:
+  workflow_call:
+    inputs:
+      sha_list:
+        required: true
+        type: string
+
   workflow_dispatch:
     inputs:
       sha:
@@ -9,25 +15,7 @@ on:
         options: []
 
 jobs:
-  load-shas:
-    runs-on: ubuntu-latest
-    outputs:
-      sha_list: ${{ steps.collect.outputs.sha_list }}
-
-    steps:
-      - name: Fetch last 10 successful CI SHAs
-        id: collect
-        run: |
-          SHAS=$(gh run list \
-            --workflow "CI Build and Push to GHCR" \
-            --branch main \
-            --json headSha,conclusion \
-            --jq '[.[] | select(.conclusion=="success") | .headSha][0:10]')
-          
-          echo "sha_list=$SHAS" >> $GITHUB_OUTPUT
-
   promote:
-    needs: load-shas
     runs-on: ubuntu-latest
 
     permissions:
@@ -35,11 +23,11 @@ jobs:
       contents: read
 
     steps:
-      - name: Convert SHAs to dropdown
-        id: dropdown
+      - name: Convert SHA list into dropdown
+        id: convert
         run: |
           echo "options<<EOF" >> $GITHUB_OUTPUT
-          echo "${{ needs.load-shas.outputs.sha_list }}" | jq -r '.[]' >> $GITHUB_OUTPUT
+          echo "${{ inputs.sha_list }}" | jq -r '.[]' >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Azure Login

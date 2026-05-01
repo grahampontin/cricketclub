@@ -20,10 +20,8 @@ jobs:
             --jq '[.[] | select(.conclusion=="success") | .headSha][0:10]')
           echo "sha_list=$SHAS" >> $GITHUB_OUTPUT
 
-      - name: Trigger Promote to Prod workflow
-        uses: peter-evans/workflow-dispatch@v3
-        with:
-          workflow: Promote to Prod.yml
-          ref: main
-          inputs: |
-            sha_list=${{ steps.shas.outputs.sha_list }}
+  call-promote:
+    needs: collect-shas
+    uses: ./.github/workflows/promote-to-prod.yml
+    with:
+      sha_list: ${{ needs.collect-shas.outputs.sha_list }}
