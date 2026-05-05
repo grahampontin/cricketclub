@@ -1031,6 +1031,118 @@ namespace CricketClubMiddle
 
         }
 
+        /// <summary>
+        /// Abandons the match mid-game (e.g. due to rain). Marks the match as abandoned, closes any in-progress
+        /// innings without advancing the other, then selectively writes ball-by-ball scorecard data — but only for
+        /// scorecard elements that are not already present (checked per-element).
+        /// </summary>
+        public void AbandonMatch(string reason)
+        {
+            var myDao = dao ?? new Dao();
+            var commentaryText = string.IsNullOrWhiteSpace(reason) ? "abandoned" : reason;
+
+            // Mark match as abandoned and persist
+            Abandoned = true;
+            Save();
+
+            // Close any innings that were in-progress; leave NotStarted innings untouched
+            var inningsStatus = myDao.GetInningsStatus(ID);
+            var statusChanged = false;
+
+            if (inningsStatus.OurInningsStatus == InningsStatus.InProgress)
+            {
+                inningsStatus.OurInningsStatus = InningsStatus.Completed;
+                inningsStatus.OurInningsCommentary = commentaryText;
+                statusChanged = true;
+            }
+
+            if (inningsStatus.TheirInningsStatus == InningsStatus.InProgress)
+            {
+                inningsStatus.TheirInningsStatus = InningsStatus.Completed;
+                inningsStatus.TheirInningsCommentary = commentaryText;
+                statusChanged = true;
+            }
+
+            if (statusChanged)
+            {
+                myDao.UpdateInningsStatus(inningsStatus);
+            }
+
+            // Flush ball-by-ball data to the static scorecards, but only fill empty elements
+            PopulateScorecardFromBallByBallDataIfEmpty();
+        }
+
+        /// <summary>
+        /// Writes ball-by-ball data into the static scorecard, but only for elements that do not already
+        /// have data (checked independently per element). This prevents overwriting manually-entered data.
+        /// </summary>
+        public void PopulateScorecardFromBallByBallDataIfEmpty()
+        {
+            var liveScorecard = GetLiveScorecard();
+
+            // Nothing to flush if our innings never produced any B2B ball data
+            if (liveScorecard.LiveBattingCard?.Players == null || !liveScorecard.LiveBattingCard.Players.Any())
+                return;
+
+            var myDao = dao ?? new Dao();
+
+            // --- Batting card + extras (treated as a unit: both written or both skipped) ---
+            var existingBatting = myDao.GetBattingCard(ID, ThemOrUs.Us)
+                .Where(a => a.PlayerID != -1)
+                .ToList();
+
+            if (!existingBatting.Any())
+            {
+                var ourBattingCard = new BattingCard(ID, ThemOrUs.Us, myDao);
+                ourBattingCard.ScorecardData.Clear();
+                ourBattingCard.ScorecardData.AddRange(
+                    liveScorecard.LiveBattingCard.Players.Select(p => BattingCardLine.From(p, this)));
+                var liveExtras = liveScorecard.LiveBattingCard.Extras;
+                ourBattingCard.Save(BattingOrBowling.Batting);
+
+                var extras = new Extras(ID, ThemOrUs.Them, myDao)
+                {
+                    Byes = liveExtras.Byes,
+                    LegByes = liveExtras.LegByes,
+                    NoBalls = liveExtras.NoBalls,
+                    Penalty = liveExtras.Penalty,
+                    Wides = liveExtras.Wides
+                };
+                extras.Save();
+            }
+
+            // --- Fall of wickets (checked independently) ---
+            var existingFow = myDao.GetFoWData(ID, ThemOrUs.Us);
+            if (!existingFow.Any() && liveScorecard.FallOfWickets != null && liveScorecard.FallOfWickets.Any())
+            {
+                // Build position map from the live batting card (key = batting position as string)
+                var playerIdToPosition = liveScorecard.LiveBattingCard.Players
+                    .ToDictionary(
+                        kvp => kvp.Value.BatsmanInningsDetails.PlayerId,
+                        kvp => int.Parse(kvp.Key));
+
+                var fallOfWicketStats = new FoWStats(ID, ThemOrUs.Us, myDao);
+                fallOfWicketStats.Data.Clear();
+                fallOfWicketStats.Data.AddRange(
+                    liveScorecard.FallOfWickets
+                        .Select(f => FoWStatsLine.From(f, this, ThemOrUs.Us, playerIdToPosition)));
+                fallOfWicketStats.Save();
+            }
+
+            // --- Their bowling (checked independently) ---
+            var existingBowling = myDao.GetBowlingStats(ID, ThemOrUs.Them);
+            if (!existingBowling.Any()
+                && liveScorecard.LiveBowlingCard != null
+                && liveScorecard.LiveBowlingCard.Any())
+            {
+                var theirBowlingStats = new BowlingStats(ID, ThemOrUs.Them, myDao);
+                theirBowlingStats.BowlingStatsData.Clear();
+                theirBowlingStats.BowlingStatsData.AddRange(
+                    liveScorecard.LiveBowlingCard.Select(b => BowlingStatsLine.From(b, this)));
+                theirBowlingStats.Save();
+            }
+        }
+
         public void DeleteLastBallByBallOver()
         {
             var myDao = dao ?? new Dao();

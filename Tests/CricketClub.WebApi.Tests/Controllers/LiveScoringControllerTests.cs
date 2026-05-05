@@ -48,5 +48,110 @@ namespace CricketClub.WebApi.Tests.Controllers
             Assert.NotNull(first.Match);
             Assert.Null(first.BallByBall);
         }
+
+        // ── AbandonMatch endpoint ──────────────────────────────────────────────────
+
+        [Fact]
+        public void AbandonMatch_WhenNoCoverageInProgress_ReturnsBadRequest()
+        {
+            // Arrange
+            const int matchId = 42;
+            mockDao.Setup(d => d.GetMatchData(matchId)).Returns(new MatchData
+            {
+                ID = matchId, OppositionID = 1, VenueID = 1, Date = new DateTime(2026, 6, 1),
+                MatchType = 1, HomeOrAway = "H", Overs = 40
+            });
+            mockDao.Setup(d => d.IsBallByBallCoverageInProgress(matchId)).Returns(false);
+
+            // Act
+            var result = controller.AbandonMatch(matchId, new AbandonMatchV1 { Reason = "rain" });
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
+        }
+
+        [Fact]
+        public void AbandonMatch_WhenCoverageInProgress_ReturnsNoContent()
+        {
+            // Arrange
+            const int matchId = 43;
+            mockDao.Setup(d => d.GetMatchData(matchId)).Returns(new MatchData
+            {
+                ID = matchId, OppositionID = 1, VenueID = 1, Date = new DateTime(2026, 6, 1),
+                MatchType = 1, HomeOrAway = "H", Overs = 40, WonToss = true, Batted = true
+            });
+            mockDao.Setup(d => d.IsBallByBallCoverageInProgress(matchId)).Returns(true);
+            mockDao.Setup(d => d.UpdateMatch(It.IsAny<MatchData>()));
+            mockDao.Setup(d => d.GetInningsStatus(matchId)).Returns(new BallByBallInningsStatus
+            {
+                MatchId = matchId,
+                OurInningsStatus = InningsStatus.InProgress,
+                TheirInningsStatus = InningsStatus.NotStarted
+            });
+            mockDao.Setup(d => d.UpdateInningsStatus(It.IsAny<BallByBallInningsStatus>()));
+
+            // GetCurrentBallByBallState internals
+            mockDao.Setup(d => d.GetAllBallsForMatch(matchId)).Returns(new List<Over>());
+            mockDao.Setup(d => d.GetPlayerStates(matchId)).Returns(new List<PlayerState>());
+            mockDao.Setup(d => d.GetOppositionInnings(matchId)).Returns(new OppositionInnings(new List<OppositionInningsDetails>()));
+
+            // Scorecard existence checks (all empty → will write from B2B, but no overs so LiveBattingCard == null)
+            mockDao.Setup(d => d.GetBattingCard(matchId, It.IsAny<ThemOrUs>()))
+                   .Returns(new List<BattingCardLineData>());
+            mockDao.Setup(d => d.GetFoWData(matchId, It.IsAny<ThemOrUs>()))
+                   .Returns(new List<FoWDataLine>());
+            mockDao.Setup(d => d.GetBowlingStats(matchId, It.IsAny<ThemOrUs>()))
+                   .Returns(new List<BowlingStatsEntryData>());
+
+            // Act
+            var result = controller.AbandonMatch(matchId, new AbandonMatchV1 { Reason = "rain" });
+
+            // Assert: 204 No Content
+            Assert.IsType<NoContentResult>(result);
+
+            // Verify the match was marked abandoned and innings status was updated
+            mockDao.Verify(d => d.UpdateMatch(It.Is<MatchData>(m => m.Abandoned)), Times.Once);
+            mockDao.Verify(d => d.UpdateInningsStatus(It.Is<BallByBallInningsStatus>(
+                s => s.OurInningsStatus == InningsStatus.Completed)), Times.Once);
+        }
+
+        [Fact]
+        public void AbandonMatch_WhenBothInningsInProgress_ClosesOnlyInProgressOnes()
+        {
+            // Arrange – unusual state where both innings are shown as InProgress
+            const int matchId = 44;
+            mockDao.Setup(d => d.GetMatchData(matchId)).Returns(new MatchData
+            {
+                ID = matchId, OppositionID = 1, VenueID = 1, Date = new DateTime(2026, 6, 1),
+                MatchType = 1, HomeOrAway = "H", Overs = 40
+            });
+            mockDao.Setup(d => d.IsBallByBallCoverageInProgress(matchId)).Returns(true);
+            mockDao.Setup(d => d.UpdateMatch(It.IsAny<MatchData>()));
+            mockDao.Setup(d => d.GetInningsStatus(matchId)).Returns(new BallByBallInningsStatus
+            {
+                MatchId = matchId,
+                OurInningsStatus = InningsStatus.Completed,
+                TheirInningsStatus = InningsStatus.InProgress
+            });
+            mockDao.Setup(d => d.UpdateInningsStatus(It.IsAny<BallByBallInningsStatus>()));
+            mockDao.Setup(d => d.GetAllBallsForMatch(matchId)).Returns(new List<Over>());
+            mockDao.Setup(d => d.GetPlayerStates(matchId)).Returns(new List<PlayerState>());
+            mockDao.Setup(d => d.GetOppositionInnings(matchId)).Returns(new OppositionInnings(new List<OppositionInningsDetails>()));
+            mockDao.Setup(d => d.GetBattingCard(matchId, It.IsAny<ThemOrUs>()))
+                   .Returns(new List<BattingCardLineData>());
+            mockDao.Setup(d => d.GetFoWData(matchId, It.IsAny<ThemOrUs>()))
+                   .Returns(new List<FoWDataLine>());
+            mockDao.Setup(d => d.GetBowlingStats(matchId, It.IsAny<ThemOrUs>()))
+                   .Returns(new List<BowlingStatsEntryData>());
+
+            // Act
+            var result = controller.AbandonMatch(matchId, new AbandonMatchV1 { Reason = "bad light" });
+
+            // Assert: 204 and only their innings was closed
+            Assert.IsType<NoContentResult>(result);
+            mockDao.Verify(d => d.UpdateInningsStatus(It.Is<BallByBallInningsStatus>(
+                s => s.TheirInningsStatus == InningsStatus.Completed
+                  && s.OurInningsStatus == InningsStatus.Completed)), Times.Once);
+        }
     }
 }

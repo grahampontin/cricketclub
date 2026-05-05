@@ -242,6 +242,35 @@ namespace CricketClub.WebApi.Controllers
         }
 
         /// <summary>
+        /// Abandon the match early (e.g. rain). Marks the match as abandoned, closes any in-progress innings,
+        /// and writes ball-by-ball data to the static scorecard for any elements not already present.
+        /// Existing scorecard data is never overwritten.
+        /// </summary>
+        [HttpPost("{matchId:int}/abandon")]
+        [Consumes("application/json")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult AbandonMatch([FromRoute] int matchId, [FromBody] AbandonMatchV1 request)
+        {
+            try
+            {
+                var match = new Match(matchId, _database);
+                if (!match.GetIsBallByBallInProgress())
+                {
+                    return BadRequest("Cannot abandon match " + matchId + ": no live ball-by-ball coverage is in progress.");
+                }
+
+                match.AbandonMatch(request?.Reason ?? "");
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                Log.Error($"Bad request error in LiveScoringController.AbandonMatch (matchId={matchId})", ex);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
         /// Force end the match by ending innings until complete.
         /// </summary>
         [HttpPost("{matchId:int}/force-end")]

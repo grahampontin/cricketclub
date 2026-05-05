@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using CricketClubDAL;
 using CricketClubDomain;
+using CricketClubMiddle;
 using Moq;
 using NUnit.Framework;
 
@@ -166,6 +167,158 @@ namespace CricketClub.Tests
             Assert.AreEqual("Test conditions", report.Conditions);
             Assert.AreEqual("Test report", report.Report);
             mockDao.Verify(dao => dao.GetMatchReport(1), Times.Once);
+        }
+
+        // ── AbandonMatch unit tests ───────────────────────────────────────────────
+        // Helper: sets up the minimum DAO stubs needed for Match.Save() to succeed
+        private static Mock<IDao> CreateMinimalMatchDao(int matchId, MatchData matchData)
+        {
+            var mockDao = new Mock<IDao>();
+            mockDao.Setup(d => d.GetMatchData(matchId)).Returns(matchData);
+            mockDao.Setup(d => d.UpdateMatch(It.IsAny<MatchData>()));
+            mockDao.Setup(d => d.GetAllMatchScoreSummaries()).Returns(new List<MatchScoreSummaryData>());
+            mockDao.Setup(d => d.GetAllTeamStatsCache()).Returns(new Dictionary<int, TeamStatsCacheData>());
+            mockDao.Setup(d => d.UpsertTeamStatsCache(It.IsAny<TeamStatsCacheData>()));
+            mockDao.Setup(d => d.GetAllVenueStatsCache()).Returns(new Dictionary<int, VenueStatsCacheData>());
+            mockDao.Setup(d => d.UpsertVenueStatsCache(It.IsAny<VenueStatsCacheData>()));
+            mockDao.Setup(d => d.GetMatchesByVenue(It.IsAny<int>())).Returns(new List<MatchData>());
+            mockDao.Setup(d => d.GetMatchesByTeam(It.IsAny<int>())).Returns(new List<MatchData>());
+            mockDao.Setup(d => d.GetTeamData(It.IsAny<int>())).Returns((int id) => new TeamData { ID = id, Name = $"Team {id}" });
+            mockDao.Setup(d => d.GetVenueData(It.IsAny<int>())).Returns((int id) => new VenueData
+            {
+                ID = id, Name = $"Venue {id}",
+                Coordinates = new Tuple<decimal?, decimal?>(51.5m, -0.1m)
+            });
+            // B2B state: no overs played so GetLiveScorecard returns LiveBattingCard == null
+            mockDao.Setup(d => d.GetAllBallsForMatch(matchId)).Returns(new List<Over>());
+            mockDao.Setup(d => d.GetPlayerStates(matchId)).Returns(new List<PlayerState>());
+            mockDao.Setup(d => d.GetOppositionInnings(matchId)).Returns(new OppositionInnings(new List<OppositionInningsDetails>()));
+            return mockDao;
+        }
+
+        [Test]
+        public void AbandonMatch_SetsAbandonedFlagAndPersists()
+        {
+            // Arrange
+            const int matchId = 100;
+            var matchData = new MatchData
+            {
+                ID = matchId, OppositionID = 2, VenueID = 1,
+                Date = DateTime.Today, MatchType = 1, HomeOrAway = "H", Overs = 40,
+                WonToss = true, Batted = true
+            };
+            var mockDao = CreateMinimalMatchDao(matchId, matchData);
+            mockDao.Setup(d => d.GetInningsStatus(matchId)).Returns(new BallByBallInningsStatus
+            {
+                MatchId = matchId,
+                OurInningsStatus = InningsStatus.InProgress,
+                TheirInningsStatus = InningsStatus.NotStarted
+            });
+            mockDao.Setup(d => d.UpdateInningsStatus(It.IsAny<BallByBallInningsStatus>()));
+
+            InternalCache.GetInstance().Clear();
+
+            // Act
+            var match = new CricketClubMiddle.Match(matchId, mockDao.Object);
+            match.AbandonMatch("rain");
+
+            // Assert: UpdateMatch called with Abandoned = true
+            mockDao.Verify(d => d.UpdateMatch(It.Is<MatchData>(m => m.Abandoned)), Times.Once);
+        }
+
+        [Test]
+        public void AbandonMatch_ClosesInProgressInnings_LeavesNotStartedUntouched()
+        {
+            // Arrange
+            const int matchId = 101;
+            var matchData = new MatchData
+            {
+                ID = matchId, OppositionID = 2, VenueID = 1,
+                Date = DateTime.Today, MatchType = 1, HomeOrAway = "H", Overs = 40,
+                WonToss = true, Batted = true
+            };
+            var mockDao = CreateMinimalMatchDao(matchId, matchData);
+            mockDao.Setup(d => d.GetInningsStatus(matchId)).Returns(new BallByBallInningsStatus
+            {
+                MatchId = matchId,
+                OurInningsStatus = InningsStatus.InProgress,
+                TheirInningsStatus = InningsStatus.NotStarted
+            });
+            BallByBallInningsStatus capturedStatus = null;
+            mockDao.Setup(d => d.UpdateInningsStatus(It.IsAny<BallByBallInningsStatus>()))
+                   .Callback<BallByBallInningsStatus>(s => capturedStatus = s);
+
+            InternalCache.GetInstance().Clear();
+
+            // Act
+            var match = new CricketClubMiddle.Match(matchId, mockDao.Object);
+            match.AbandonMatch("rain");
+
+            // Assert
+            Assert.IsNotNull(capturedStatus);
+            Assert.AreEqual(InningsStatus.Completed, capturedStatus.OurInningsStatus);
+            // Their innings was NotStarted — must NOT be changed
+            Assert.AreEqual(InningsStatus.NotStarted, capturedStatus.TheirInningsStatus);
+        }
+
+        [Test]
+        public void AbandonMatch_WhenNoInningsInProgress_DoesNotCallUpdateInningsStatus()
+        {
+            // Arrange: both already Completed (unusual but let's handle it gracefully)
+            const int matchId = 102;
+            var matchData = new MatchData
+            {
+                ID = matchId, OppositionID = 2, VenueID = 1,
+                Date = DateTime.Today, MatchType = 1, HomeOrAway = "H", Overs = 40
+            };
+            var mockDao = CreateMinimalMatchDao(matchId, matchData);
+            mockDao.Setup(d => d.GetInningsStatus(matchId)).Returns(new BallByBallInningsStatus
+            {
+                MatchId = matchId,
+                OurInningsStatus = InningsStatus.Completed,
+                TheirInningsStatus = InningsStatus.Completed
+            });
+
+            InternalCache.GetInstance().Clear();
+
+            // Act
+            var match = new CricketClubMiddle.Match(matchId, mockDao.Object);
+            match.AbandonMatch("rain");
+
+            // Assert: status update not required when nothing was InProgress
+            mockDao.Verify(d => d.UpdateInningsStatus(It.IsAny<BallByBallInningsStatus>()), Times.Never);
+        }
+
+        [Test]
+        public void AbandonMatch_WhenNoBallsPlayed_DoesNotWriteScorecardData()
+        {
+            // Arrange: innings in progress but no overs, so no B2B data to flush
+            const int matchId = 103;
+            var matchData = new MatchData
+            {
+                ID = matchId, OppositionID = 2, VenueID = 1,
+                Date = DateTime.Today, MatchType = 1, HomeOrAway = "H", Overs = 40,
+                WonToss = true, Batted = true
+            };
+            var mockDao = CreateMinimalMatchDao(matchId, matchData);
+            mockDao.Setup(d => d.GetInningsStatus(matchId)).Returns(new BallByBallInningsStatus
+            {
+                MatchId = matchId,
+                OurInningsStatus = InningsStatus.InProgress,
+                TheirInningsStatus = InningsStatus.NotStarted
+            });
+            mockDao.Setup(d => d.UpdateInningsStatus(It.IsAny<BallByBallInningsStatus>()));
+
+            InternalCache.GetInstance().Clear();
+
+            // Act
+            var match = new CricketClubMiddle.Match(matchId, mockDao.Object);
+            match.AbandonMatch("rain");
+
+            // Assert: no batting/bowling/FoW data written since no overs were bowled
+            mockDao.Verify(d => d.UpdateScoreCard(It.IsAny<List<BattingCardLineData>>(), It.IsAny<int>(), It.IsAny<BattingOrBowling>()), Times.Never);
+            mockDao.Verify(d => d.UpdateFoWData(It.IsAny<List<FoWDataLine>>(), It.IsAny<ThemOrUs>()), Times.Never);
+            mockDao.Verify(d => d.UpdateBowlingStats(It.IsAny<List<BowlingStatsEntryData>>(), It.IsAny<ThemOrUs>()), Times.Never);
         }
     }
 }
