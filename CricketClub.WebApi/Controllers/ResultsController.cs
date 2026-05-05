@@ -14,10 +14,21 @@ namespace CricketClub.WebApi.Controllers
     public class ResultsController : ControllerBase
     {
         private readonly IDao database;
+        private readonly IWebHostEnvironment _environment;
 
-        public ResultsController(IDao database)
+        public ResultsController(IDao database, IWebHostEnvironment environment)
         {
             this.database = database;
+            _environment = environment;
+        }
+
+        /// <summary>
+        /// Mirrors the team logo pattern in TeamsController: returns null when no logo file exists.
+        /// </summary>
+        private string? ResolveTeamLogoUrl(int teamId)
+        {
+            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+            return Utils.ResolveTeamLogoUrl(teamId, _environment.ContentRootPath, baseUrl);
         }
 
         /// <summary>
@@ -44,7 +55,7 @@ namespace CricketClub.WebApi.Controllers
             var results = filteredMatches.Select(m =>
             {
                 allMatchReports.TryGetValue(m.ID, out var report);
-                return ResultV1.FromInternal(m, report);
+                return ResultV1.FromInternal(m, report, ResolveTeamLogoUrl);
             }).ToList();
 
             return Ok(results);
@@ -77,7 +88,7 @@ namespace CricketClub.WebApi.Controllers
             var results = matches.Select(m =>
             {
                 allMatchReports.TryGetValue(m.ID, out var report);
-                return ResultV1.FromInternal(m, report);
+                return ResultV1.FromInternal(m, report, ResolveTeamLogoUrl);
             }).ToList();
 
             return Ok(results);

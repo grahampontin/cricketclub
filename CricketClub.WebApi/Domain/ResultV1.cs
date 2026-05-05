@@ -40,12 +40,22 @@ namespace CricketClub.WebApi.Domain
         // New field to indicate if primary team won
         public bool? IsWinner { get; set; }
 
+        /// <summary>ID of the opposition team (for /teams/:id link), or null if unavailable.</summary>
+        public int? OppositionId { get; set; }
+
+        /// <summary>Logo URL of the opposition team, or null when no logo exists.</summary>
+        public string? OppositionLogoUrl { get; set; }
+
+        /// <summary>ID of the venue (for /venues/:id link), or null if unavailable.</summary>
+        public int? VenueId { get; set; }
+
         public static ResultV1 FromInternal(Match match)
         {
             return FromInternal(match, null);
         }
         
-        public static ResultV1 FromInternal(Match match, MatchReportAndConditions matchReport)
+        public static ResultV1 FromInternal(Match match, MatchReportAndConditions matchReport,
+            Func<int, string?>? logoUrlResolver = null)
         {
             bool? isWinner = null;
             if (match.Winner != null)
@@ -81,7 +91,10 @@ namespace CricketClub.WebApi.Domain
                 IsWinner = isWinner,
                 MatchReportConditions = hasMatchReport ? matchReport.Conditions : null,
                 MatchReportText = hasMatchReport ? matchReport.Report : null,
-                MatchReportImage = hasMatchReport ? matchReport.ReportImage : null
+                MatchReportImage = hasMatchReport ? matchReport.ReportImage : null,
+                OppositionId = match.OppositionID,
+                OppositionLogoUrl = logoUrlResolver?.Invoke(match.OppositionID),
+                VenueId = match.VenueID
             };
         }
     }

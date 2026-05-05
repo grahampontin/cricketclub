@@ -707,6 +707,48 @@
         }
       }
     },
+    "/api/LiveScoring/{matchId}/abandon": {
+      "post": {
+        "tags": [
+          "LiveScoring"
+        ],
+        "parameters": [
+          {
+            "name": "matchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AbandonMatchV1"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/LiveScoring/{matchId}/force-end": {
       "post": {
         "tags": [
@@ -2043,6 +2085,16 @@
             "nullable": true
           },
           "footerRow": {
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AbandonMatchV1": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
             "nullable": true
           }
         },
@@ -3778,6 +3830,20 @@
           },
           "isWinner": {
             "type": "boolean",
+            "nullable": true
+          },
+          "oppositionId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "oppositionLogoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "venueId": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           }
         },

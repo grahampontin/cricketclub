@@ -2,6 +2,7 @@ using CricketClub.WebApi.Controllers;
 using CricketClub.WebApi.Domain;
 using CricketClubDAL;
 using CricketClubDomain;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -28,7 +29,11 @@ namespace CricketClub.WebApi.Tests.Controllers
             mockDao.Setup(d => d.GetBattingCard(It.IsAny<int>(), It.IsAny<ThemOrUs>())).Returns(new List<BattingCardLineData>());
             mockDao.Setup(d => d.GetBowlingStats(It.IsAny<int>(), It.IsAny<ThemOrUs>())).Returns(new List<BowlingStatsEntryData>());
 
-            controller = new ResultsController(mockDao.Object);
+            var mockEnv = new Mock<IWebHostEnvironment>();
+            mockEnv.Setup(e => e.ContentRootPath).Returns(Path.GetTempPath());
+
+            controller = new ResultsController(mockDao.Object, mockEnv.Object);
+            TestDefaults.SetupHttpContext(controller);
         }
 
         [Fact]

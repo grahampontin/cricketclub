@@ -158,6 +158,34 @@ The API will be available at:
 - HTTP: http://localhost:5000
 - Swagger UI: https://localhost:5001/swagger
 
+## Deployment
+
+The API is hosted as an Azure Container App. Deployments are performed via the Azure CLI from the Azure Portal (or any shell with the CLI installed).
+
+### DEV
+
+Deploys the `latest` image — use after merging to the main branch:
+
+```bash
+az containerapp update \
+  --name villagecc-api-dev \
+  --resource-group Village_CC \
+  --image ghcr.io/grahampontin/thevillagecc-api:latest
+```
+
+### PROD
+
+Deploys a specific image — replace `<version>` with the git commit hash from GHCR (e.g. `a1b2c3d`):
+
+```bash
+az containerapp update \
+  --name villagecc-api \
+  --resource-group Village_CC \
+  --image ghcr.io/grahampontin/thevillagecc-api:<version>
+```
+
+---
+
 ## Configuration
 
 ### appsettings.json

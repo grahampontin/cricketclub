@@ -83,7 +83,7 @@ namespace CricketClub.WebApi.Controllers
             var resultList = teamMatches.Select(m =>
             {
                 matchReports.TryGetValue(m.ID, out var report);
-                return ResultV1.FromInternal(m, report);
+                return ResultV1.FromInternal(m, report, id => ResolveTeamLogoUrl(id, baseUrl));
             }).ToList();
 
             allStats.TryGetValue(id, out var myStats);
