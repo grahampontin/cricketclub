@@ -26,6 +26,10 @@ RUN dotnet publish CricketClub.WebApi/CricketClub.WebApi.csproj -c $BUILD_CONFIG
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
+# Git commit hash baked in at build time: docker build --build-arg GIT_HASH=$(git rev-parse HEAD) .
+ARG GIT_HASH=unknown
+ENV GIT_HASH=$GIT_HASH
+
 # Bind to port 8080 inside the container
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080

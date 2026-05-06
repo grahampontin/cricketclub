@@ -184,6 +184,27 @@ az containerapp update \
   --image ghcr.io/grahampontin/thevillagecc-api:<version>
 ```
 
+### Checking the deployed version
+
+Once deployed, you can confirm which commit is running:
+
+```
+GET /api/version
+```
+
+Response:
+```json
+{ "gitHash": "a1b2c3d...", "envName": "PROD" }
+```
+
+The hash is baked into the image at build time via the `GIT_HASH` Docker build arg:
+
+```bash
+docker build --build-arg GIT_HASH=$(git rev-parse HEAD) .
+```
+
+Returns `"unknown"` when running locally without the build arg.
+
 ---
 
 ## Configuration

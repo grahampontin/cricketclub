@@ -2065,6 +2065,25 @@
           }
         }
       }
+    },
+    "/api/Version": {
+      "get": {
+        "tags": [
+          "Version"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionInfoV1"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4182,6 +4201,20 @@
           "longitude": {
             "type": "number",
             "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "VersionInfoV1": {
+        "type": "object",
+        "properties": {
+          "gitHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "envName": {
+            "type": "string",
             "nullable": true
           }
         },
