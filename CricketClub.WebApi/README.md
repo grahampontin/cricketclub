@@ -160,7 +160,7 @@ The API will be available at:
 
 ## Deployment
 
-The API is hosted as an Azure Container App. Deployments are performed via the Azure CLI from the Azure Portal (or any shell with the CLI installed).
+The API is hosted as an Azure Container App. Images are built and pushed to GHCR automatically by the GitHub Actions workflow (`.github/workflows/build.yml`) on every merge to `master`. The image is tagged with both `latest` and the full git commit SHA.
 
 ### DEV
 
@@ -175,7 +175,14 @@ az containerapp update \
 
 ### PROD
 
-Deploys a specific image — replace `<version>` with the git commit hash from GHCR (e.g. `a1b2c3d`):
+Deploys a specific image — replace `<version>` with the full git commit SHA from GHCR (e.g. `a1b2c3d4e5f6...`):
+
+```bash
+az containerapp update \
+  --name villagecc-api \
+  --resource-group Village_CC \
+  --image ghcr.io/grahampontin/thevillagecc-api:<version>
+```
 
 ```bash
 az containerapp update \

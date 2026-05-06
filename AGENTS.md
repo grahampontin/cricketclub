@@ -45,6 +45,15 @@ CricketClub.WebApi (ASP.NET Core 9)
 - **`CricketClubDAL.Dao`** executes raw SQL against SQL Server (`thevilla_admin` / `dbo` schemas).
 - **`CricketClub.WebApi/Domain/`** contains versioned API DTOs (`MatchV1`, `VenueV1`, `ResultV1`, …) with `static FromInternal(…)` factory methods that convert from `CricketClubMiddle` types.
 
+## CI / CD
+
+The CI pipeline is defined in `.github/workflows/ci-build-push.yml` (GitHub Actions). On every push to `master` it:
+1. Restores, builds, and runs all non-database tests.
+2. Builds the Docker image with `GIT_HASH=${{ github.sha }}` baked in as a build arg.
+3. Pushes two tags to GHCR: `latest` and the full commit SHA (`ghcr.io/grahampontin/thevillagecc-api:<sha>`).
+
+**Do not create additional workflow files.** All CI changes should be made to the existing `ci-build-push.yml`.
+
 ## Build & Run
 
 ```powershell
@@ -112,6 +121,7 @@ Log4net throughout. Never log secrets or connection string credentials.
 
 | Path | Purpose |
 |------|---------|
+| `.github/workflows/ci-build-push.yml` | GitHub Actions CI: build, test, push to GHCR |
 | `CricketClub.WebApi/Program.cs` | DI setup, middleware, CORS, Swagger |
 | `CricketClub.WebApi/Domain/` | All V1 DTOs and mappers |
 | `CricketClubMiddle/InternalCache.cs` | Process-wide cache singleton |
