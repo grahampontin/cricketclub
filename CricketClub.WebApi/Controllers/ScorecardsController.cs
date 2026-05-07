@@ -5,6 +5,7 @@ using CricketClubMiddle;
 using CricketClubMiddle.Stats;
 using Microsoft.AspNetCore.Mvc;
 using Match = CricketClubMiddle.Match;
+using MatchDropData = CricketClubDomain.MatchDropData;
 
 namespace CricketClub.WebApi.Controllers
 {
@@ -134,6 +135,17 @@ namespace CricketClub.WebApi.Controllers
                 ourFowData.Save();
             }
 
+            // Save dropped catches if provided.
+            // Null = leave existing drops unchanged; empty list = clear all drops.
+            if (unsavedScorecard.Drops != null)
+            {
+                var rows = unsavedScorecard.Drops
+                    .Where(d => d.Drops > 0)
+                    .SelectMany(d => Enumerable.Repeat(
+                        new MatchDropData { MatchId = id, PlayerId = d.PlayerId }, d.Drops));
+                database.SetMatchDrops(id, rows);
+            }
+
             var savedScorecard = new MatchScorecardV1(
                 match.GetOurBattingScoreCard(),
                 match.GetThierBowlingStats(),
@@ -144,6 +156,13 @@ namespace CricketClub.WebApi.Controllers
                 new Extras(match.ID, ThemOrUs.Them, database),
                 new Extras(match.ID, ThemOrUs.Us, database),
                 match);
+
+            var savedRawDrops = database.GetMatchDrops(id);
+            savedScorecard.Drops = savedRawDrops
+                .GroupBy(d => d.PlayerId)
+                .Select(g => new MatchDropV1 { PlayerId = g.Key, Drops = g.Count() })
+                .OrderBy(v => v.PlayerId)
+                .ToList();
 
             return Ok(savedScorecard);
         }

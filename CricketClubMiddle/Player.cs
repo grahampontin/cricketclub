@@ -84,7 +84,7 @@ namespace CricketClubMiddle
                     var match = Match.FromData(matchMap[a.MatchID], loadDao);
                     return new KeyValuePair<Match, FieldingStats>(match,
                         new FieldingStats(GetCatchesTaken(a.MatchID), GetRunOuts(a.MatchID),
-                            GetStumpings(a.MatchID), match, this));
+                            GetStumpings(a.MatchID), GetDrops(a.MatchID), match, this));
                 })
                 .OrderBy(a => a.Key.MatchDate);
         }
@@ -1128,6 +1128,36 @@ namespace CricketClubMiddle
         {
             return GetRunOuts(a => a.MatchID == matchId);
         }
+
+        #region Drops
+
+        private List<MatchDropData> dropsDataCache;
+
+        private IEnumerable<MatchDropData> DropsData
+        {
+            get
+            {
+                if (dropsDataCache == null)
+                {
+                    var myDao = dao ?? new Dao();
+                    dropsDataCache = myDao.GetPlayerDrops(Id);
+                }
+
+                return dropsDataCache;
+            }
+        }
+
+        public int GetDrops()
+        {
+            return DropsData.Count();
+        }
+
+        public int GetDrops(int matchId)
+        {
+            return DropsData.Count(d => d.MatchId == matchId);
+        }
+
+        #endregion
 
         #endregion
 

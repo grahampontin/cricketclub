@@ -1452,6 +1452,48 @@ namespace CricketClubDAL
             return reports.ToDictionary(x => x.MatchId, x => x.Report);
         }
 
+        #region Drops
+
+        public List<MatchDropData> GetMatchDrops(int matchId)
+        {
+            const string sql = "SELECT id, match_id, player_id FROM thevilla_admin.match_drops WHERE match_id = @matchId";
+            return db.ExecuteSqlAndReturnAllRows(sql, MatchDropDataFromRow,
+                new SqlParameter("@matchId", matchId)).ToList();
+        }
+
+        public List<MatchDropData> GetPlayerDrops(int playerId)
+        {
+            const string sql = "SELECT id, match_id, player_id FROM thevilla_admin.match_drops WHERE player_id = @playerId";
+            return db.ExecuteSqlAndReturnAllRows(sql, MatchDropDataFromRow,
+                new SqlParameter("@playerId", playerId)).ToList();
+        }
+
+        public void SetMatchDrops(int matchId, IEnumerable<MatchDropData> drops)
+        {
+            db.ExecuteInsertOrUpdate(
+                "DELETE FROM thevilla_admin.match_drops WHERE match_id = @matchId",
+                new SqlParameter("@matchId", matchId));
+
+            foreach (var drop in drops)
+            {
+                db.ExecuteInsertOrUpdate(
+                    "INSERT INTO thevilla_admin.match_drops (match_id, player_id) VALUES (@matchId, @playerId)",
+                    new SqlParameter("@matchId", matchId),
+                    new SqlParameter("@playerId", drop.PlayerId));
+            }
+        }
+
+        private static MatchDropData MatchDropDataFromRow(Row row)
+        {
+            return new MatchDropData
+            {
+                Id = row.GetInt("id"),
+                MatchId = row.GetInt("match_id"),
+                PlayerId = row.GetInt("player_id")
+            };
+        }
+
+        #endregion
     }
 
     public class MatchReportAndConditions

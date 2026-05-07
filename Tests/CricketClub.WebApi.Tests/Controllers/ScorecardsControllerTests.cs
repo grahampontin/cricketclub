@@ -75,6 +75,104 @@ namespace CricketClub.WebApi.Tests.Controllers
         }
 
         [Fact]
+        public void GetScorecard_IncludesDrops()
+        {
+            // Arrange
+            mockDao.Setup(d => d.GetMatchData(1)).Returns(new MatchData
+            {
+                ID = 1, Date = DateTime.Today, OppositionID = 1, VenueID = 1,
+                MatchType = 1, HomeOrAway = "H", CaptainID = 1, WicketKeeperID = 2,
+                Overs = 40, WonToss = true, Batted = true
+            });
+            mockDao.Setup(d => d.GetMatchDrops(1)).Returns(new List<MatchDropData>
+            {
+                new MatchDropData { Id = 1, MatchId = 1, PlayerId = 5 },
+                new MatchDropData { Id = 2, MatchId = 1, PlayerId = 5 },
+                new MatchDropData { Id = 3, MatchId = 1, PlayerId = 7 },
+            });
+
+            // Act
+            var result = controller.GetScorecard(1);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var scorecard = Assert.IsType<MatchScorecardV1>(ok.Value);
+            Assert.NotNull(scorecard.Drops);
+            Assert.Equal(2, scorecard.Drops.Count);
+            Assert.Equal(2, scorecard.Drops.Single(d => d.PlayerId == 5).Drops);
+            Assert.Equal(1, scorecard.Drops.Single(d => d.PlayerId == 7).Drops);
+        }
+
+        [Fact]
+        public void SaveScorecard_WithDrops_PersistsDrops()
+        {
+            // Arrange
+            mockDao.Setup(d => d.GetMatchData(1)).Returns(new MatchData
+            {
+                ID = 1, Date = DateTime.Today, OppositionID = 1, VenueID = 1,
+                MatchType = 1, HomeOrAway = "H", CaptainID = 1, WicketKeeperID = 2,
+                Overs = 40, WonToss = true, Batted = true
+            });
+            mockDao.Setup(d => d.GetMatchDrops(1)).Returns(new List<MatchDropData>
+            {
+                new MatchDropData { Id = 1, MatchId = 1, PlayerId = 5 },
+                new MatchDropData { Id = 2, MatchId = 1, PlayerId = 5 },
+            });
+
+            var scorecard = new MatchScorecardV1
+            {
+                MatchConditions = new MatchConditionsV1
+                {
+                    Abandoned = false, CaptainId = 1, WicketKeeperId = 2,
+                    Overs = 40, Declaration = false, WeWonTheToss = true, TossWinnerBatted = true
+                },
+                Drops = new List<MatchDropV1>
+                {
+                    new MatchDropV1 { PlayerId = 5, Drops = 2 },
+                }
+            };
+
+            // Act
+            var result = controller.SaveScorecard(1, scorecard);
+
+            // Assert — SetMatchDrops called with 2 expanded rows for player 5
+            mockDao.Verify(d => d.SetMatchDrops(1,
+                It.Is<IEnumerable<MatchDropData>>(rows => rows.Count() == 2)), Times.Once);
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var saved = Assert.IsType<MatchScorecardV1>(ok.Value);
+            Assert.NotNull(saved.Drops);
+        }
+
+        [Fact]
+        public void SaveScorecard_NullDrops_DoesNotTouchDrops()
+        {
+            // Arrange — Drops property omitted (null) means no-op for drops
+            mockDao.Setup(d => d.GetMatchData(1)).Returns(new MatchData
+            {
+                ID = 1, Date = DateTime.Today, OppositionID = 1, VenueID = 1,
+                MatchType = 1, HomeOrAway = "H", CaptainID = 1, WicketKeeperID = 2,
+                Overs = 40, WonToss = true, Batted = true
+            });
+
+            var scorecard = new MatchScorecardV1
+            {
+                MatchConditions = new MatchConditionsV1
+                {
+                    Abandoned = false, CaptainId = 1, WicketKeeperId = 2,
+                    Overs = 40, Declaration = false, WeWonTheToss = true, TossWinnerBatted = true
+                }
+                // Drops is null — should be a no-op
+            };
+
+            // Act
+            controller.SaveScorecard(1, scorecard);
+
+            // Assert — SetMatchDrops should NOT have been called
+            mockDao.Verify(d => d.SetMatchDrops(It.IsAny<int>(), It.IsAny<IEnumerable<MatchDropData>>()), Times.Never);
+        }
+
+        [Fact]
         public void SaveScorecard_WithMatchReport_PersistsMatchReport()
         {
             // Arrange

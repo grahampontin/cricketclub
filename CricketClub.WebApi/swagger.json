@@ -3200,6 +3200,20 @@
         },
         "additionalProperties": false
       },
+      "MatchDropV1": {
+        "type": "object",
+        "properties": {
+          "playerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "drops": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "MatchReportV1": {
         "type": "object",
         "properties": {
@@ -3232,6 +3246,13 @@
           },
           "matchReport": {
             "$ref": "#/components/schemas/MatchReportV1"
+          },
+          "drops": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MatchDropV1"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false

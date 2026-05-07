@@ -75,7 +75,6 @@ dotnet test --filter "Category!=RequiresDatabase"
 
 **Agents must always run `dotnet build` and `dotnet test --filter "Category!=RequiresDatabase"` before completing any task. Both must succeed with zero errors and zero non-RequiresDatabase test failures.**
 
-Packages for `CricketClubAccounts`, `CricketClubDAL`, `CricketClubDomain`, and `CricketClubMiddle` are restored from a private Azure DevOps NuGet feed configured in `nuget.config`.
 
 ## C# Conventions
 

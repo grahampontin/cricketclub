@@ -61,6 +61,11 @@ namespace CricketClubDAL
         int GetPreviousMatch(DateTime date);
         List<MatchData> GetAllMatches();
 
+        // Drops (dropped catches)
+        List<MatchDropData> GetMatchDrops(int matchId);
+        List<MatchDropData> GetPlayerDrops(int playerId);
+        void SetMatchDrops(int matchId, IEnumerable<MatchDropData> drops);
+
         // Scorecards
         IEnumerable<BattingCardLineData> GetBattingCard(int matchId, ThemOrUs themOrUs);
         void UpdateScoreCard(List<BattingCardLineData> battingData, int totalExtras, BattingOrBowling battingOrBowling);

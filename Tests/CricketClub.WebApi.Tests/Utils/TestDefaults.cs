@@ -99,6 +99,15 @@ namespace CricketClub.WebApi.Tests.Utils
                 .Setup(d => d.GetMatchesByTeam(It.IsAny<int>()))
                 .Returns(new List<MatchData>());
 
+            // Drops — return empty by default so tests that touch fielding stats don't fail.
+            dao
+                .Setup(d => d.GetMatchDrops(It.IsAny<int>()))
+                .Returns(new List<MatchDropData>());
+
+            dao
+                .Setup(d => d.GetPlayerDrops(It.IsAny<int>()))
+                .Returns(new List<MatchDropData>());
+
             // Some production code paths (e.g., ResultV1.FromInternal) call Team.OurTeam which uses new Dao().
             // To keep unit tests isolated from the real database, pre-populate the global cache with common team IDs.
             var cache = InternalCache.GetInstance();
