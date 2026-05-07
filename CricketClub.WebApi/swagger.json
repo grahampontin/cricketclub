@@ -3885,6 +3885,14 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
+          },
+          "tossWinner": {
+            "type": "string",
+            "nullable": true
+          },
+          "tossWinnerElectedTo": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

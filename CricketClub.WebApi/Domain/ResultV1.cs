@@ -49,6 +49,12 @@ namespace CricketClub.WebApi.Domain
         /// <summary>ID of the venue (for /venues/:id link), or null if unavailable.</summary>
         public int? VenueId { get; set; }
 
+        /// <summary>Name of the team that won the toss, or null if not recorded.</summary>
+        public string? TossWinner { get; set; }
+
+        /// <summary>"bat" or "bowl" — what the toss-winning team elected to do, or null if not recorded.</summary>
+        public string? TossWinnerElectedTo { get; set; }
+
         public static ResultV1 FromInternal(Match match)
         {
             return FromInternal(match, null);
@@ -94,7 +100,9 @@ namespace CricketClub.WebApi.Domain
                 MatchReportImage = hasMatchReport ? matchReport.ReportImage : null,
                 OppositionId = match.OppositionID,
                 OppositionLogoUrl = logoUrlResolver?.Invoke(match.OppositionID),
-                VenueId = match.VenueID
+                VenueId = match.VenueID,
+                TossWinner = match.TossWinner?.Name,
+                TossWinnerElectedTo = match.TossWinnerBatted ? "bat" : "bowl"
             };
         }
     }

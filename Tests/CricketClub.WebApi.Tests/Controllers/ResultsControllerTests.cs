@@ -146,5 +146,65 @@ namespace CricketClub.WebApi.Tests.Controllers
             var results = Assert.IsAssignableFrom<List<ResultV1>>(okResult.Value);
             Assert.Single(results);
         }
+
+        [Fact]
+        public void GetResults_WeWonTossAndBatted_TossFieldsReflectUs()
+        {
+            // Arrange: WonToss = true (we won), Batted = true (we batted)
+            var matchData = new MatchData
+            {
+                ID = 1,
+                Date = new DateTime(2026, 1, 20),
+                OppositionID = 1,
+                VenueID = 1,
+                MatchType = 1,
+                HomeOrAway = "Home",
+                WonToss = true,
+                Batted = true
+            };
+            _mockDao.Setup(d => d.GetAllMatches()).Returns(new List<MatchData> { matchData });
+            _mockDao.Setup(d => d.GetAllMatchReports()).Returns(new Dictionary<int, MatchReportAndConditions>());
+
+            // Act
+            var result = _controller.GetResults(null);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var results = Assert.IsAssignableFrom<List<ResultV1>>(okResult.Value);
+            var item = Assert.Single(results);
+            // WonToss = true → toss winner is "Us" (The Village)
+            Assert.NotNull(item.TossWinner);
+            Assert.Equal("bat", item.TossWinnerElectedTo);
+        }
+
+        [Fact]
+        public void GetResults_OppositionWonTossAndBowled_TossFieldsReflectOpposition()
+        {
+            // Arrange: WonToss = false (opposition won), Batted = false (opposition fielded → we batted)
+            var matchData = new MatchData
+            {
+                ID = 1,
+                Date = new DateTime(2026, 1, 20),
+                OppositionID = 1,
+                VenueID = 1,
+                MatchType = 1,
+                HomeOrAway = "Home",
+                WonToss = false,
+                Batted = false
+            };
+            _mockDao.Setup(d => d.GetAllMatches()).Returns(new List<MatchData> { matchData });
+            _mockDao.Setup(d => d.GetAllMatchReports()).Returns(new Dictionary<int, MatchReportAndConditions>());
+
+            // Act
+            var result = _controller.GetResults(null);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var results = Assert.IsAssignableFrom<List<ResultV1>>(okResult.Value);
+            var item = Assert.Single(results);
+            // WonToss = false → toss winner is the opposition
+            Assert.NotNull(item.TossWinner);
+            Assert.Equal("bowl", item.TossWinnerElectedTo);
+        }
     }
 }
