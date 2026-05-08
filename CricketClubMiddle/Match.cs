@@ -117,7 +117,7 @@ namespace CricketClubMiddle
         public Team TossWinner => data.WonToss ? Us : Opposition;
 
         /// <summary>
-        ///     Did the special case team (The Village) win the toss - try not to use - prefer TossWinner
+        ///     Did the special case team (The Village CC) win the toss - try not to use - prefer TossWinner
         /// </summary>
         public bool WonToss
         {

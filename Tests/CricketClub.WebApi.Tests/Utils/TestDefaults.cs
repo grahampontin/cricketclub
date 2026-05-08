@@ -53,7 +53,7 @@ namespace CricketClub.WebApi.Tests.Utils
                 .Returns((int id) => new TeamData
                 {
                     ID = id,
-                    Name = id == 0 ? "The Village" : $"Team {id}"
+                    Name = id == 0 ? "The Village CC" : $"Team {id}"
                 });
 
             // Player.GetAll(fullyHydrated: true) expects these to be non-null.
@@ -111,7 +111,7 @@ namespace CricketClub.WebApi.Tests.Utils
             // Some production code paths (e.g., ResultV1.FromInternal) call Team.OurTeam which uses new Dao().
             // To keep unit tests isolated from the real database, pre-populate the global cache with common team IDs.
             var cache = InternalCache.GetInstance();
-            cache.Insert("team0", new TeamData { ID = 0, Name = "The Village" }, TimeSpan.FromHours(24));
+            cache.Insert("team0", new TeamData { ID = 0, Name = "The Village CC" }, TimeSpan.FromHours(24));
             cache.Insert("team1", new TeamData { ID = 1, Name = "Team 1" }, TimeSpan.FromHours(24));
             cache.Insert("team2", new TeamData { ID = 2, Name = "Team 2" }, TimeSpan.FromHours(24));
         }
@@ -164,7 +164,7 @@ namespace CricketClub.WebApi.Tests.Utils
                 .Returns((int id) => matchList.FirstOrDefault(m => m.ID == id));
 
             mock.Setup(s => s.GetTeam(It.IsAny<int>()))
-                .Returns((int id) => new TeamData { ID = id, Name = id == 0 ? "The Village" : $"Team {id}" });
+                .Returns((int id) => new TeamData { ID = id, Name = id == 0 ? "The Village CC" : $"Team {id}" });
             mock.Setup(s => s.GetVenue(It.IsAny<int>()))
                 .Returns((int id) => new VenueData
                 {

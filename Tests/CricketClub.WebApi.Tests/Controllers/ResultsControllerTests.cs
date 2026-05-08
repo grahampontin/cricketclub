@@ -172,7 +172,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             var okResult = Assert.IsType<OkObjectResult>(result);
             var results = Assert.IsAssignableFrom<List<ResultV1>>(okResult.Value);
             var item = Assert.Single(results);
-            // WonToss = true → toss winner is "Us" (The Village)
+            // WonToss = true → toss winner is "Us" (The Village CC)
             Assert.NotNull(item.TossWinner);
             Assert.Equal("bat", item.TossWinnerElectedTo);
         }

@@ -24,8 +24,8 @@ namespace CricketClub.WebApi.Stats
             id = match.Id;
             matchDate = match.Date;
             opposition = match.IsHome
-                ? "The Village vs " + match.Opposition.Name
-                : match.Opposition.Name + " vs The Village";
+                ? "The Village CC vs " + match.Opposition.Name
+                : match.Opposition.Name + " vs The Village CC";
             batsAt = battingStatsRowData.batsAt;
             runs = battingStatsRowData.runs;
             bowlingFigures = bowlingStatsRowData.overs == 0 ? "-/-" : bowlingStatsRowData.wickets + "/" + bowlingStatsRowData.runs;
