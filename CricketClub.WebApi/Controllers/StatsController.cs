@@ -25,7 +25,7 @@ namespace CricketClub.WebApi.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public IActionResult QueryStats([FromBody] StatsQueryV1 query)
         {
-            var statsData = StatsProvider.Query(query);
+            var statsData = StatsProvider.Query(query, database);
             return Ok(statsData);
         }
 

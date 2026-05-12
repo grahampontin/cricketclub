@@ -16,7 +16,7 @@ namespace CricketClub.WebApi.Stats
     [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     public class StatsProvider
     {
-        public static StatsDataV1 Query(StatsQueryV1 query)
+        public static StatsDataV1 Query(StatsQueryV1 query, IDao dao)
         {
             List<object> rows = new List<object>();
             List<StatsColumnDefinitionV1> columns = new List<StatsColumnDefinitionV1>();
@@ -25,7 +25,7 @@ namespace CricketClub.WebApi.Stats
             switch (query.category)
             {
                 case "batting":
-                    var inScopeBatsmen = Player.GetAll().Where(a =>
+                    var inScopeBatsmen = Player.GetAll(true, dao).Where(a =>
                         a.GetMatchesPlayed(query.from, query.to, matchTypes,
                             venue) > 0);
                     rows = inScopeBatsmen.Select(p => new BattingStatsRowData(p, query.from, query.to,
@@ -49,7 +49,7 @@ namespace CricketClub.WebApi.Stats
                         BattingStatsRowData.RunOuts);
                     break;
                 case "bowling":
-                    var inScopeBowlers = Player.GetAll().Where(a =>
+                    var inScopeBowlers = Player.GetAll(true, dao).Where(a =>
                         a.GetMatchesPlayed(query.from, query.to, matchTypes,
                             venue) > 0);
                     rows = inScopeBowlers.Select(p => new BowlingStatsRowData(p, query.from, query.to,
