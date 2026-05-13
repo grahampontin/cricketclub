@@ -84,5 +84,9 @@ namespace CricketClub.WebApi.Services
             _dao.DeleteMatch(id);
             _cache.Remove(CacheKeyMatches);
         }
+        public void InvalidateTeamsCache()
+        {
+            _cache.Remove(CacheKeyTeams);
+        }
     }
 }

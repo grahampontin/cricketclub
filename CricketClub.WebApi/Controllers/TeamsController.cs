@@ -1,4 +1,5 @@
 using CricketClub.WebApi.Domain;
+using CricketClub.WebApi.Services;
 using CricketClubDAL;
 using CricketClubDomain;
 using CricketClubMiddle;
@@ -16,11 +17,13 @@ namespace CricketClub.WebApi.Controllers
     {
         private readonly IDao _database;
         private readonly IWebHostEnvironment _environment;
+        private readonly IMatchService _matchService;
 
-        public TeamsController(IDao database, IWebHostEnvironment environment)
+        public TeamsController(IDao database, IWebHostEnvironment environment, IMatchService matchService)
         {
             _database = database;
             _environment = environment;
+            _matchService = matchService;
         }
 
         /// <summary>
@@ -173,6 +176,7 @@ namespace CricketClub.WebApi.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var team = Team.CreateNewTeam(teamData.Name, _database);
+            _matchService.InvalidateTeamsCache();
             var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
             var result = TeamV1.FromInternal(team, id => ResolveTeamLogoUrl(id, baseUrl));
             return CreatedAtAction(nameof(GetTeam), new { id = team.ID }, result);
@@ -195,6 +199,8 @@ namespace CricketClub.WebApi.Controllers
                 HomeVenueId = teamData.HomeVenueId
             };
             team.Save();
+            InternalCache.GetInstance().Remove($"team{teamData.Id}");
+            _matchService.InvalidateTeamsCache();
             return Ok(teamData);
         }
 
@@ -210,6 +216,7 @@ namespace CricketClub.WebApi.Controllers
             {
                 _database.DeleteTeam(id);
                 InternalCache.GetInstance().Remove($"team{id}");
+                _matchService.InvalidateTeamsCache();
                 return NoContent();
             }
             catch (Exception ex) when (ex.Message.Contains("REFERENCE") || ex.Message.Contains("FK") || ex.Message.Contains("foreign key"))

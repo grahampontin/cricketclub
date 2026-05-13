@@ -1,5 +1,6 @@
 using CricketClub.WebApi.Controllers;
 using CricketClub.WebApi.Domain;
+using CricketClub.WebApi.Services;
 using CricketClubDAL;
 using CricketClubDomain;
 using Microsoft.AspNetCore.Hosting;
@@ -13,6 +14,7 @@ namespace CricketClub.WebApi.Tests.Controllers
     public class TeamsControllerTests
     {
         private readonly Mock<IDao> mockDao;
+        private readonly Mock<IMatchService> mockMatchService;
         private readonly TeamsController controller;
 
         public TeamsControllerTests()
@@ -22,11 +24,13 @@ namespace CricketClub.WebApi.Tests.Controllers
             mockDao = new Mock<IDao>();
             TestDefaults.SetupSafeVenueAndTeamLookups(mockDao);
 
+            mockMatchService = new Mock<IMatchService>();
+
             // Mock IWebHostEnvironment — ContentRootPath points to a temp dir (no logo files exist, so fallback 0.png is used)
             var mockEnv = new Mock<IWebHostEnvironment>();
             mockEnv.Setup(e => e.ContentRootPath).Returns(Path.GetTempPath());
 
-            controller = new TeamsController(mockDao.Object, mockEnv.Object);
+            controller = new TeamsController(mockDao.Object, mockEnv.Object, mockMatchService.Object);
             TestDefaults.SetupHttpContext(controller);
         }
 
@@ -83,6 +87,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             var team = Assert.IsType<TeamV1>(created.Value);
             Assert.Equal(2, team.Id);
             mockDao.Verify(d => d.CreateNewTeam("NewTeam"), Times.Once);
+            mockMatchService.Verify(s => s.InvalidateTeamsCache(), Times.Once);
         }
 
         [Fact]
@@ -207,6 +212,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             // Assert
             Assert.IsType<OkObjectResult>(result);
             mockDao.Verify(d => d.UpdateTeam(It.Is<TeamData>(t => t.ID == 2 && t.Name == "Updated")), Times.Once);
+            mockMatchService.Verify(s => s.InvalidateTeamsCache(), Times.Once);
         }
 
         [Fact]
@@ -218,6 +224,7 @@ namespace CricketClub.WebApi.Tests.Controllers
 
             Assert.IsType<NoContentResult>(result);
             mockDao.Verify(d => d.DeleteTeam(3), Times.Once);
+            mockMatchService.Verify(s => s.InvalidateTeamsCache(), Times.Once);
         }
     }
 }

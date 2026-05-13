@@ -43,6 +43,9 @@ namespace CricketClub.WebApi.Services
 
         /// <summary>Deletes a match and invalidates the match list cache.</summary>
         void Delete(int id);
+
+        /// <summary>Invalidates the team lookup cache so the next request re-reads from the database.</summary>
+        void InvalidateTeamsCache();
     }
 }
 
