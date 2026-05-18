@@ -52,13 +52,29 @@ namespace CricketClubMiddle.Stats
             => Load(matchId, match, new Dao());
 
         public static BallByBallMatch Load(int matchId, Match match, IDao dao)
-            => new BallByBallMatch(
+        {
+            var cacheKey = $"BallByBallState_{matchId}";
+            var cache = InternalCache.GetInstance();
+            if (cache.Get(cacheKey) is BallByBallMatch cached) return cached;
+
+            var loaded = new BallByBallMatch(
                 dao.GetAllBallsForMatch(matchId),
                 dao.GetPlayerStates(matchId),
                 matchId,
                 dao.GetOppositionInnings(matchId),
                 dao.GetInningsStatus(matchId),
                 match);
+
+            cache.Insert(cacheKey, loaded, TimeSpan.FromSeconds(30));
+            return loaded;
+        }
+
+        /// <summary>Removes the cached <see cref="BallByBallMatch"/> for the given match so the next
+        /// call to <see cref="Load"/> fetches fresh data from the database.</summary>
+        public static void InvalidateCache(int matchId)
+        {
+            InternalCache.GetInstance().Remove($"BallByBallState_{matchId}");
+        }
 
         public Dictionary<int, int> GetPlayerScores(HashSet<int> playerIds)
         {

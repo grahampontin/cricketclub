@@ -57,7 +57,9 @@ namespace CricketClub.WebApi.Controllers
                 var matchDescriptors2 = Match.GetInProgressGames(_database)
                     .Union(Match.GetFixtures(_database).Where(m =>
                         m.MatchDate < DateTime.Today.AddDays(14) &&
-                        !m.GetCurrentBallByBallState().IsMatchComplete()))
+                        // Short-circuit: fixtures with no ball-by-ball coverage started can never be
+                        // complete, so skip the expensive 4-query BallByBallMatch load for them.
+                        (!m.GetIsBallByBallInProgress() || !m.GetCurrentBallByBallState().IsMatchComplete())))
                     .Select(BallByBallMatchDescriptorV1.FromInternal)
                     .Distinct(new BallByBallMatchDescriptorV1.MatchIdEqualityComparer())
                     .Select(LiveScoringMatchSummaryV1.FromBallByBall)
