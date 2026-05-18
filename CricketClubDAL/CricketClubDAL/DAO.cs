@@ -1119,7 +1119,19 @@ namespace CricketClubDAL
 
         public IEnumerable<int> GetInProgressMatchIds()
         {
-            return db.QueryMany<int>("SELECT DISTINCT match_id FROM dbo.ballbyball_team", r => r.GetInt(0));
+            // INNER JOIN on Matches ensures we only return IDs with valid match data (prevents NullReferenceException
+            // when constructing Match objects from stale/orphaned ball-by-ball rows).
+            // LEFT JOIN on innings_status: exclude matches where BOTH innings are already Completed.
+            // Matches with no innings_status row yet (just started) are included via the IS NULL branch.
+            const string sql = @"
+                SELECT DISTINCT bt.match_id
+                FROM dbo.ballbyball_team bt
+                INNER JOIN thevilla_admin.Matches m ON m.match_id = bt.match_id
+                LEFT JOIN dbo.ballbyball_innings_status bis ON bis.match_id = bt.match_id
+                WHERE bis.match_id IS NULL
+                   OR NOT (    bis.our_innings_status   = 'Completed'
+                            AND bis.their_innings_status = 'Completed')";
+            return db.QueryMany<int>(sql, r => r.GetInt(0));
         }
 
         public void StartBallByBallCoverage(int id, IEnumerable<int> playerIds, MatchData matchConditions)

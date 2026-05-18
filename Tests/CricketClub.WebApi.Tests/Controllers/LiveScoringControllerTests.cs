@@ -49,6 +49,75 @@ namespace CricketClub.WebApi.Tests.Controllers
             Assert.Null(first.BallByBall);
         }
 
+        [Fact]
+        public void GetMatches_Default_WithNoGamesOrFixtures_ReturnsEmpty()
+        {
+            // Arrange – nothing in progress, no upcoming fixtures
+            mockDao.Setup(d => d.GetAllMatches()).Returns(new List<MatchData>());
+            // GetInProgressMatchIds already returns empty via TestDefaults
+
+            // Act
+            var result = controller.GetMatches(null);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var payload = Assert.IsAssignableFrom<List<LiveScoringMatchSummaryV1>>(ok.Value);
+            Assert.Empty(payload);
+        }
+
+        [Fact]
+        public void GetMatches_Default_OrphanedInProgressMatchId_DoesNotThrow()
+        {
+            // Arrange – GetInProgressMatchIds returns an ID that has no corresponding match data
+            // (simulates a stale ballbyball_team row whose Matches record was deleted).
+            // GetMatchData is deliberately NOT set up for ID 999 so Moq returns null (the default).
+            mockDao.Setup(d => d.GetInProgressMatchIds()).Returns(new List<int> { 999 });
+            mockDao.Setup(d => d.GetAllMatches()).Returns(new List<MatchData>());
+
+            // Act – should not throw NullReferenceException
+            var result = controller.GetMatches(null);
+
+            // Assert – the orphaned ID is silently skipped; result is empty
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var payload = Assert.IsAssignableFrom<List<LiveScoringMatchSummaryV1>>(ok.Value);
+            Assert.Empty(payload);
+        }
+
+        [Fact]
+        public void GetMatches_Default_WithActiveInProgressGame_ReturnsIt()
+        {
+            // Arrange – one match is genuinely in progress (ball-by-ball coverage started, innings InProgress)
+            const int matchId = 77;
+            mockDao.Setup(d => d.GetInProgressMatchIds()).Returns(new List<int> { matchId });
+            mockDao.Setup(d => d.GetMatchData(matchId)).Returns(new MatchData
+            {
+                ID = matchId, OppositionID = 1, VenueID = 1, Date = DateTime.Today,
+                MatchType = 1, HomeOrAway = "H", Overs = 20, WonToss = true, Batted = true
+            });
+            mockDao.Setup(d => d.GetInningsStatus(matchId)).Returns(new BallByBallInningsStatus
+            {
+                MatchId = matchId,
+                OurInningsStatus = InningsStatus.InProgress,
+                TheirInningsStatus = InningsStatus.NotStarted
+            });
+            mockDao.Setup(d => d.GetAllBallsForMatch(matchId)).Returns(new List<Over>());
+            mockDao.Setup(d => d.GetPlayerStates(matchId)).Returns(new List<PlayerState>());
+            mockDao.Setup(d => d.GetOppositionInnings(matchId))
+                   .Returns(new OppositionInnings(new List<OppositionInningsDetails>()));
+            // No upcoming fixtures
+            mockDao.Setup(d => d.GetAllMatches()).Returns(new List<MatchData>());
+
+            // Act
+            var result = controller.GetMatches(null);
+
+            // Assert – the in-progress match appears in the list
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var payload = Assert.IsAssignableFrom<List<LiveScoringMatchSummaryV1>>(ok.Value);
+            Assert.Single(payload);
+            Assert.Equal(LiveScoringMatchSummaryKindV1.BallByBall, payload[0].Kind);
+            Assert.Equal(matchId, payload[0].BallByBall?.MatchId);
+        }
+
         // ── AbandonMatch endpoint ──────────────────────────────────────────────────
 
         [Fact]

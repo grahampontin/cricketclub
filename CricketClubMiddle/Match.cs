@@ -42,6 +42,13 @@ namespace CricketClubMiddle
         /// </summary>
         public IDao Dao => dao ?? new Dao();
 
+        /// <summary>
+        /// Returns false when the underlying MatchData could not be loaded (e.g. an orphaned
+        /// ball-by-ball row whose match record has been deleted).  Any code that creates a
+        /// Match from an external ID should check HasData before accessing other properties.
+        /// </summary>
+        public bool HasData => data != null;
+
         public int ID => data.ID;
 
         public int VenueID
@@ -761,6 +768,7 @@ namespace CricketClubMiddle
 
             return inProgressIds
                 .Select(id => new Match(id, dao))
+                .Where(m => m.HasData)           // skip orphaned IDs where GetMatchData returned null
                 .Where(m => !m.BallByBallComplete());
         }
 
