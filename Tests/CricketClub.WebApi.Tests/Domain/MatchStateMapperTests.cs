@@ -1,6 +1,7 @@
 using CricketClub.WebApi.Domain;
 using CricketClub.WebApi.Tests.Utils;
 using CricketClubDomain;
+using CricketClubMiddle;
 using Xunit;
 
 namespace CricketClub.WebApi.Tests.Domain
@@ -10,6 +11,63 @@ namespace CricketClub.WebApi.Tests.Domain
         public MatchStateMapperTests()
         {
             TestDefaults.ResetInternalCache();
+        }
+
+        // ...existing tests...
+
+        [Fact]
+        public void MapToInPlayScorecardV1_WhenScorecardHasWaitingPlayers_YetToBatIsMappedPreservingOrder()
+        {
+            // Sorting by position is done in Match.GetLiveScorecard(); the mapper just maps in the order it receives.
+            var scorecard = new LiveScorecard
+            {
+                YetToBat = new List<PlayerState>
+                {
+                    new PlayerState { PlayerId = 42, PlayerName = "A. Smith", Position = 3, State = PlayerState.Waiting },
+                    new PlayerState { PlayerId = 43, PlayerName = "B. Jones", Position = 4, State = PlayerState.Waiting }
+                }
+            };
+
+            var result = MatchStateMapper.MapToInPlayScorecardV1(scorecard);
+
+            Assert.NotNull(result.YetToBat);
+            Assert.Equal(2, result.YetToBat.Count);
+            Assert.Equal(42, result.YetToBat[0].PlayerId);
+            Assert.Equal("A. Smith", result.YetToBat[0].PlayerName);
+            Assert.Equal(43, result.YetToBat[1].PlayerId);
+            Assert.Equal("B. Jones", result.YetToBat[1].PlayerName);
+        }
+
+        [Fact]
+        public void MapToInPlayScorecardV1_WhenYetToBatIsNull_YetToBatPropertyIsNull()
+        {
+            var scorecard = new LiveScorecard { YetToBat = null };
+
+            var result = MatchStateMapper.MapToInPlayScorecardV1(scorecard);
+
+            Assert.Null(result.YetToBat);
+        }
+
+        [Fact]
+        public void MapToInPlayScorecardV1_WhenAllPlayersBatted_YetToBatIsEmpty()
+        {
+            var scorecard = new LiveScorecard
+            {
+                YetToBat = new List<PlayerState>()
+            };
+
+            var result = MatchStateMapper.MapToInPlayScorecardV1(scorecard);
+
+            Assert.NotNull(result.YetToBat);
+            Assert.Empty(result.YetToBat);
+        }
+
+        [Fact]
+        public void MapToInPlayScorecardV1_NullScorecard_ReturnsNull()
+        {
+            var result = MatchStateMapper.MapToInPlayScorecardV1(null);
+
+            Assert.Null(result);
         }
 
         [Theory]

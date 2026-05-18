@@ -45,7 +45,8 @@ namespace CricketClub.WebApi.Domain
                 OurInningsCommentary = scorecard.OurInningsCommentary,
                 TheirInningsCommentary = scorecard.TheirInningsCommentary,
                 LiveBowlingCard = scorecard.LiveBowlingCard?.Select(MapBowlerDetailsToBowlerInningsDetailsV1).ToList(),
-                Partnerships = scorecard.Partnerships?.Select(PartnershipV1.FromInternal).ToList()
+                Partnerships = scorecard.Partnerships?.Select(PartnershipV1.FromInternal).ToList(),
+                YetToBat = scorecard.YetToBat?.Select(p => new YetToBatEntryV1 { PlayerId = p.PlayerId, PlayerName = p.PlayerName }).ToList()
             };
         }
 

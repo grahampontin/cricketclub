@@ -2990,6 +2990,13 @@
               "$ref": "#/components/schemas/PartnershipV1"
             },
             "nullable": true
+          },
+          "yetToBat": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/YetToBatEntryV1"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -4310,6 +4317,20 @@
           "isRetiredHurt": {
             "type": "boolean",
             "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "YetToBatEntryV1": {
+        "type": "object",
+        "properties": {
+          "playerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "playerName": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

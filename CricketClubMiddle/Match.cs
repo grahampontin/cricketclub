@@ -841,8 +841,11 @@ namespace CricketClubMiddle
                 liveScorecard.Partnerships = partnershipsAndFallOfWickets.Partnerships;
 
                 liveScorecard.LiveBattingCard = GetLiveBattingCard(currentBallByBallState, fallOfWickets);
-                
 
+                liveScorecard.YetToBat = matchState.Players
+                    .Where(p => p.State == CricketClubDomain.PlayerState.Waiting)
+                    .OrderBy(p => p.Position)
+                    .ToList();
 
                 liveScorecard.CompletedOvers = currentBallByBallState.GetOverSummaries();
 

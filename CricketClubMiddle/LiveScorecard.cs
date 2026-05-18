@@ -46,6 +46,11 @@ namespace CricketClubMiddle
         public string TheirInningsCommentary { get; set; }
         public List<BowlerInningsDetails> LiveBowlingCard { get; set; }
         public List<Partnership> Partnerships { get; set; }
+
+        /// <summary>
+        /// VCC players who are yet to bat in the current innings, ordered by batting position.
+        /// </summary>
+        public List<CricketClubDomain.PlayerState> YetToBat { get; set; }
     }
 
     public class LiveBattingCard

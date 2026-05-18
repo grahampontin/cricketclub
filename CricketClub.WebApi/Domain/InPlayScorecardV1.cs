@@ -39,5 +39,10 @@ namespace CricketClub.WebApi.Domain
         public string TheirInningsCommentary { get; set; }
         public List<BowlerInningsDetailsV1> LiveBowlingCard { get; set; }
         public List<PartnershipV1> Partnerships { get; set; }
+
+        /// <summary>
+        /// VCC players who have not yet come to the crease in the current innings, in batting order.
+        /// </summary>
+        public List<YetToBatEntryV1> YetToBat { get; set; }
     }
 }
