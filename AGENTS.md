@@ -45,6 +45,22 @@ CricketClub.WebApi (ASP.NET Core 9)
 - **`CricketClubDAL.Dao`** executes raw SQL against SQL Server (`thevilla_admin` / `dbo` schemas).
 - **`CricketClub.WebApi/Domain/`** contains versioned API DTOs (`MatchV1`, `VenueV1`, `ResultV1`, …) with `static FromInternal(…)` factory methods that convert from `CricketClubMiddle` types.
 
+### ⚠️ Legacy Architecture Warning — N+1 and Static Constructors
+
+The `CricketClubMiddle` / `CricketClubDAL` interaction is **legacy and prone to serious performance problems**, particularly N+1 query patterns. Key symptoms to watch for:
+
+- **Static or implicit constructors** in `CricketClubMiddle` domain objects (e.g. `Match`, `Venue`, `Player`) that lazily load data per-instance trigger one DB round-trip per object when iterating a list — classic N+1.
+- Methods like `GetIsBallByBallInProgress(matchId)`, `GetCurrentBallByBallState()`, or any `IDao` call inside a `.Select(...)` / `.Where(...)` LINQ chain over a collection of domain objects will silently fan out into N queries.
+- `InternalCache` patching (adding a 30s TTL cache around a per-item DAO call) **only helps repeat loads** — first-time callers still pay the full N+1 cost.
+
+**When making any change that touches the DAO/Middle boundary, agents must actively consider whether a bulk DAO method exists (or should be added) to replace per-item calls.** The preferred pattern is:
+
+1. **Add a bulk `IDao` method** (e.g. `HashSet<int> GetMatchIdsWithBallByBallCoverage(IEnumerable<int> matchIds)`) that returns all needed data in a single query.
+2. **Call it once** at the top of the controller action or service method, then filter/join in memory.
+3. **Avoid** reaching back into `IDao` inside any loop, LINQ projection, or per-item method call on a collection of domain objects.
+
+Each time you work on a feature that reads a list of entities, treat it as an opportunity to audit and fix any N+1 patterns in the surrounding code, even if they are not the primary focus of the change.
+
 ## CI / CD
 
 The CI pipeline is defined in `.github/workflows/ci-build-push.yml` (GitHub Actions). On every push to `master` it:
