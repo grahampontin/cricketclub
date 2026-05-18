@@ -108,6 +108,12 @@ namespace CricketClub.WebApi.Tests.Utils
                 .Setup(d => d.GetPlayerDrops(It.IsAny<int>()))
                 .Returns(new List<MatchDropData>());
 
+            // Ball-by-ball in-progress — return empty by default so GetIsBallByBallInProgress()
+            // is false for all matches and the expensive BallByBallMatch load is never triggered.
+            dao
+                .Setup(d => d.GetInProgressMatchIds())
+                .Returns(Enumerable.Empty<int>());
+
             // Some production code paths (e.g., ResultV1.FromInternal) call Team.OurTeam which uses new Dao().
             // To keep unit tests isolated from the real database, pre-populate the global cache with common team IDs.
             var cache = InternalCache.GetInstance();

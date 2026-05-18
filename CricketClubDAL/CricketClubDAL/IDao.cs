@@ -90,6 +90,12 @@ namespace CricketClubDAL
 
         // Ball by Ball
         bool IsBallByBallCoverageInProgress(int matchId);
+        /// <summary>
+        /// Returns all match IDs that currently have ball-by-ball coverage rows in the database.
+        /// Prefer this over <see cref="IsBallByBallCoverageInProgress"/> when checking multiple matches,
+        /// as it replaces N per-match queries with a single batch query.
+        /// </summary>
+        IEnumerable<int> GetInProgressMatchIds();
         void StartBallByBallCoverage(int id, IEnumerable<int> playerIds, MatchData matchConditions);
         void ResetBallByBallCoverage(int match_id);
         List<PlayerState> GetPlayerStates(int matchId);

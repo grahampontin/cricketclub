@@ -13,22 +13,24 @@ namespace CricketClub.WebApi.Domain
 
         public static BallByBallMatchDescriptorV1 FromInternal(Match match)
         {
-            var currentBallByBallState = match.GetCurrentBallByBallState();
-
             var batOrBowl = string.Empty;
             var overs = 0;
 
+            // GetIsBallByBallInProgress() is now O(1) via the cached batch query.
+            // Only load the 4-query BallByBallMatch state when coverage is actually running.
             if (match.GetIsBallByBallInProgress())
             {
-                if (match.OurInningsInProgress)
+                var bbb = match.GetCurrentBallByBallState();
+                var inningsStatus = bbb.GetInningsStatus();
+                if (inningsStatus.OurInningsStatus == InningsStatus.InProgress)
                 {
                     batOrBowl = "Bat";
-                    overs = currentBallByBallState.LastCompletedOver;
+                    overs = bbb.LastCompletedOver;
                 }
-                else if (match.TheirInningsInProgress)
+                else if (inningsStatus.TheirInningsStatus == InningsStatus.InProgress)
                 {
                     batOrBowl = "Bowl";
-                    overs = currentBallByBallState.OppositionOver;
+                    overs = bbb.OppositionOver;
                 }
             }
 

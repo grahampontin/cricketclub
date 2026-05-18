@@ -80,6 +80,8 @@ namespace CricketClub.WebApi.Tests.Controllers
                 ID = matchId, OppositionID = 1, VenueID = 1, Date = new DateTime(2026, 6, 1),
                 MatchType = 1, HomeOrAway = "H", Overs = 40, WonToss = true, Batted = true
             });
+            // GetIsBallByBallInProgress() now uses batch GetInProgressMatchIds(), not the per-match method.
+            mockDao.Setup(d => d.GetInProgressMatchIds()).Returns(new List<int> { matchId });
             mockDao.Setup(d => d.IsBallByBallCoverageInProgress(matchId)).Returns(true);
             mockDao.Setup(d => d.UpdateMatch(It.IsAny<MatchData>()));
             mockDao.Setup(d => d.GetInningsStatus(matchId)).Returns(new BallByBallInningsStatus
@@ -125,6 +127,8 @@ namespace CricketClub.WebApi.Tests.Controllers
                 ID = matchId, OppositionID = 1, VenueID = 1, Date = new DateTime(2026, 6, 1),
                 MatchType = 1, HomeOrAway = "H", Overs = 40
             });
+            // GetIsBallByBallInProgress() now uses batch GetInProgressMatchIds(), not the per-match method.
+            mockDao.Setup(d => d.GetInProgressMatchIds()).Returns(new List<int> { matchId });
             mockDao.Setup(d => d.IsBallByBallCoverageInProgress(matchId)).Returns(true);
             mockDao.Setup(d => d.UpdateMatch(It.IsAny<MatchData>()));
             mockDao.Setup(d => d.GetInningsStatus(matchId)).Returns(new BallByBallInningsStatus

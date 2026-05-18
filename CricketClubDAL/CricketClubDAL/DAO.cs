@@ -1117,6 +1117,11 @@ namespace CricketClubDAL
             return result.GetInt(0) > 0;
         }
 
+        public IEnumerable<int> GetInProgressMatchIds()
+        {
+            return db.QueryMany<int>("SELECT DISTINCT match_id FROM dbo.ballbyball_team", r => r.GetInt(0));
+        }
+
         public void StartBallByBallCoverage(int id, IEnumerable<int> playerIds, MatchData matchConditions)
         {
             try

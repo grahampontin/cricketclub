@@ -699,6 +699,9 @@ namespace CricketClubMiddle
                 data.Overs = ballByBallMatchConditions.Overs;
 
                 myDao.StartBallByBallCoverage(ID, ballByBallMatchConditions.PlayerIds, data);
+                // Invalidate the batch in-progress cache so the next GetIsBallByBallInProgress call
+                // reflects the newly started coverage without waiting for the 30s TTL to expire.
+                InternalCache.GetInstance().Remove("inprogress_match_ids");
                 var inningsStatus = BallByBallInningsStatus.NotStarted(ID);
                 if (data.WonToss && data.Batted || !data.WonToss && !data.Batted)
                     inningsStatus.OurInningsStatus = InningsStatus.InProgress;
@@ -749,11 +752,33 @@ namespace CricketClubMiddle
         }
 
         // Added overload for testing - allow injection of a DAO
-         public static IEnumerable<Match> GetInProgressGames(IDao dao)
-         {
-            // inline BuildInProgressQuery: reuse central builder and apply in-progress filter
-            return BuildMatchQuery(dao).Where(m => m.GetIsBallByBallInProgress() && !m.BallByBallComplete());
-         }
+        public static IEnumerable<Match> GetInProgressGames(IDao dao)
+        {
+            // Use the batch query to find in-progress match IDs, then load only those matches.
+            // This replaces the old O(N) per-match IsBallByBallCoverageInProgress scan.
+            var inProgressIds = GetInProgressMatchIds(dao);
+            if (inProgressIds.Count == 0) return Enumerable.Empty<Match>();
+
+            return inProgressIds
+                .Select(id => new Match(id, dao))
+                .Where(m => !m.BallByBallComplete());
+        }
+
+        /// <summary>
+        /// Returns the set of match IDs that currently have ball-by-ball coverage in progress.
+        /// Result is cached for 30 seconds so repeated calls within a request are free.
+        /// The cache is invalidated when coverage is started or reset.
+        /// </summary>
+        public static HashSet<int> GetInProgressMatchIds(IDao dao)
+        {
+            const string cacheKey = "inprogress_match_ids";
+            if (InternalCache.GetInstance().Get(cacheKey) is HashSet<int> cached)
+                return cached;
+
+            var ids = new HashSet<int>(dao.GetInProgressMatchIds());
+            InternalCache.GetInstance().Insert(cacheKey, ids, TimeSpan.FromSeconds(30));
+            return ids;
+        }
 
         private bool BallByBallComplete()
         {
@@ -762,8 +787,8 @@ namespace CricketClubMiddle
 
         public bool GetIsBallByBallInProgress()
         {
-            var myDao = dao ?? new Dao();
-            return myDao.IsBallByBallCoverageInProgress(ID);
+            // Use the cached batch result instead of a per-match DB query.
+            return GetInProgressMatchIds(dao ?? new Dao()).Contains(ID);
         }
 
         public LiveScorecard GetLiveScorecard()
@@ -1156,6 +1181,8 @@ namespace CricketClubMiddle
         {
             var myDao = dao ?? new Dao();
             myDao.ResetBallByBallCoverage(ID);
+            // Invalidate the batch in-progress cache so the reset is reflected immediately.
+            InternalCache.GetInstance().Remove("inprogress_match_ids");
         }
 
         public FoWStats GetOurFoWData()
