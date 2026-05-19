@@ -1385,6 +1385,46 @@
         }
       }
     },
+    "/api/Stats/player/{playerId}/summary": {
+      "get": {
+        "tags": [
+          "Stats"
+        ],
+        "parameters": [
+          {
+            "name": "playerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerSummaryV1"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Stats/player/{playerId}/{statsType}": {
       "get": {
         "tags": [
@@ -3669,6 +3709,65 @@
           "asOfOver": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PlayerSummaryV1": {
+        "type": "object",
+        "properties": {
+          "playerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "surname": {
+            "type": "string",
+            "nullable": true
+          },
+          "playingRole": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "matches": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "careerRuns": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "battingAverage": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "highScore": {
+            "type": "string",
+            "nullable": true
+          },
+          "careerWickets": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "bestBowling": {
+            "type": "string",
+            "nullable": true
+          },
+          "debutYear": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
