@@ -178,6 +178,42 @@ namespace CricketClub.WebApi.Stats
             }
         }
 
+        public static PlayerSummaryV1 QueryPlayerSummary(int playerId, Func<int, string> playerImageUrlResolver, string contentRootPath)
+            => QueryPlayerSummary(playerId, playerImageUrlResolver, contentRootPath, new CricketClubDAL.Dao());
+
+        public static PlayerSummaryV1 QueryPlayerSummary(int playerId, Func<int, string> playerImageUrlResolver, string contentRootPath, IDao dao)
+        {
+            var player = new Player(playerId, dao);
+
+            var highScoreRuns = player.GetHighScore();
+            string? highScore = highScoreRuns > 0
+                ? highScoreRuns + (player.GetHighScoreWasNotOut() ? "*" : "")
+                : null;
+
+            var wickets = player.GetWicketsTaken();
+            string? bestBowling = wickets > 0 ? player.GetBestMatchFigures() : null;
+
+            decimal? battingAverage = player.GetInnings() > 0 ? player.GetBattingAverage() : null;
+
+            int? debutYear = player.Debut.Year > 1 ? player.Debut.Year : null;
+
+            return new PlayerSummaryV1
+            {
+                PlayerId = player.Id,
+                FirstName = player.FirstName,
+                Surname = player.Surname,
+                PlayingRole = PlayerV1.DeterminePlayingRole(player),
+                ImageUrl = ResolvePlayerImageUrl(player.Id, playerImageUrlResolver, contentRootPath),
+                Matches = player.GetMatchesPlayed(),
+                CareerRuns = player.GetRunsScored(),
+                BattingAverage = battingAverage,
+                HighScore = highScore,
+                CareerWickets = wickets,
+                BestBowling = bestBowling,
+                DebutYear = debutYear
+            };
+        }
+
         public static PlayerDetailV1 QueryPlayer(int playerId, Func<int, string> playerImageUrlResolver, string contentRootPath)
         {
             return QueryPlayer(playerId, playerImageUrlResolver, contentRootPath, new CricketClubDAL.Dao());

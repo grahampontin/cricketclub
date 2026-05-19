@@ -44,6 +44,21 @@ namespace CricketClub.WebApi.Controllers
             return Ok(playerDetailV1);
         }
 
+        [HttpGet("player/{playerId}/summary")]
+        [ProducesResponseType(typeof(PlayerSummaryV1), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        public IActionResult GetPlayerSummary(int playerId)
+        {
+            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+            var summary = StatsProvider.QueryPlayerSummary(
+                playerId,
+                imagePlayerId => new Uri(new Uri(baseUrl), $"/images/players/{imagePlayerId}.png").ToString(),
+                environment.ContentRootPath,
+                database);
+
+            return Ok(summary);
+        }
+
         [HttpGet("player/{playerId}/{statsType}")]
         [ProducesResponseType(typeof(IEnumerable<StatsDataV1>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]

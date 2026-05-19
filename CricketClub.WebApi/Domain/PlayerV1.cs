@@ -68,7 +68,7 @@ namespace CricketClub.WebApi.Domain
             return "RM";
         }
 
-        private static string DeterminePlayingRole(Player player)
+        internal static string DeterminePlayingRole(Player player)
         {
             if (player.GetMatchesPlayed() == 0)
             {
