@@ -31,5 +31,13 @@ namespace CricketClubDomain
         /// excludes NotOut/DidNotBat/RetiredHurt and the extras row).
         /// </summary>
         public int TheirWickets { get; set; }
+        /// <summary>
+        /// Total overs faced by us in our batting innings (sum of overs from oppo_bowling_stats).
+        /// </summary>
+        public decimal OurOversFaced { get; set; }
+        /// <summary>
+        /// Total overs faced by the opposition in their batting innings (sum of overs from bowling_stats).
+        /// </summary>
+        public decimal TheirOversFaced { get; set; }
     }
 }

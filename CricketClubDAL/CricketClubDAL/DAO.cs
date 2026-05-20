@@ -291,11 +291,13 @@ namespace CricketClubDAL
                     m.venue_id,
                     m.match_date,
                     m.abandoned,
-                    ISNULL(us.our_score,      0) AS our_score,
-                    ISNULL(them.their_score,  0) AS their_score,
-                    ISNULL(uw.our_wickets,    0) AS our_wickets,
-                    ISNULL(tw.their_wickets,  0) AS their_wickets,
-                    CASE WHEN m.won_toss = m.batted THEN 1 ELSE 0 END AS we_batted_first
+                    ISNULL(us.our_score,           0)   AS our_score,
+                    ISNULL(them.their_score,        0)   AS their_score,
+                    ISNULL(uw.our_wickets,          0)   AS our_wickets,
+                    ISNULL(tw.their_wickets,        0)   AS their_wickets,
+                    CASE WHEN m.won_toss = m.batted THEN 1 ELSE 0 END AS we_batted_first,
+                    ISNULL(obf.our_overs_faced,     0.0) AS our_overs_faced,
+                    ISNULL(tbf.their_overs_faced,   0.0) AS their_overs_faced
                 FROM thevilla_admin.matches m
                 LEFT JOIN (
                     SELECT match_id, SUM(score) AS our_score
@@ -321,6 +323,18 @@ namespace CricketClubDAL
                       AND [batting at] != 11
                     GROUP BY match_id
                 ) tw ON tw.match_id = m.match_id
+                LEFT JOIN (
+                    -- Opposition's bowling stats = overs we (the club) faced
+                    SELECT match_id, SUM(overs) AS our_overs_faced
+                    FROM thevilla_admin.oppo_bowling_stats
+                    GROUP BY match_id
+                ) obf ON obf.match_id = m.match_id
+                LEFT JOIN (
+                    -- Our bowling stats = overs the opposition faced
+                    SELECT match_id, SUM(overs) AS their_overs_faced
+                    FROM thevilla_admin.bowling_stats
+                    GROUP BY match_id
+                ) tbf ON tbf.match_id = m.match_id
                 WHERE m.match_date <= GETDATE()
                   AND m.oppo_id <> 0";
 
@@ -335,7 +349,9 @@ namespace CricketClubDAL
                 TheirScore     = row.GetInt("their_score"),
                 OurWickets     = row.GetInt("our_wickets"),
                 TheirWickets   = row.GetInt("their_wickets"),
-                WeBattedFirst  = row.GetBool("we_batted_first")
+                WeBattedFirst  = row.GetBool("we_batted_first"),
+                OurOversFaced  = row.GetDecimal("our_overs_faced", 0),
+                TheirOversFaced = row.GetDecimal("their_overs_faced", 0)
             }).ToList();
         }
 

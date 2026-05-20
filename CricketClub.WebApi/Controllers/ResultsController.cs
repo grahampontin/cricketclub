@@ -49,13 +49,16 @@ namespace CricketClub.WebApi.Controllers
                 .Where(m => m.MatchDate >= startDate && m.MatchDate <= endDate)
                 .ToList();
 
-            // Fetch all match reports in one query for efficiency
+            // Fetch all match reports and score summaries in bulk — eliminates N+1 batting/bowling queries
             var allMatchReports = database.GetAllMatchReports();
+            var allSummaries = database.GetAllMatchScoreSummaries().ToDictionary(s => s.MatchId);
 
             var results = filteredMatches.Select(m =>
             {
                 allMatchReports.TryGetValue(m.ID, out var report);
-                return ResultV1.FromInternal(m, report, ResolveTeamLogoUrl);
+                return allSummaries.TryGetValue(m.ID, out var summary)
+                    ? ResultV1.FromInternal(m, summary, report, ResolveTeamLogoUrl)
+                    : ResultV1.FromInternal(m, report, ResolveTeamLogoUrl);
             }).ToList();
 
             return Ok(results);
@@ -83,12 +86,16 @@ namespace CricketClub.WebApi.Controllers
                 .Take(safeCount)
                 .ToList();
 
+            // Fetch all match reports and score summaries in bulk — eliminates N+1 batting/bowling queries
             var allMatchReports = database.GetAllMatchReports();
+            var allSummaries = database.GetAllMatchScoreSummaries().ToDictionary(s => s.MatchId);
 
             var results = matches.Select(m =>
             {
                 allMatchReports.TryGetValue(m.ID, out var report);
-                return ResultV1.FromInternal(m, report, ResolveTeamLogoUrl);
+                return allSummaries.TryGetValue(m.ID, out var summary)
+                    ? ResultV1.FromInternal(m, summary, report, ResolveTeamLogoUrl)
+                    : ResultV1.FromInternal(m, report, ResolveTeamLogoUrl);
             }).ToList();
 
             return Ok(results);

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using CricketClubDAL;
+using CricketClubDomain;
 using CricketClubMiddle;
 
 namespace CricketClub.WebApi.Domain
@@ -104,6 +105,145 @@ namespace CricketClub.WebApi.Domain
                 TossWinner = match.TossWinner?.Name,
                 TossWinnerElectedTo = match.TossWinnerBatted ? "bat" : "bowl"
             };
+        }
+
+        /// <summary>
+        /// Builds a ResultV1 from a pre-loaded <see cref="MatchScoreSummaryData"/>, avoiding N+1
+        /// per-match batting-card and bowling-stats queries. All score, wicket, and overs figures
+        /// come from the bulk summary; team/venue names are resolved via the normal (cached) Match
+        /// properties (no extra DB round-trips after the first access per unique team/venue ID).
+        /// </summary>
+        public static ResultV1 FromInternal(
+            Match match,
+            MatchScoreSummaryData summary,
+            MatchReportAndConditions? matchReport,
+            Func<int, string?>? logoUrlResolver = null)
+        {
+            bool weBattedFirst = summary.WeBattedFirst;
+
+            // Determine drawn/tied result from summary data
+            bool resultDrawn = false;
+            if (match.Type == CricketClubDomain.MatchType.Declaration)
+            {
+                resultDrawn = weBattedFirst
+                    ? summary.TheirScore < summary.OurScore && summary.TheirWickets < 10
+                    : summary.OurScore < summary.TheirScore && summary.OurWickets < 10;
+            }
+            bool resultTied = summary.OurScore == summary.TheirScore && summary.OurScore > 0;
+
+            // Winner/loser (null when drawn, tied, abandoned, or no result yet)
+            bool weWon  = !resultDrawn && !resultTied && !match.Abandoned && summary.OurScore > summary.TheirScore;
+            bool theyWon = !resultDrawn && !resultTied && !match.Abandoned && summary.TheirScore > summary.OurScore;
+
+            string? winnerName = weWon ? match.Us.Name : theyWon ? match.Opposition.Name : null;
+            string? loserName  = weWon ? match.Opposition.Name : theyWon ? match.Us.Name : null;
+            bool? isWinner     = weWon ? true : theyWon ? (bool?)false : null;
+
+            // Result text is expressed from the HOME team's perspective
+            string resultText   = BuildResultText(match.Abandoned, match.HomeOrAway, weWon, theyWon, resultDrawn, resultTied);
+            string resultMargin = BuildResultMargin(match.Abandoned, weWon, theyWon, weBattedFirst, resultDrawn, summary);
+
+            // Formatted score strings (e.g. "150 for 5", "200 all out", "180 for 7 dec")
+            bool isHome = match.HomeOrAway == HomeOrAway.Home;
+            string homeTeamScore = FormatScoreString(
+                isHome ? summary.OurScore  : summary.TheirScore,
+                isHome ? summary.OurWickets : summary.TheirWickets,
+                isHome ? match.WeDeclared  : match.TheyDeclared);
+            string awayTeamScore = FormatScoreString(
+                isHome ? summary.TheirScore  : summary.OurScore,
+                isHome ? summary.TheirWickets : summary.OurWickets,
+                isHome ? match.TheyDeclared  : match.WeDeclared);
+
+            bool hasMatchReport = matchReport != null && matchReport != MatchReportAndConditions.None;
+
+            return new ResultV1
+            {
+                MatchId          = match.ID,
+                HomeTeamName     = match.HomeTeamName,
+                HomeTeamScore    = homeTeamScore,
+                AwayTeamName     = match.AwayTeamName,
+                AwayTeamScore    = awayTeamScore,
+                ResultText       = resultText,
+                ResultMargin     = resultMargin,
+                MatchDate        = match.MatchDate.ToString("yyyy-MM-dd"),
+                WinningTeam      = winnerName,
+                LosingTeam       = loserName,
+                Margin           = resultMargin,
+                IsTied           = resultTied,
+                IsDrawn          = resultDrawn,
+                OurScore         = summary.OurScore,
+                OurWickets       = summary.OurWickets,
+                OurOversFaced    = summary.OurOversFaced,
+                TheirScore       = summary.TheirScore,
+                TheirWickets     = summary.TheirWickets,
+                TheirOversFaced  = summary.TheirOversFaced,
+                IsAbandoned      = match.Abandoned,
+                VenueName        = match.Venue?.Name,
+                IsWinner         = isWinner,
+                MatchReportConditions = hasMatchReport ? matchReport!.Conditions : null,
+                MatchReportText       = hasMatchReport ? matchReport!.Report     : null,
+                MatchReportImage      = hasMatchReport ? matchReport!.ReportImage : null,
+                OppositionId     = match.OppositionID,
+                OppositionLogoUrl = logoUrlResolver?.Invoke(match.OppositionID),
+                VenueId          = match.VenueID,
+                TossWinner       = match.TossWinner?.Name,
+                TossWinnerElectedTo = match.TossWinnerBatted ? "bat" : "bowl"
+            };
+        }
+
+        private static string FormatScoreString(int score, int wickets, bool declared)
+        {
+            var s = $"{score} for {wickets}";
+            s = s.Replace("for 10", "all out");
+            if (declared) s += " dec";
+            return s;
+        }
+
+        private static string BuildResultText(
+            bool abandoned, HomeOrAway homeOrAway,
+            bool weWon, bool theyWon, bool resultDrawn, bool resultTied)
+        {
+            if (abandoned) return "abandoned";
+            if (weWon)   return homeOrAway == HomeOrAway.Home ? "beat"    : "lost to";
+            if (theyWon) return homeOrAway == HomeOrAway.Away ? "beat"    : "lost to";
+            if (resultDrawn) return "drew with";
+            if (resultTied)  return "tied with";
+            return "vs";
+        }
+
+        private static string BuildResultMargin(
+            bool abandoned, bool weWon, bool theyWon,
+            bool weBattedFirst, bool resultDrawn, MatchScoreSummaryData summary)
+        {
+            if (weWon)
+            {
+                if (weBattedFirst)
+                {
+                    var margin = summary.OurScore - summary.TheirScore;
+                    return $"by {margin} run{(margin == 1 ? "" : "s")}";
+                }
+                else
+                {
+                    var margin = 10 - summary.OurWickets;
+                    return $"by {margin} wicket{(margin == 1 ? "" : "s")}";
+                }
+            }
+            if (theyWon)
+            {
+                if (!weBattedFirst)
+                {
+                    var margin = summary.TheirScore - summary.OurScore;
+                    return $"by {margin} run{(margin == 1 ? "" : "s")}";
+                }
+                else
+                {
+                    var margin = 10 - summary.TheirWickets;
+                    return $"by {margin} wicket{(margin == 1 ? "" : "s")}";
+                }
+            }
+            if (!abandoned && !resultDrawn) return "result not yet in";
+            if (resultDrawn) return "";
+            return "no result";
         }
     }
 }

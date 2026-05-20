@@ -29,31 +29,36 @@ namespace CricketClub.WebApi.Tests.Controllers
             _controller = new ResultsController(_mockDao.Object, mockEnv.Object);
             TestDefaults.SetupHttpContext(_controller);
 
-            // Mock extra dependencies ResultV1.FromInternal touches
-            SetupMockBowlingStats();
-        }
-
-        private void SetupMockBowlingStats()
-        {
-            // ResultV1.FromInternal calls match.GetOurBowlingStats().BowlingStatsData.Sum(...)
-            // That constructs BowlingStats(matchId, ThemOrUs.Us, dao) which calls dao.GetBowlingStats.
-            // Provide at least one row so Sum() works.
+            // Ensure fallback path (no summary found) still works without DB calls
+            _mockDao
+                .Setup(d => d.GetBattingCard(It.IsAny<int>(), It.IsAny<ThemOrUs>()))
+                .Returns(new List<BattingCardLineData>());
             _mockDao
                 .Setup(d => d.GetBowlingStats(It.IsAny<int>(), It.IsAny<ThemOrUs>()))
-                .Returns((int matchId, ThemOrUs who) =>
-                    new List<BowlingStatsEntryData>
-                    {
-                        new BowlingStatsEntryData
-                        {
-                            MatchID = matchId,
-                            PlayerID = 1,
-                            Overs = 10m,
-                            Maidens = 0,
-                            Runs = 40,
-                            Wickets = 2
-                        }
-                    });
+                .Returns(new List<BowlingStatsEntryData>());
         }
+
+        /// <summary>Creates a minimal summary for a given MatchData to exercise the fast path.</summary>
+        private static MatchScoreSummaryData SummaryFor(MatchData m,
+            int ourScore = 0, int theirScore = 0,
+            int ourWickets = 0, int theirWickets = 0,
+            decimal ourOversFaced = 0m, decimal theirOversFaced = 0m,
+            bool weBattedFirst = true)
+            => new MatchScoreSummaryData
+            {
+                MatchId        = m.ID,
+                OppositionId   = m.OppositionID,
+                VenueId        = m.VenueID,
+                MatchDate      = m.Date,
+                Abandoned      = m.Abandoned,
+                OurScore       = ourScore,
+                TheirScore     = theirScore,
+                OurWickets     = ourWickets,
+                TheirWickets   = theirWickets,
+                OurOversFaced  = ourOversFaced,
+                TheirOversFaced = theirOversFaced,
+                WeBattedFirst  = weBattedFirst
+            };
 
         [Fact]
         public void GetResults_WithoutSeason_ReturnsResultsForCurrentYear()
@@ -70,6 +75,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             };
             _mockDao.Setup(d => d.GetAllMatches()).Returns(new List<MatchData> { matchData });
             _mockDao.Setup(d => d.GetAllMatchReports()).Returns(new Dictionary<int, MatchReportAndConditions>());
+            _mockDao.Setup(d => d.GetAllMatchScoreSummaries()).Returns(new List<MatchScoreSummaryData> { SummaryFor(matchData) });
 
             // Act
             var result = _controller.GetResults(null);
@@ -91,6 +97,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             };
             _mockDao.Setup(d => d.GetAllMatches()).Returns(matches);
             _mockDao.Setup(d => d.GetAllMatchReports()).Returns(new Dictionary<int, MatchReportAndConditions>());
+            _mockDao.Setup(d => d.GetAllMatchScoreSummaries()).Returns(matches.Select(m => SummaryFor(m)).ToList());
 
             // Act
             var result = _controller.GetResults(2025);
@@ -107,6 +114,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             // Arrange
             _mockDao.Setup(d => d.GetAllMatches()).Returns(new List<MatchData>());
             _mockDao.Setup(d => d.GetAllMatchReports()).Returns(new Dictionary<int, MatchReportAndConditions>());
+            _mockDao.Setup(d => d.GetAllMatchScoreSummaries()).Returns(new List<MatchScoreSummaryData>());
 
             // Act
             var result = _controller.GetResults(2025);
@@ -137,6 +145,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             { 
                 { 1, reportData } 
             });
+            _mockDao.Setup(d => d.GetAllMatchScoreSummaries()).Returns(new List<MatchScoreSummaryData> { SummaryFor(matchData) });
 
             // Act
             var result = _controller.GetResults(null);
@@ -164,6 +173,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             };
             _mockDao.Setup(d => d.GetAllMatches()).Returns(new List<MatchData> { matchData });
             _mockDao.Setup(d => d.GetAllMatchReports()).Returns(new Dictionary<int, MatchReportAndConditions>());
+            _mockDao.Setup(d => d.GetAllMatchScoreSummaries()).Returns(new List<MatchScoreSummaryData> { SummaryFor(matchData) });
 
             // Act
             var result = _controller.GetResults(null);
@@ -194,6 +204,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             };
             _mockDao.Setup(d => d.GetAllMatches()).Returns(new List<MatchData> { matchData });
             _mockDao.Setup(d => d.GetAllMatchReports()).Returns(new Dictionary<int, MatchReportAndConditions>());
+            _mockDao.Setup(d => d.GetAllMatchScoreSummaries()).Returns(new List<MatchScoreSummaryData> { SummaryFor(matchData) });
 
             // Act
             var result = _controller.GetResults(null);
@@ -205,6 +216,54 @@ namespace CricketClub.WebApi.Tests.Controllers
             // WonToss = false → toss winner is the opposition
             Assert.NotNull(item.TossWinner);
             Assert.Equal("bowl", item.TossWinnerElectedTo);
+        }
+
+        [Fact]
+        public void GetResults_WithSummary_ScoresAndWicketsPopulatedFromBulkQuery()
+        {
+            // Arrange: verify the fast summary path correctly populates score fields.
+            // HomeOrAway = "H" so that match.HomeOrAway == HomeOrAway.Home (the legacy code checks .ToUpper() == "H").
+            var matchData = new MatchData
+            {
+                ID = 5,
+                Date = new DateTime(2026, 1, 20),
+                OppositionID = 1,
+                VenueID = 1,
+                MatchType = 1,
+                HomeOrAway = "H",   // "H" → HomeOrAway.Home
+                WonToss = true,
+                Batted = true
+            };
+            var summary = SummaryFor(matchData,
+                ourScore: 175, theirScore: 142,
+                ourWickets: 7, theirWickets: 10,
+                ourOversFaced: 35.0m, theirOversFaced: 28.3m,
+                weBattedFirst: true);
+
+            _mockDao.Setup(d => d.GetAllMatches()).Returns(new List<MatchData> { matchData });
+            _mockDao.Setup(d => d.GetAllMatchReports()).Returns(new Dictionary<int, MatchReportAndConditions>());
+            _mockDao.Setup(d => d.GetAllMatchScoreSummaries()).Returns(new List<MatchScoreSummaryData> { summary });
+
+            // Act
+            var result = _controller.GetResults(null);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var results = Assert.IsAssignableFrom<List<ResultV1>>(okResult.Value);
+            var item = Assert.Single(results);
+
+            Assert.Equal(175, item.OurScore);
+            Assert.Equal(7,   item.OurWickets);
+            Assert.Equal(35.0m, item.OurOversFaced);
+            Assert.Equal(142, item.TheirScore);
+            Assert.Equal(10,  item.TheirWickets);
+            Assert.Equal(28.3m, item.TheirOversFaced);
+            Assert.True(item.IsWinner);
+            Assert.Equal("by 33 runs", item.ResultMargin);
+            // HomeOrAway="H" → Home → we are the home team → HomeTeamName should be "The Village CC"
+            Assert.Equal("The Village CC", item.HomeTeamName);
+            // Home team (us) won → "beat"
+            Assert.Equal("beat", item.ResultText);
         }
     }
 }

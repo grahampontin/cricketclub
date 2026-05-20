@@ -56,6 +56,8 @@ namespace CricketClub.WebApi.Tests.Controllers
 
             mockDao.Setup(d => d.GetAllMatches()).Returns(allMatches);
             mockDao.Setup(d => d.GetAllMatchReports()).Returns(new Dictionary<int, MatchReportAndConditions>());
+            mockDao.Setup(d => d.GetAllMatchScoreSummaries()).Returns(
+                allMatches.Select(m => new MatchScoreSummaryData { MatchId = m.ID, OppositionId = m.OppositionID, VenueId = m.VenueID, MatchDate = m.Date }).ToList());
 
             // Act
             var action = controller.GetRecentResults(2);

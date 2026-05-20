@@ -29,18 +29,24 @@ namespace CricketClubMiddle.Stats
         public BattingCard(int matchId, ThemOrUs themOrUs, IDao dao)
         {
             this.dao = dao;
-            ScorecardData = (dao.GetBattingCard(matchId, themOrUs).Where(a => a.PlayerID != -1).Where(
-                a => a.PlayerName != "(Frank) Extras").Select(a => new BattingCardLine(a))).OrderBy(b=>b.BattingAt).ToList();
+            // Fetch all rows once and reuse — the constructor previously called GetBattingCard twice.
+            var allRows = dao.GetBattingCard(matchId, themOrUs).ToList();
+            ScorecardData = allRows
+                .Where(a => a.PlayerID != -1)
+                .Where(a => a.PlayerName != "(Frank) Extras")
+                .Select(a => new BattingCardLine(a))
+                .OrderBy(b => b.BattingAt)
+                .ToList();
             MatchId = matchId;
             try
             {
                 if (ThemOrUs.Us == themOrUs)
                 {
-                    Extras = dao.GetBattingCard(matchId, themOrUs).Where(a => a.PlayerID == -1).FirstOrDefault().Score;
+                    Extras = allRows.Where(a => a.PlayerID == -1).FirstOrDefault()?.Score ?? 0;
                 }
                 else
                 {
-                    this.Extras = dao.GetBattingCard(matchId, themOrUs).Where(a => a.ModeOfDismissal == -1).FirstOrDefault().Score;
+                    Extras = allRows.Where(a => a.ModeOfDismissal == -1).FirstOrDefault()?.Score ?? 0;
                 }
             }
             catch
