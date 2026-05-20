@@ -94,6 +94,18 @@ namespace CricketClubMiddle
             set => data.OppositionID = value;
         }
 
+        /// <summary>
+        /// Direct access to the captain player ID stored on MatchData.
+        /// Prefer this over <c>Captain.Id</c> when only the ID is needed — avoids constructing a Player object.
+        /// </summary>
+        public int CaptainID => data.CaptainID;
+
+        /// <summary>
+        /// Direct access to the wicket-keeper player ID stored on MatchData.
+        /// Prefer this over <c>WicketKeeper.Id</c> when only the ID is needed — avoids constructing a Player object.
+        /// </summary>
+        public int WicketKeeperID => data.WicketKeeperID;
+
         public Team Opposition
         {
             get
@@ -1204,22 +1216,4 @@ namespace CricketClubMiddle
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

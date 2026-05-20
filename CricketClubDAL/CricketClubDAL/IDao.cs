@@ -9,6 +9,11 @@ namespace CricketClubDAL
     {
         // Players
         PlayerData GetPlayerData(int playerId);
+        /// <summary>
+        /// Bulk-loads player data for a set of IDs in a single query.
+        /// Prefer this over repeated <see cref="GetPlayerData"/> calls when resolving player IDs across a collection.
+        /// </summary>
+        Dictionary<int, PlayerData> GetPlayerDataBulk(IEnumerable<int> ids);
         List<PlayerData> GetAllPlayers();
         int CreateNewPlayer(string name);
         void UpdatePlayer(PlayerData playerData);

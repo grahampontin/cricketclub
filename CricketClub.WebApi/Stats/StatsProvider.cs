@@ -94,7 +94,9 @@ namespace CricketClub.WebApi.Stats
                     columns = MatchStatsRowData.ColumnDefinitions;
                     break;
                 case "innings":
-                    var inningsList = Player.GetAll().Select(p=> GetBestInningsPerformance(p, query.from, query.to,
+                    // Use fullyHydrated=true so all batting/bowling stats are bulk-loaded in 3 queries
+                    // instead of lazily triggering one query per player per stats type (O(3N) N+1).
+                    var inningsList = Player.GetAll(true, dao).Select(p=> GetBestInningsPerformance(p, query.from, query.to,
                         matchTypes, venue));
                     rows = inningsList.Select(t => new BestInningsStatsRowData(t)).Cast<object>().ToList();
                     columns = BestInningsStatsRowData.ColumnDefinitions;
@@ -372,6 +374,10 @@ namespace CricketClub.WebApi.Stats
         {
             var dataByMatch = player.GetBattingStatsByMatch(dao).ToList();
 
+            // Pre-warm the Player InternalCache with all captains and keepers referenced by this player's
+            // matches — eliminates O(distinct captains + keepers) lazy DB queries during the pivot projections below.
+            PreloadMatchCaptainsAndKeepers(dataByMatch.Select(kvp => kvp.Key), dao);
+
             yield return PlayerBattingDataWithPivot("Vs Opposition", k => k.Key.Opposition.Name, dataByMatch, player,
                 new StatsColumnDefinitionV1("", "tableKey"));
             yield return PlayerBattingDataWithPivot("At Venue", k => k.Key.Venue.Name, dataByMatch, player,
@@ -386,11 +392,12 @@ namespace CricketClub.WebApi.Stats
                 player, new StatsColumnDefinitionV1("", "tableKey"));
             yield return PlayerBattingDataWithPivot("Toss", k => k.Key.WonToss ? "Won" : "Lost", dataByMatch, player,
                 new StatsColumnDefinitionV1("", "tableKey"));
+            // Use CaptainID / WicketKeeperID (ID-only passthrough) to avoid constructing a Player just for an ID check.
             yield return PlayerBattingDataWithPivot("As Captain",
-                k => k.Key.Captain.Id == player.Id ? "Captain" : "Not Captain",
+                k => k.Key.CaptainID == player.Id ? "Captain" : "Not Captain",
                 dataByMatch, player, new StatsColumnDefinitionV1("", "tableKey"));
             yield return PlayerBattingDataWithPivot("As Keeper",
-                k => k.Key.WicketKeeper.Id == player.Id ? "Keeper" : "Not Keeper",
+                k => k.Key.WicketKeeperID == player.Id ? "Keeper" : "Not Keeper",
                 dataByMatch, player, new StatsColumnDefinitionV1("", "tableKey"));
             yield return PlayerBattingDataWithPivot("Match Result",
                 k => k.Key.Winner != null && k.Key.Winner.ID == Team.OurTeam.ID ? "Won" :
@@ -401,6 +408,10 @@ namespace CricketClub.WebApi.Stats
         private static IEnumerable<StatsDataV1> GetPlayerBowlingStatsBreakDown(Player player, IDao dao)
         {
             List<KeyValuePair<Match, BowlingStatsEntryData>> dataByMatch = player.GetBowlingStatsByMatch(dao).ToList();
+
+            // Pre-warm the Player InternalCache with all captains referenced by this player's
+            // matches — eliminates O(distinct captains) lazy DB queries during the pivot projections below.
+            PreloadMatchCaptainsAndKeepers(dataByMatch.Select(kvp => kvp.Key), dao);
 
             yield return PlayerBowlingDataWithPivot("Vs Opposition", k => k.Key.Opposition.Name, dataByMatch, player,
                 new StatsColumnDefinitionV1("", "tableKey"));
@@ -415,13 +426,34 @@ namespace CricketClub.WebApi.Stats
                 player, new StatsColumnDefinitionV1("", "tableKey"));
             yield return PlayerBowlingDataWithPivot("Toss", k => k.Key.WonToss ? "Won" : "Lost", dataByMatch, player,
                 new StatsColumnDefinitionV1("", "tableKey"));
+            // Use CaptainID passthrough to avoid constructing a Player just for an ID check.
             yield return PlayerBowlingDataWithPivot("As Captain",
-                k => k.Key.Captain.Id == player.Id ? "Captain" : "Not Captain",
+                k => k.Key.CaptainID == player.Id ? "Captain" : "Not Captain",
                 dataByMatch, player, new StatsColumnDefinitionV1("", "tableKey"));
             yield return PlayerBowlingDataWithPivot("Match Result",
                 k => k.Key.Winner != null && k.Key.Winner.ID == Team.OurTeam.ID ? "Won" :
                     k.Key.ResultDrawn ? "Drawn" : "Lost",
                 dataByMatch, player, new StatsColumnDefinitionV1("", "tableKey"));
+        }
+
+        /// <summary>
+        /// Bulk-loads the PlayerData for every captain and wicket-keeper referenced across <paramref name="matches"/>
+        /// and seeds the InternalCache so that subsequent <c>match.Captain</c> / <c>match.WicketKeeper</c> property
+        /// accesses are satisfied from cache instead of issuing individual DB queries.
+        /// Replaces O(distinct captains + keepers) queries with a single bulk query.
+        /// </summary>
+        private static void PreloadMatchCaptainsAndKeepers(IEnumerable<Match> matches, IDao dao)
+        {
+            var distinctPlayerIds = matches
+                .SelectMany(m => new[] { m.CaptainID, m.WicketKeeperID })
+                .Where(id => id > 0)
+                .Distinct()
+                .ToList();
+
+            if (!distinctPlayerIds.Any()) return;
+
+            var playerDataById = dao.GetPlayerDataBulk(distinctPlayerIds);
+            Player.PrewarmCache(playerDataById.Values);
         }
 
         private static StatsDataV1 PlayerBattingDataWithPivot<T>(string gridName,

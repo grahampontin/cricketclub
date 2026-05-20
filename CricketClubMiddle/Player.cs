@@ -182,6 +182,23 @@ namespace CricketClubMiddle
             return new Player(newPlayerId, dao);
         }
 
+        /// <summary>
+        /// Creates a lightweight Player from already-loaded data (no DB round-trip).
+        /// Used by bulk-load paths to avoid N+1 queries.
+        /// </summary>
+        public static Player FromData(PlayerData data, IDao dao) => new Player(data, dao);
+
+        /// <summary>
+        /// Seeds the InternalCache with a batch of pre-loaded PlayerData records
+        /// so that subsequent <c>new Player(id, dao)</c> calls are served from cache without a DB query.
+        /// Call this before iterating a collection of Match objects that will access Captain/WicketKeeper.
+        /// </summary>
+        public static void PrewarmCache(IEnumerable<PlayerData> playerDataBatch)
+        {
+            foreach (var pd in playerDataBatch)
+                InternalCache.GetInstance().Insert("player" + pd.ID, pd, new TimeSpan(0, 30, 0));
+        }
+
         public static List<Player> GetAll(bool fullyHydrated = false)
         {
             return GetAll(fullyHydrated, new Dao());

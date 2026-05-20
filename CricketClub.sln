@@ -39,6 +39,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{EEF21053-F
 		AGENTS.md = AGENTS.md
 		docs\frontend-drops-spec.md = docs\frontend-drops-spec.md
 		docs\ui-agent-drops.md = docs\ui-agent-drops.md
+		docs\tech-debt-n-plus-one.md = docs\tech-debt-n-plus-one.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL", "SQL", "{B2F7F315-1224-4E71-ABDD-0C409A340F5B}"
