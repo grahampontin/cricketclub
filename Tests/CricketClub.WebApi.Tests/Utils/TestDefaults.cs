@@ -56,6 +56,16 @@ namespace CricketClub.WebApi.Tests.Utils
                     Name = id == 0 ? "The Village CC" : $"Team {id}"
                 });
 
+            dao
+                .Setup(d => d.GetTeamDataBulk(It.IsAny<IEnumerable<int>>()))
+                .Returns((IEnumerable<int> ids) => ids
+                    .Distinct()
+                    .ToDictionary(id => id, id => new TeamData
+                    {
+                        ID = id,
+                        Name = id == 0 ? "The Village CC" : $"Team {id}"
+                    }));
+
             // Player.GetAll(fullyHydrated: true) expects these to be non-null.
             dao
                 .Setup(d => d.GetAllBattingStatsData())

@@ -82,6 +82,13 @@ namespace CricketClub.WebApi.Controllers
                 .OrderByDescending(m => m.MatchDate)
                 .ToList();
 
+            // Bulk-warm the Team InternalCache for all distinct opposition teams referenced by
+            // these matches so that match.Opposition.Name / match.Winner.Name do not trigger N
+            // individual GetTeamData queries (TODO-6).
+            var oppositionIds = teamMatches.Select(m => m.OppositionID).Distinct();
+            var teamBulkData = _database.GetTeamDataBulk(oppositionIds);
+            Team.PrewarmCache(teamBulkData.Values);
+
             var matchReports = _database.GetAllMatchReports();
             var resultList = teamMatches.Select(m =>
             {

@@ -96,13 +96,21 @@ namespace CricketClub.WebApi.Controllers
         public IActionResult GetFamilyTree()
         {
             var allPlayers = Player.GetAll(true, database);
+
+            // Build a lookup of parentId → total caps of all ringers for that parent (TODO-2).
+            // This replaces an O(N²) inner scan with a single O(N) pass.
+            var capsByParentId = allPlayers
+                .Where(c => c.RingerOf != null)
+                .GroupBy(c => c.RingerOf!.Id)
+                .ToDictionary(g => g.Key, g => g.Sum(c => c.Caps));
+
             var familyTreeNodes = allPlayers.Select(p => new FamilyTreeNode()
             {
                 Id = p.Id,
                 ParentId = p.RingerOf == null ? -2 : p.RingerOf.Id,
                 Name = p.FirstName + " " + p.Surname,
                 Caps = p.Caps,
-                ResponsibleCaps = allPlayers.Where(c => c.RingerOf != null && c.RingerOf.Id == p.Id).Sum(c => c.Caps) + p.Caps
+                ResponsibleCaps = (capsByParentId.TryGetValue(p.Id, out var childCaps) ? childCaps : 0) + p.Caps
             }).ToList();
             familyTreeNodes.Add(new FamilyTreeNode()
             {
@@ -127,10 +135,16 @@ namespace CricketClub.WebApi.Controllers
 
             var categories = new List<LeadingPlayerCategoryV1>();
 
+            // Materialise each aggregate once to avoid evaluating the same method twice per player
+            // (once in .Max() and again in .Where()) — TODO-1.
+            var runsById       = players.ToDictionary(p => p.Id, p => p.GetRunsScored());
+            var wicketsById    = players.ToDictionary(p => p.Id, p => p.GetWicketsTaken());
+            var catchesById    = players.ToDictionary(p => p.Id, p => p.GetCatchesTaken());
+
             // Most Runs
-            var mostRuns = players.Max(a => a.GetRunsScored());
-            var topRunScorers = players.Where(a => a.GetRunsScored() == mostRuns)
-                .Select(p => CreateLeadingPlayerEntry(p, p.GetRunsScored())).ToList();
+            var mostRuns = runsById.Values.Max();
+            var topRunScorers = players.Where(a => runsById[a.Id] == mostRuns)
+                .Select(p => CreateLeadingPlayerEntry(p, runsById[p.Id])).ToList();
             categories.Add(new LeadingPlayerCategoryV1
             {
                 Category = "Most Runs",
@@ -138,9 +152,9 @@ namespace CricketClub.WebApi.Controllers
             });
 
             // Most Wickets
-            var mostWickets = players.Max(a => a.GetWicketsTaken());
-            var topWicketTakers = players.Where(a => a.GetWicketsTaken() == mostWickets)
-                .Select(p => CreateLeadingPlayerEntry(p, p.GetWicketsTaken())).ToList();
+            var mostWickets = wicketsById.Values.Max();
+            var topWicketTakers = players.Where(a => wicketsById[a.Id] == mostWickets)
+                .Select(p => CreateLeadingPlayerEntry(p, wicketsById[p.Id])).ToList();
             categories.Add(new LeadingPlayerCategoryV1
             {
                 Category = "Most Wickets",
@@ -148,9 +162,9 @@ namespace CricketClub.WebApi.Controllers
             });
 
             // Most Catches
-            var mostCatches = players.Max(a => a.GetCatchesTaken());
-            var topCatchTakers = players.Where(a => a.GetCatchesTaken() == mostCatches)
-                .Select(p => CreateLeadingPlayerEntry(p, p.GetCatchesTaken())).ToList();
+            var mostCatches = catchesById.Values.Max();
+            var topCatchTakers = players.Where(a => catchesById[a.Id] == mostCatches)
+                .Select(p => CreateLeadingPlayerEntry(p, catchesById[p.Id])).ToList();
             categories.Add(new LeadingPlayerCategoryV1
             {
                 Category = "Most Catches",

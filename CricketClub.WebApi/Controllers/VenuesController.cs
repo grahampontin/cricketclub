@@ -163,11 +163,22 @@ namespace CricketClub.WebApi.Controllers
             if (string.IsNullOrEmpty(venue.Name))
                 return NotFound();
 
-            var stats = venue.GetCachedStats();
+            // Fetch venue stats once and pass the pre-loaded dictionary to avoid a redundant
+            // full GetAllVenueStatsCache() scan inside GetCachedStats() (TODO-5).
+            var allVenueStats = _database.GetAllVenueStatsCache();
+            var stats = venue.GetCachedStats(allVenueStats);
+
             var venueMatches = venue.GetMatches()
                 .Where(m => m.MatchDate <= DateTime.Today)
                 .OrderByDescending(m => m.MatchDate)
                 .ToList();
+
+            // Bulk-warm the Team InternalCache for all distinct opposition teams referenced by
+            // these matches so that match.Opposition.Name / match.Winner.Name do not trigger N
+            // individual GetTeamData queries (TODO-6).
+            var oppositionIds = venueMatches.Select(m => m.OppositionID).Distinct();
+            var teamBulkData = _database.GetTeamDataBulk(oppositionIds);
+            Team.PrewarmCache(teamBulkData.Values);
 
             var matchReports = _database.GetAllMatchReports();
             var resultList = venueMatches.Select(m =>

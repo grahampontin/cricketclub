@@ -121,6 +121,18 @@ namespace CricketClubMiddle
         }
 
 
+        /// <summary>
+        /// Seeds the InternalCache with a batch of pre-loaded TeamData records so that subsequent
+        /// <c>new Team(id, dao)</c> calls (e.g. from <see cref="Match.Opposition"/>) are served from
+        /// cache without a DB query. Call this before iterating a collection of Match objects that
+        /// will access the Opposition team name.
+        /// </summary>
+        public static void PrewarmCache(IEnumerable<TeamData> teamDataBatch)
+        {
+            foreach (var td in teamDataBatch)
+                InternalCache.GetInstance().Insert("team" + td.ID, td, new TimeSpan(24, 0, 0));
+        }
+
         public override string ToString()
         {
             return Name;

@@ -150,5 +150,15 @@ namespace CricketClubMiddle
             allStats.TryGetValue(_data.ID, out var stats);
             return stats;
         }
+
+        /// <summary>
+        /// Returns the pre-computed stats for this venue from a pre-fetched dictionary, avoiding a
+        /// redundant full-table scan when the caller has already loaded <see cref="IDao.GetAllVenueStatsCache"/>.
+        /// </summary>
+        public VenueStatsCacheData? GetCachedStats(Dictionary<int, VenueStatsCacheData> allStats)
+        {
+            allStats.TryGetValue(_data.ID, out var stats);
+            return stats;
+        }
     }
 }

@@ -252,6 +252,16 @@ namespace CricketClubDAL
                 new SqlParameter("@teamId", teamId));
         }
 
+        public Dictionary<int, TeamData> GetTeamDataBulk(IEnumerable<int> ids)
+        {
+            var distinctIds = ids.Distinct().ToList();
+            if (!distinctIds.Any())
+                return new Dictionary<int, TeamData>();
+
+            var sql = $"select * from thevilla_admin.Teams where team_id in ({string.Join(",", distinctIds)})";
+            return db.ExecuteSqlAndReturnAllRows(sql, TeamDataFromRow).ToDictionary(t => t.ID);
+        }
+
         public int CreateNewTeam(string teamName)
         {
             var dr = db.ExecuteSQLAndReturnFirstRow("select * from thevilla_admin.teams where team = @teamName",

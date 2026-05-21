@@ -26,6 +26,11 @@ namespace CricketClubDAL
 
         // Teams
         TeamData GetTeamData(int teamId);
+        /// <summary>
+        /// Bulk-loads team data for a set of IDs in a single query.
+        /// Prefer this over repeated <see cref="GetTeamData"/> calls when resolving team IDs across a collection.
+        /// </summary>
+        Dictionary<int, TeamData> GetTeamDataBulk(IEnumerable<int> ids);
         int CreateNewTeam(string teamName);
         void UpdateTeam(TeamData teamData);
         IEnumerable<TeamData> GetAllTeamData();

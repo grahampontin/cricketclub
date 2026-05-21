@@ -2,6 +2,7 @@
 
 Audit performed: 2026-05-20  
 High-priority items have been addressed in the same session — see commit history.  
+Medium-priority items addressed 2026-05-21 — see commit history.  
 The items below remain open.
 
 ---
@@ -19,38 +20,18 @@ The items below remain open.
 
 ---
 
-## 🟡 Open (Medium Priority)
+## ✅ Fixed (Medium Priority)
 
-### TODO-1 — `GET /api/stats/leadingplayers` — double iteration of per-player stats
-**File:** `StatsController.cs` lines ~131–163  
-**Issue:** Each of `GetRunsScored()`, `GetWicketsTaken()`, `GetCatchesTaken()` is evaluated twice per player — once in `.Max(a => a.GetX())` and again in `.Where(a => a.GetX() == mostX)`. This is in-memory (no DB), but wastes CPU for large rosters.  
-**Suggested fix:** Materialise each aggregate into a `Dictionary<int, int>` (playerId → value) once before the max/filter chain.
-```csharp
-var runsById = players.ToDictionary(p => p.Id, p => p.GetRunsScored());
-var mostRuns = runsById.Values.Max();
-var topRunScorers = players.Where(p => runsById[p.Id] == mostRuns)...
-```
+| # | Location | What was fixed |
+|---|---|---|
+| M1 | `StatsController.GetLeadingPlayers` | Materialised `runsById`, `wicketsById`, `catchesById` dictionaries once before the max/filter chain — eliminated the double call per player (TODO-1) |
+| M2 | `StatsController.GetFamilyTree` | Built `capsByParentId` lookup before the `.Select()` projection — replaced O(N²) inner scan with O(N) pass (TODO-2) |
+| M5 | `VenuesController.GetVenueDetails` + `Venue.GetCachedStats()` | Added `GetCachedStats(Dictionary<int,VenueStatsCacheData>)` overload; controller now fetches `GetAllVenueStatsCache()` once and passes the dictionary in — eliminates the redundant full table scan (TODO-5) |
+| M6 | `VenuesController.GetVenueDetails` + `TeamsController.GetTeamDetails` | Added `IDao.GetTeamDataBulk` + `Team.PrewarmCache`; both endpoints now bulk-warm the Team InternalCache for all opposition IDs before the match loop — replaces O(N distinct teams) per-match queries with a single batch query on cold cache (TODO-6) |
 
 ---
 
-### TODO-2 — `GET /api/stats/familytree` — O(N²) RingerOf inner scan
-**File:** `StatsController.cs` lines ~99–106  
-**Issue:** Inside the `.Select()` projection, `allPlayers.Where(c => c.RingerOf != null && c.RingerOf.Id == p.Id)` does a full linear scan of all players for every player — O(N²) in-memory.  
-**Suggested fix:** Build a lookup before the projection:
-```csharp
-var capsByParentId = allPlayers
-    .Where(c => c.RingerOf != null)
-    .GroupBy(c => c.RingerOf!.Id)
-    .ToDictionary(g => g.Key, g => g.Sum(c => c.Caps));
-
-var familyTreeNodes = allPlayers.Select(p => new FamilyTreeNode
-{
-    ...
-    ResponsibleCaps = (capsByParentId.TryGetValue(p.Id, out var childCaps) ? childCaps : 0) + p.Caps
-}).ToList();
-```
-
----
+## 🟡 Open (Low Priority)
 
 ### TODO-3 — `GET /api/livescoring/matches` (no season) — `GetCurrentBallByBallState()` per in-progress match
 **File:** `LiveScoringController.cs` lines ~57–66  
@@ -63,18 +44,4 @@ var familyTreeNodes = allPlayers.Select(p => new FamilyTreeNode
 **File:** `LiveScoringController.cs` lines ~48–54  
 **Issue:** `ToV1(match)` → `MatchV1.FromInternal(match, ...)` accesses `match.Opposition` and `match.Venue`. Both are backed by `InternalCache` (24h TTL), so repeated calls are cache hits. On first call (cold cache) this is O(distinct teams + venues in the season) queries.  
 **Suggested fix:** Acceptable for current dataset size. If it becomes a problem, pre-call `_matchService.GetTeam`/`GetVenue` for all teams/venues referenced in the season before the `.Select(ToV1)` loop, or use the `IMatchService` bulk pattern instead of `Match.FromInternal`.
-
----
-
-### TODO-5 — `GET /api/venues/{id}/details` — redundant `GetAllVenueStatsCache()` call inside `GetCachedStats()`
-**File:** `VenuesController.cs` lines ~162–189 + `Venue.cs` `GetCachedStats()`  
-**Issue:** `GetVenueDetails` calls `GetAllVenueStatsCache()` (via `venue.GetCachedStats()`) and then calls `venue.GetMatches()`. `GetCachedStats()` internally calls `myDAO.GetAllVenueStatsCache()` — a full table scan — just to look up one row for the current venue.  
-**Suggested fix:** Either (a) overload `GetCachedStats(Dictionary<int, VenueStatsCacheData> allStats)` so the controller can pass the already-fetched dictionary, or (b) add `IDao.GetVenueStatsCache(int venueId)` for single-venue lookup.
-
----
-
-### TODO-6 — `GET /api/venues/{id}/details` and `GET /api/teams/{id}/details` — cold-cache Opposition Team lookups per match
-**File:** `VenuesController.cs` + `TeamsController.cs` detail endpoints  
-**Issue:** `ResultV1.FromInternal(m, report)` accesses `m.Opposition.Name` → `new Team(id, dao)` per match. `Team` uses `InternalCache` (24h TTL) so only a cold-start issue. For a venue/team with matches against 20+ distinct opponents, this could be 20+ queries on first hit.  
-**Suggested fix:** Now that `Player.PrewarmCache` and `GetPlayerDataBulk` patterns exist, the same approach could be applied to teams. Add `Team.PrewarmCache(IEnumerable<TeamData>)` + `IDao.GetTeamDataBulk(IEnumerable<int>)`, then bulk-warm before the `venueMatches.Select(...)` loop. Low priority given the existing InternalCache coverage.
 
