@@ -4,6 +4,7 @@ using System.Data;
 using Microsoft.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
+using System.Transactions;
 using CricketClubDomain;
 using log4net;
 
@@ -1315,35 +1316,24 @@ namespace CricketClubDAL
 
         public void UpdateCurrentBallByBallState(MatchState matchState, int matchId)
         {
-            var rollbacks = new List<Action>();
-            try
-            {
-                var thisOver = matchState.LastCompletedOver + 1;
-                foreach (var playerState in matchState.Players)
-                {
-                    rollbacks.Add(UpdatePlayerState(playerState, matchId, thisOver));
-                }
+            var thisOver = matchState.LastCompletedOver + 1;
 
-                rollbacks.Add(AddOverCommentary(matchState.Over, matchId, thisOver));
-                var ballNumber = 0;
-                foreach (var ball in matchState.Over.Balls)
-                {
-                    ballNumber++;
-                    rollbacks.Add(AddBallToMatch(ball, matchId, thisOver, ballNumber));
-                }
-            }
-            catch (Exception exception)
-            {
-                Log.Error("Failed to update ball by ball state - rolling back.", exception);
-                foreach (var rollback in rollbacks)
-                {
-                    rollback();
-                }
+            // Use a real DB transaction so that a partial failure can never leave
+            // ballbyball_data and ballbyball_team in an inconsistent state.
+            // If anything throws, TransactionScope.Dispose() rolls back everything
+            // automatically — no fragile per-row manual-rollback list needed.
+            using var scope = new TransactionScope();
 
-                throw;
-            }
-            
-            
+            foreach (var playerState in matchState.Players)
+                InsertPlayerState(playerState, matchId, thisOver);
+
+            InsertOverCommentary(matchState.Over, matchId, thisOver);
+
+            var ballNumber = 0;
+            foreach (var ball in matchState.Over.Balls)
+                InsertBallData(ball, matchId, thisOver, ++ballNumber);
+
+            scope.Complete();
         }
 
         private Action AddOverCommentary(Over over, int matchId, int overNumber)
@@ -1376,6 +1366,44 @@ namespace CricketClubDAL
                                                " and over_number = " + overNumber + " and ball = " + ballNumber);
         }
 
+        private Action UpdatePlayerState(PlayerState playerState, int matchId, int thisOver)
+        {
+            db.ExecuteInsertOrUpdate($"insert into ballbyball_team (match_id,player_id, state, position, as_of_over) values ({matchId},{playerState.PlayerId},'{playerState.State}', {playerState.Position}, {thisOver})");
+            return () => db.ExecuteInsertOrUpdate($"delete from ballbyball_team where match_id = " + matchId + " and as_of_over = " + thisOver);
+        }
+
+        private void InsertOverCommentary(Over over, int matchId, int overNumber)
+        {
+            db.ExecuteInsertOrUpdate(
+                "insert into thevilla_admin.ballbyball_commentary(match_id, over_number, commentary) values (" +
+                matchId + "," + overNumber + ", '" + SafeForSql(over.Commentary) + "')");
+        }
+
+        private void InsertBallData(Ball ball, int matchId, int overNumber, int ballNumber)
+        {
+            var outPlayerId = "NULL";
+            var dismissalId = "NULL";
+            string fielder = null;
+            string description = null;
+            if (ball.Wicket != null)
+            {
+                outPlayerId = ball.Wicket.Player.ToString();
+                dismissalId = GetDismissalId(ball.Wicket.ModeOfDismissal).ToString();
+                fielder = ball.Wicket.Fielder;
+                description = ball.Wicket.Description;
+            }
+            var angle = ball.Angle.HasValue ? ball.Angle.Value.ToString(CultureInfo.InvariantCulture) : "null";
+
+            db.ExecuteInsertOrUpdate(
+                $"insert into dbo.ballbyball_data (ball, over_number, type, value, player_id, match_id, bowler, out_player_id, dismissal_id, fielder, description, angle) VALUES ({ballNumber},{overNumber},'{ball.Thing}',{ball.Amount},{ball.Batsman},{matchId},'{ball.Bowler}',{outPlayerId},{dismissalId},'{fielder}','{SafeForSql(description)}', {angle})");
+        }
+
+        private void InsertPlayerState(PlayerState playerState, int matchId, int thisOver)
+        {
+            db.ExecuteInsertOrUpdate(
+                $"insert into ballbyball_team (match_id,player_id, state, position, as_of_over) values ({matchId},{playerState.PlayerId},'{playerState.State}', {playerState.Position}, {thisOver})");
+        }
+
         private int GetDismissalId(string modeOfDismissal)
         {
             return
@@ -1384,11 +1412,6 @@ namespace CricketClubDAL
                     new SqlParameter("@dismissal", modeOfDismissal));
         }
 
-        private Action UpdatePlayerState(PlayerState playerState, int matchId, int thisOver)
-        {
-            db.ExecuteInsertOrUpdate($"insert into ballbyball_team (match_id,player_id, state, position, as_of_over) values ({matchId},{playerState.PlayerId},'{playerState.State}', {playerState.Position}, {thisOver})");
-            return () => db.ExecuteInsertOrUpdate($"delete from ballbyball_team where match_id = " + matchId + " and as_of_over = " + thisOver);
-        }
 
         public OppositionInnings GetOppositionInnings(int matchId)
         {
@@ -1461,12 +1484,14 @@ namespace CricketClubDAL
 
         public void DeleteBallByBallOver(int matchId, int lastCompletedOver)
         {
+            using var scope = new TransactionScope();
             db.ExecuteInsertOrUpdate("delete from dbo.ballbyball_data where match_id = " + matchId + " and over_number = " +
                                      lastCompletedOver);
             db.ExecuteInsertOrUpdate("delete from dbo.ballbyball_team where match_id = " + matchId + " and as_of_over = " +
                                      lastCompletedOver);
             db.ExecuteInsertOrUpdate("delete from thevilla_admin.ballbyball_commentary where match_id = " + matchId + " and over_number = " +
                                      lastCompletedOver);
+            scope.Complete();
         }
 
         public void CreateOrUpdateMatchReport(int matchId, string conditions, string report, string base64EncodedImage)

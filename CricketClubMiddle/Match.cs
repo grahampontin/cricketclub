@@ -755,6 +755,13 @@ namespace CricketClubMiddle
             {
                 throw new InvalidOperationException("Can't add a new over with no balls in it, noone counts that badly");
             }
+            if (stateFromClient.Players.IsNullOrEmpty())
+            {
+                throw new InvalidOperationException(
+                    "Cannot update ball-by-ball state: the Players array must not be empty. " +
+                    "Each over submission must include the full player state snapshot, otherwise " +
+                    "the ball data and player state data will become inconsistent.");
+            }
             var myDao = dao ?? new Dao();
             if (inningsStatus.OurInningsStatus != InningsStatus.InProgress)
             {

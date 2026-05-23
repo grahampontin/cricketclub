@@ -111,7 +111,7 @@ namespace CricketClubMiddle.Stats
                     Sixes = partnership?.Balls.Count(b => b.IsSix()) ?? 0,
                     Fours = partnership?.Balls.Count(b => b.IsBoundary()) ?? 0
                 },
-                OnStrikeBatsmanId = !overs.Any() ? -1 : GatBastmanOnStrikeAfter(GetSortedBallsLastToFirst().First()),
+                OnStrikeBatsmanId = !overs.Any() || !GetPlayersInState(PlayerState.Batting).Any() ? -1 : GatBastmanOnStrikeAfter(GetSortedBallsLastToFirst().First()),
                 NextState = GetWhatsNext().ToString(),
                 OppositionScore = OppositionScore,
                 OppositionWickets = OppositionWickets,
@@ -210,15 +210,14 @@ namespace CricketClubMiddle.Stats
         private Tuple<PlayerState, PlayerState> GetBattingPlayers()
         {
             var battingPlayers = GetPlayersInState(PlayerState.Batting);
-            var secondPlayer = new PlayerState()
+            var defaultPlayer = new PlayerState { PlayerId = -1 };
+
+            if (battingPlayers.Length == 0)
             {
-                PlayerId = -1
-            };
-            if (battingPlayers.Length > 1)
-            {
-                secondPlayer = battingPlayers[1];
+                return new Tuple<PlayerState, PlayerState>(defaultPlayer, defaultPlayer);
             }
 
+            var secondPlayer = battingPlayers.Length > 1 ? battingPlayers[1] : new PlayerState { PlayerId = -1 };
             return new Tuple<PlayerState, PlayerState>(battingPlayers[0], secondPlayer);
         }
 
