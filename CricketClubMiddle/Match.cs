@@ -770,6 +770,7 @@ namespace CricketClubMiddle
             }
 
             myDao.UpdateCurrentBallByBallState(stateFromClient, ID);
+            BallByBallMatch.InvalidateCache(ID);
         }
 
         public static IEnumerable<Match> GetInProgressGames()
@@ -1202,6 +1203,7 @@ namespace CricketClubMiddle
         {
             var myDao = dao ?? new Dao();
             myDao.DeleteBallByBallOver(ID, GetCurrentBallByBallState().LastCompletedOver);
+            BallByBallMatch.InvalidateCache(ID);
         }
 
         public void ResetBallByBallData()
