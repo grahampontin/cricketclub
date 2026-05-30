@@ -728,6 +728,9 @@ namespace CricketClubMiddle
                     inningsStatus.TheirInningsStatus = InningsStatus.InProgress;
 
                 myDao.UpdateInningsStatus(inningsStatus);
+                // Invalidate the BallByBallMatch cache so the next GetCurrentBallByBallState call
+                // sees the newly saved player states and innings status (not the pre-start stale entry).
+                BallByBallMatch.InvalidateCache(ID);
             }
             else
             {
