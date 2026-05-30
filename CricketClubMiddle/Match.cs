@@ -992,6 +992,9 @@ namespace CricketClubMiddle
             }
 
             myDao.CreateOrUpdateOppositionInningsDetails(oppositionInningsDetails, ID);
+            // Invalidate cache so the updated opposition innings and innings status are immediately
+            // visible to the BuildMatchState call that follows in the controller.
+            BallByBallMatch.InvalidateCache(ID);
         }
 
 
@@ -1041,6 +1044,9 @@ namespace CricketClubMiddle
             }
 
             var status = myDao.GetInningsStatus(ID);
+            // Invalidate cache: innings status was written above; the controller reads BuildMatchState
+            // immediately after this returns, so it must not see the pre-EndInnings stale entry.
+            BallByBallMatch.InvalidateCache(ID);
             if (status.OurInningsStatus == InningsStatus.Completed &&
                 status.TheirInningsStatus == InningsStatus.Completed)
             {
@@ -1126,6 +1132,10 @@ namespace CricketClubMiddle
             {
                 myDao.UpdateInningsStatus(inningsStatus);
             }
+
+            // Invalidate cache so any subsequent GET for this match sees the closed innings status,
+            // not the in-progress snapshot that was live when AbandonMatch was called.
+            BallByBallMatch.InvalidateCache(ID);
 
             // Flush ball-by-ball data to the static scorecards, but only fill empty elements
             PopulateScorecardFromBallByBallDataIfEmpty();
@@ -1215,6 +1225,8 @@ namespace CricketClubMiddle
             myDao.ResetBallByBallCoverage(ID);
             // Invalidate the batch in-progress cache so the reset is reflected immediately.
             InternalCache.GetInstance().Remove("inprogress_match_ids");
+            // Invalidate the per-match BallByBallMatch cache so subsequent GETs don't serve stale data.
+            BallByBallMatch.InvalidateCache(ID);
         }
 
         public FoWStats GetOurFoWData()
