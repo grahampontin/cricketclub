@@ -41,8 +41,50 @@ namespace CricketClub.WebApi.Domain
         public List<PartnershipV1> Partnerships { get; set; }
 
         /// <summary>
-        /// VCC players who have not yet come to the crease in the current innings, in batting order.
+        /// VCC players who have not yet come to the crease, in batting order.
         /// </summary>
         public List<YetToBatEntryV1> YetToBat { get; set; }
+
+        // ── Opposition ball-by-ball innings (populated when TheirInningsIsBallByBall = true) ──
+        /// <summary>True when their innings is being scored ball-by-ball rather than per-over summary.</summary>
+        public bool TheirInningsIsBallByBall { get; set; }
+        /// <summary>The opposition batter currently on strike.</summary>
+        public OppositionBatterStateV1 TheirOnStrikeBatsman { get; set; }
+        /// <summary>The other opposition batter at the crease.</summary>
+        public OppositionBatterStateV1 TheirOtherBatsman { get; set; }
+        /// <summary>Opposition batters yet to bat (ball-by-ball mode).</summary>
+        public List<OppositionBatterStateV1> TheirYetToBat { get; set; }
+        /// <summary>Live batting card for all opposition batters who have faced a ball.</summary>
+        public List<OppositionBatterScorecardLineV1> TheirLiveBattingCard { get; set; }
+        /// <summary>Bowling figures for each of OUR players who has bowled in the opposition innings.</summary>
+        public List<OppositionBowlerDetailsV1> TheirLiveBowlingCard { get; set; }
+        /// <summary>Over number of the last completed opposition over (ball-by-ball mode).</summary>
+        public int TheirLastCompletedOver { get; set; }
+    }
+
+    /// <summary>Batting scorecard line for an opposition batter (ball-by-ball mode).</summary>
+    public class OppositionBatterScorecardLineV1
+    {
+        public string BatsmanName { get; set; }
+        public int Score { get; set; }
+        public int BallsFaced { get; set; }
+        public int Fours { get; set; }
+        public int Sixes { get; set; }
+        public decimal StrikeRate { get; set; }
+        public OppositionWicketV1 Wicket { get; set; }
+    }
+
+    /// <summary>Bowling figures for one of OUR players in the opposition innings (ball-by-ball mode).</summary>
+    public class OppositionBowlerDetailsV1
+    {
+        public int PlayerId { get; set; }
+        public string PlayerName { get; set; }
+        public int Overs { get; set; }
+        public int Maidens { get; set; }
+        public int Runs { get; set; }
+        public int Wickets { get; set; }
+        public int Wides { get; set; }
+        public int NoBalls { get; set; }
+        public decimal Economy { get; set; }
     }
 }

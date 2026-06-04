@@ -16,9 +16,13 @@ namespace CricketClubMiddle.Stats
         private readonly OppositionInnings oppositionInnings;
         private readonly BallByBallInningsStatus inningsStatus;
         private readonly Match match;
+        // Opposition ball-by-ball data (only populated when TheirInningsIsBallByBall = true)
+        private readonly List<OppositionOver> oppositionBallByBallOvers;
+        private readonly List<OppositionBatterState> oppositionBatterStates;
 
         private BallByBallMatch(List<Over> overs, List<PlayerState> playerStates, int matchId,
-            OppositionInnings oppositionInnings, BallByBallInningsStatus inningsStatus, Match match)
+            OppositionInnings oppositionInnings, BallByBallInningsStatus inningsStatus, Match match,
+            List<OppositionOver> oppositionBallByBallOvers, List<OppositionBatterState> oppositionBatterStates)
         {
             this.overs = overs;
             this.playerStates = playerStates;
@@ -26,6 +30,8 @@ namespace CricketClubMiddle.Stats
             this.oppositionInnings = oppositionInnings;
             this.inningsStatus = inningsStatus;
             this.match = match;
+            this.oppositionBallByBallOvers = oppositionBallByBallOvers;
+            this.oppositionBatterStates = oppositionBatterStates;
         }
 
         public int LastCompletedOver
@@ -37,16 +43,112 @@ namespace CricketClubMiddle.Stats
 
         public bool OppositionInningsComplete => inningsStatus.TheirInningsStatus == InningsStatus.Completed;
         public int OppositionOver => oppositionInnings.Details.Any() ? oppositionInnings.Details.Max(d => d.Over) : 0;
-        public int OppositionScore => oppositionInnings.Details.Any() ? LastOppositionOver.Score : 0;
+        public int OppositionScore => inningsStatus.TheirInningsIsBallByBall
+            ? GetOppositionBallByBallScore()
+            : (oppositionInnings.Details.Any() ? LastOppositionOver.Score : 0);
 
-        public List<OppositionInningsDetails> OppositionOvers => oppositionInnings.Details; 
+        public List<OppositionInningsDetails> OppositionOvers => oppositionInnings.Details;
 
         private OppositionInningsDetails LastOppositionOver
         {
             get { return oppositionInnings.Details.OrderBy(d => d.Over).LastOrDefault(); }
         }
 
-        public int OppositionWickets => oppositionInnings.Details.Any() ? LastOppositionOver.Wickets : 0;
+        public int OppositionWickets => inningsStatus.TheirInningsIsBallByBall
+            ? GetOppositionBallByBallWickets()
+            : (oppositionInnings.Details.Any() ? LastOppositionOver.Wickets : 0);
+
+        // ── Opposition ball-by-ball helpers ─────────────────────────────────────
+
+        public bool TheirInningsIsBallByBall => inningsStatus.TheirInningsIsBallByBall;
+
+        public List<OppositionOver> OppositionBallByBallOvers => oppositionBallByBallOvers;
+
+        public List<OppositionBatterState> OppositionBatterStates => oppositionBatterStates;
+
+        public int OppositionBallByBallLastCompletedOver =>
+            oppositionBallByBallOvers.Any() ? oppositionBallByBallOvers.Max(o => o.OverNumber) : 0;
+
+        public int GetOppositionBallByBallScore() =>
+            oppositionBallByBallOvers.SelectMany(o => o.Balls).Sum(b => b.Amount);
+
+        public int GetOppositionBallByBallWickets() =>
+            oppositionBallByBallOvers.SelectMany(o => o.Balls).Count(b => b.Wicket != null);
+
+        public OppositionBatterState GetOppositionOnStrikeBatter()
+        {
+            var battingStates = oppositionBatterStates
+                .Where(s => s.State == OppositionBatterState.Batting)
+                .ToList();
+            if (!battingStates.Any()) return null;
+
+            var allBalls = OppositionBallsSortedLastToFirst();
+            var lastBall = allBalls.FirstOrDefault(b => battingStates.Any(s => s.BatsmanName == b.BatsmanName));
+            if (lastBall == null) return battingStates.First();
+
+            // After an over ends the striker rotates; we just return who faced the last ball
+            return battingStates.FirstOrDefault(s => s.BatsmanName == lastBall.BatsmanName)
+                   ?? battingStates.First();
+        }
+
+        public OppositionBatterState GetOppositionOtherBatter()
+        {
+            var onStrike = GetOppositionOnStrikeBatter();
+            return oppositionBatterStates
+                .FirstOrDefault(s => s.State == OppositionBatterState.Batting && s.BatsmanName != onStrike?.BatsmanName);
+        }
+
+        /// <summary>Returns scoring details for an individual opposition batter.</summary>
+        public OppositionBatterScorecardLine GetOppositionBatterDetails(string batsmanName)
+        {
+            var allBalls = oppositionBallByBallOvers.SelectMany(o => o.Balls)
+                .Where(b => b.BatsmanName == batsmanName).ToList();
+
+            var score = allBalls.Sum(b => b.Amount);
+            var ballsFaced = allBalls.Count(b => !b.IsWide);
+            var fours = allBalls.Count(b => b.IsBoundary());
+            var sixes = allBalls.Count(b => b.IsSix());
+            var wicket = allBalls.Select(b => b.Wicket).FirstOrDefault(w => w?.BatsmanName == batsmanName);
+
+            return new OppositionBatterScorecardLine
+            {
+                BatsmanName = batsmanName,
+                Score = score,
+                BallsFaced = ballsFaced,
+                Fours = fours,
+                Sixes = sixes,
+                StrikeRate = ballsFaced == 0 ? 0 : Math.Round((decimal)score * 100 / ballsFaced, 2),
+                Wicket = wicket
+            };
+        }
+
+        /// <summary>Returns bowling figures for one of OUR players bowling in the opposition innings.</summary>
+        public OppositionBowlerDetails GetOppositionInningsBowlerDetails(int bowlerPlayerId, string bowlerName)
+        {
+            var oversBowled = oppositionBallByBallOvers
+                .Where(o => o.Balls.Any(b => b.BowlerPlayerId == bowlerPlayerId)).ToList();
+            var allBalls = oversBowled.SelectMany(o => o.Balls).Where(b => b.BowlerPlayerId == bowlerPlayerId).ToList();
+
+            return new OppositionBowlerDetails
+            {
+                PlayerId = bowlerPlayerId,
+                PlayerName = bowlerName,
+                Overs = oversBowled.Count,
+                Maidens = oversBowled.Count(o => o.IsMaiden()),
+                Runs = allBalls.Where(b => !b.IsFieldingExtra()).Sum(b => b.Amount),
+                Wickets = allBalls.Count(b => b.IsBowlersWicket()),
+                Wides = allBalls.Where(b => b.IsWide).Sum(b => b.Amount),
+                NoBalls = allBalls.Count(b => b.IsNoBall),
+                Economy = oversBowled.Count == 0
+                    ? 0
+                    : Math.Round((decimal)allBalls.Where(b => !b.IsFieldingExtra()).Sum(b => b.Amount) / oversBowled.Count, 2)
+            };
+        }
+
+        private IEnumerable<OppositionBall> OppositionBallsSortedLastToFirst() =>
+            oppositionBallByBallOvers
+                .OrderByDescending(o => o.OverNumber)
+                .SelectMany(o => ((IEnumerable<OppositionBall>)o.Balls).Reverse());
 
         public static BallByBallMatch Load(int matchId, Match match)
             => Load(matchId, match, new Dao());
@@ -57,13 +159,30 @@ namespace CricketClubMiddle.Stats
             var cache = InternalCache.GetInstance();
             if (cache.Get(cacheKey) is BallByBallMatch cached) return cached;
 
+            var inningsStatus = dao.GetInningsStatus(matchId);
+
+            List<OppositionOver> oppOvers;
+            List<OppositionBatterState> oppStates;
+            if (inningsStatus.TheirInningsIsBallByBall)
+            {
+                oppOvers = dao.GetOppositionBallByBallOvers(matchId);
+                oppStates = dao.GetOppositionBatterStates(matchId);
+            }
+            else
+            {
+                oppOvers = new List<OppositionOver>();
+                oppStates = new List<OppositionBatterState>();
+            }
+
             var loaded = new BallByBallMatch(
                 dao.GetAllBallsForMatch(matchId),
                 dao.GetPlayerStates(matchId),
                 matchId,
                 dao.GetOppositionInnings(matchId),
-                dao.GetInningsStatus(matchId),
-                match);
+                inningsStatus,
+                match,
+                oppOvers,
+                oppStates);
 
             cache.Insert(cacheKey, loaded, TimeSpan.FromSeconds(30));
             return loaded;
@@ -143,12 +262,29 @@ namespace CricketClubMiddle.Stats
 
             if (theirInningsStatus == InningsStatus.InProgress)
             {
-                if (LastOppositionOver!=null && (LastOppositionOver.Over == match.Overs || oppositionInnings.Details.Last()?.Wickets>=10 || (ourInningsStatus==InningsStatus.Completed && OppositionScore > GetScore())))
+                if (inningsStatus.TheirInningsIsBallByBall)
                 {
-                    return NextState.EndOfBowlingInnings;
+                    // Ball-by-ball opposition innings
+                    var oppLastOver = oppositionBallByBallOvers.Any() ? oppositionBallByBallOvers.Max(o => o.OverNumber) : 0;
+                    var oppWickets = GetOppositionBallByBallWickets();
+                    var oppScore = GetOppositionBallByBallScore();
+                    if (oppLastOver >= match.Overs || oppWickets >= 10 ||
+                        (ourInningsStatus == InningsStatus.Completed && oppScore > GetScore()))
+                    {
+                        return NextState.EndOfBowlingInnings;
+                    }
+                    return NextState.OppositionBattingOver;
                 }
+                else
+                {
+                    // Summary (per-over) opposition innings
+                    if (LastOppositionOver!=null && (LastOppositionOver.Over == match.Overs || oppositionInnings.Details.Last()?.Wickets>=10 || (ourInningsStatus==InningsStatus.Completed && OppositionScore > GetScore())))
+                    {
+                        return NextState.EndOfBowlingInnings;
+                    }
 
-                return NextState.BowlingOver;
+                    return NextState.BowlingOver;
+                }
             }
 
             if (theirInningsStatus == InningsStatus.NotStarted &&

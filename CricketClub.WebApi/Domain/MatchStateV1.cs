@@ -20,5 +20,15 @@
         public string OppositionShortName { get; set; }
         public BowlerInningsDetailsV1[] BowlerDetails { get; set; }
         public LiveScorecardV1 LiveScorecard { get; set; }
+
+        // ── Opposition ball-by-ball extras ───────────────────────────────────────
+        /// <summary>True when the opposition innings is being scored ball-by-ball.</summary>
+        public bool TheirInningsIsBallByBall { get; set; }
+        /// <summary>Current batter states for the opposition (ball-by-ball mode only).</summary>
+        public OppositionBatterStateV1[] OppositionPlayers { get; set; }
+        /// <summary>Name of the opposition batter currently on strike (ball-by-ball mode only).</summary>
+        public string OppositionOnStrikeBatsmanName { get; set; }
+        /// <summary>Over number of the last completed opposition over (ball-by-ball mode only).</summary>
+        public int OppositionLastCompletedOver { get; set; }
     }
 }

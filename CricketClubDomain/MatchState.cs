@@ -73,6 +73,10 @@ namespace CricketClubDomain
         BowlingOver,
         EndOfMatch,
         SelectTeam,
-        MatchConditions
+        MatchConditions,
+        /// <summary>
+        /// Opposition innings is being scored ball-by-ball (their batters = strings, our bowlers = player IDs).
+        /// </summary>
+        OppositionBattingOver
     }
 }

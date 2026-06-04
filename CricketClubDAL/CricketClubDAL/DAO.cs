@@ -1198,6 +1198,9 @@ namespace CricketClubDAL
             db.ExecuteInsertOrUpdate($"delete from thevilla_admin.ballbyball_commentary where match_id = {match_id}");
             db.ExecuteInsertOrUpdate($"delete from dbo.ballbyball_opposition_data where match_id = {match_id}");
             db.ExecuteInsertOrUpdate($"delete from dbo.ballbyball_innings_status where match_id = {match_id}");
+            // Opposition ball-by-ball tables
+            db.ExecuteInsertOrUpdate($"delete from dbo.ballbyball_opposition_team where match_id = {match_id}");
+            db.ExecuteInsertOrUpdate($"delete from dbo.ballbyball_opposition_balls where match_id = {match_id}");
         }
 
         public List<PlayerState> GetPlayerStates(int matchId)
@@ -1452,6 +1455,7 @@ namespace CricketClubDAL
                 TheirInningsWasDeclared = r.GetBool("their_innings_declared"),
                 OurInningsCommentary = r.GetString("our_innings_commentary"),
                 TheirInningsCommentary = r.GetString("their_innings_commentary"),
+                TheirInningsIsBallByBall = r.GetBool("their_innings_is_ball_by_ball", false),
             }, BallByBallInningsStatus.NotStarted(matchId));
         }
 
@@ -1468,16 +1472,19 @@ namespace CricketClubDAL
                 db.ExecuteInsertOrUpdate("update ballbyball_innings_status set their_innings_status = '" + inningsStatus.TheirInningsStatus + "' where match_id=" + inningsStatus.MatchId);
                 db.ExecuteInsertOrUpdate("update ballbyball_innings_status set their_innings_commentary = '" + SafeForSql(inningsStatus.TheirInningsCommentary) + "' where match_id=" + inningsStatus.MatchId);
                 db.ExecuteInsertOrUpdate("update ballbyball_innings_status set their_innings_declared = '" + inningsStatus.TheirInningsWasDeclared + "' where match_id=" + inningsStatus.MatchId);
+                db.ExecuteInsertOrUpdate("update ballbyball_innings_status set their_innings_is_ball_by_ball = " + (inningsStatus.TheirInningsIsBallByBall ? 1 : 0) + " where match_id=" + inningsStatus.MatchId);
             } else
             {
                 db.ExecuteInsertOrUpdate(
-                    "insert into ballbyball_innings_status(our_innings_status, our_innings_commentary, our_innings_declared, their_innings_status, their_innings_commentary, their_innings_declared, match_id) values ('" 
+                    "insert into ballbyball_innings_status(our_innings_status, our_innings_commentary, our_innings_declared, their_innings_status, their_innings_commentary, their_innings_declared, their_innings_is_ball_by_ball, match_id) values ('" 
                     + inningsStatus.OurInningsStatus + "','" 
-                    + inningsStatus.OurInningsCommentary + "','" 
+                    + SafeForSql(inningsStatus.OurInningsCommentary) + "','" 
                     + inningsStatus.OurInningsWasDeclared + "','" 
                     + inningsStatus.TheirInningsStatus + "','" 
-                    + inningsStatus.TheirInningsCommentary + "','" 
-                    + inningsStatus.TheirInningsWasDeclared + "'," + inningsStatus.MatchId+")");
+                    + SafeForSql(inningsStatus.TheirInningsCommentary) + "','" 
+                    + inningsStatus.TheirInningsWasDeclared + "',"
+                    + (inningsStatus.TheirInningsIsBallByBall ? 1 : 0) + ","
+                    + inningsStatus.MatchId + ")");
             }
             
         }
@@ -1491,6 +1498,142 @@ namespace CricketClubDAL
                                      lastCompletedOver);
             db.ExecuteInsertOrUpdate("delete from thevilla_admin.ballbyball_commentary where match_id = " + matchId + " and over_number = " +
                                      lastCompletedOver);
+            scope.Complete();
+        }
+
+        // ── Opposition ball-by-ball innings ──────────────────────────────────────
+
+        public void StartOppositionBallByBallInnings(int matchId, IEnumerable<string> batsmanNames)
+        {
+            var position = 1;
+            foreach (var name in batsmanNames)
+            {
+                db.ExecuteInsertOrUpdate(
+                    $"INSERT INTO dbo.ballbyball_opposition_team (match_id, batsman_name, position, state, as_of_over) " +
+                    $"VALUES ({matchId}, '{SafeForSql(name)}', {position++}, 'Waiting', 0)");
+            }
+        }
+
+        public void UpdateOppositionBallByBallState(int matchId, int overNumber, IEnumerable<OppositionBatterState> batsmenStates, IEnumerable<OppositionBall> balls)
+        {
+            using var scope = new TransactionScope();
+
+            foreach (var state in batsmenStates)
+            {
+                db.ExecuteInsertOrUpdate(
+                    $"INSERT INTO dbo.ballbyball_opposition_team (match_id, batsman_name, position, state, as_of_over) " +
+                    $"VALUES ({matchId}, '{SafeForSql(state.BatsmanName)}', {state.Position}, '{state.State}', {overNumber})");
+            }
+
+            var ballNumber = 0;
+            foreach (var ball in balls)
+            {
+                ballNumber++;
+                var outName = ball.Wicket != null ? $"'{SafeForSql(ball.Wicket.BatsmanName)}'" : "NULL";
+                var dismissalId = ball.Wicket != null ? GetDismissalId(ball.Wicket.ModeOfDismissal).ToString() : "NULL";
+                var fielderPlayerId = ball.Wicket?.FielderPlayerId.HasValue == true ? ball.Wicket.FielderPlayerId.Value.ToString() : "NULL";
+                var description = ball.Wicket != null ? $"'{SafeForSql(ball.Wicket.Description)}'" : "NULL";
+                var angle = ball.Angle.HasValue ? ball.Angle.Value.ToString(CultureInfo.InvariantCulture) : "NULL";
+
+                db.ExecuteInsertOrUpdate(
+                    $"INSERT INTO dbo.ballbyball_opposition_balls " +
+                    $"(match_id, over_number, ball, batsman_name, bowler_player_id, [type], value, out_batsman_name, dismissal_id, fielder_player_id, description, angle) " +
+                    $"VALUES ({matchId}, {overNumber}, {ballNumber}, '{SafeForSql(ball.BatsmanName)}', {ball.BowlerPlayerId}, " +
+                    $"'{SafeForSql(ball.Thing)}', {ball.Amount}, {outName}, {dismissalId}, {fielderPlayerId}, {description}, {angle})");
+            }
+
+            scope.Complete();
+        }
+
+        public List<OppositionBatterState> GetOppositionBatterStates(int matchId)
+        {
+            var rows = db.QueryMany(
+                $"SELECT batsman_name, position, state, as_of_over " +
+                $"FROM dbo.ballbyball_opposition_team WHERE match_id = {matchId}");
+
+            var groups = rows.Select(r => new OppositionBatterState
+            {
+                BatsmanName = r.GetString("batsman_name"),
+                Position = r.GetInt("position"),
+                State = r.GetString("state"),
+                AsOfOver = r.GetInt("as_of_over")
+            }).GroupBy(s => s.BatsmanName);
+
+            return groups.Select(g => g.OrderByDescending(s => s.AsOfOver).First()).ToList();
+        }
+
+        public List<OppositionOver> GetOppositionBallByBallOvers(int matchId)
+        {
+            var rows = db.QueryMany(
+                $"SELECT b.over_number, b.ball, b.batsman_name, b.bowler_player_id, b.[type], b.value, " +
+                $"b.out_batsman_name, b.dismissal_id, b.fielder_player_id, b.description, b.angle, " +
+                $"p.player_name AS bowler_name " +
+                $"FROM dbo.ballbyball_opposition_balls b " +
+                $"LEFT JOIN thevilla_admin.Players p ON p.player_id = b.bowler_player_id " +
+                $"WHERE b.match_id = {matchId} " +
+                $"ORDER BY b.over_number, b.ball");
+
+            var overs = new Dictionary<int, OppositionOver>();
+            foreach (var r in rows)
+            {
+                var overNumber = r.GetInt("over_number");
+                if (!overs.TryGetValue(overNumber, out var over))
+                {
+                    over = new OppositionOver { OverNumber = overNumber, Balls = Array.Empty<OppositionBall>() };
+                    overs[overNumber] = over;
+                }
+
+                OppositionWicket wicket = null;
+                var outBatsmanName = r.GetString("out_batsman_name");
+                if (!string.IsNullOrEmpty(outBatsmanName))
+                {
+                    wicket = new OppositionWicket
+                    {
+                        BatsmanName = outBatsmanName,
+                        BowlerPlayerId = r.GetInt("bowler_player_id"),
+                        FielderPlayerId = r.GetNullableInt("fielder_player_id"),
+                        ModeOfDismissal = GetDismissalText(r.GetInt("dismissal_id")),
+                        Description = r.GetString("description")
+                    };
+                }
+
+                var ball = new OppositionBall
+                {
+                    BallNumber = r.GetInt("ball"),
+                    BatsmanName = r.GetString("batsman_name"),
+                    BowlerPlayerId = r.GetInt("bowler_player_id"),
+                    Thing = r.GetString("type"),
+                    Amount = r.GetInt("value"),
+                    Angle = r.GetDecimal("angle"),
+                    MatchId = matchId,
+                    OverNumber = overNumber,
+                    Wicket = wicket
+                };
+
+                over.Balls = over.Balls.Add(ball);
+            }
+
+            // Load commentary (reuse the same commentary table keyed by over_number)
+            var commentaryRows = db.ExecuteSqlAndReturnAllRows(
+                $"SELECT over_number, commentary FROM thevilla_admin.ballbyball_commentary WHERE match_id = {matchId}",
+                row => new KeyValuePair<int, string>(row.GetInt("over_number"), row.GetString("commentary")));
+            var commentaryLookup = commentaryRows.ToDictionary(p => p.Key, p => p.Value);
+            foreach (var over in overs.Values)
+            {
+                if (commentaryLookup.TryGetValue(over.OverNumber, out var commentary))
+                    over.Commentary = commentary;
+            }
+
+            return overs.Values.OrderBy(o => o.OverNumber).ToList();
+        }
+
+        public void DeleteOppositionBallByBallOver(int matchId, int overNumber)
+        {
+            using var scope = new TransactionScope();
+            db.ExecuteInsertOrUpdate(
+                $"DELETE FROM dbo.ballbyball_opposition_balls WHERE match_id = {matchId} AND over_number = {overNumber}");
+            db.ExecuteInsertOrUpdate(
+                $"DELETE FROM dbo.ballbyball_opposition_team WHERE match_id = {matchId} AND as_of_over = {overNumber}");
             scope.Complete();
         }
 
@@ -1599,6 +1742,8 @@ namespace CricketClubDAL
         public bool TheirInningsWasDeclared;
         public string OurInningsCommentary { get; set; }
         public string TheirInningsCommentary { get; set; }
+        /// <summary>True when the opposition innings is being scored ball-by-ball rather than per-over summary.</summary>
+        public bool TheirInningsIsBallByBall { get; set; }
 
         public static BallByBallInningsStatus NotStarted(int matchId)
         {
@@ -1610,7 +1755,8 @@ namespace CricketClubDAL
                 OurInningsWasDeclared = false,
                 TheirInningsWasDeclared = false,
                 OurInningsCommentary = "",
-                TheirInningsCommentary = ""
+                TheirInningsCommentary = "",
+                TheirInningsIsBallByBall = false
             };
         }
     }

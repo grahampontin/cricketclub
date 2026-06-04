@@ -120,5 +120,17 @@ namespace CricketClubDAL
         void CreateOrUpdateMatchReport(int matchId, string conditions, string report, string base64EncodedImage);
         MatchReportAndConditions GetMatchReport(int matchId);
         Dictionary<int, MatchReportAndConditions> GetAllMatchReports();
+
+        // Opposition ball-by-ball innings
+        /// <summary>Stores the opposition batting lineup (11 string names) and marks their innings as ball-by-ball.</summary>
+        void StartOppositionBallByBallInnings(int matchId, IEnumerable<string> batsmanNames);
+        /// <summary>Persists one over's worth of opposition ball-by-ball data and the updated batter states.</summary>
+        void UpdateOppositionBallByBallState(int matchId, int overNumber, IEnumerable<OppositionBatterState> batsmenStates, IEnumerable<OppositionBall> balls);
+        /// <summary>Returns the latest state for each opposition batter (most recent as_of_over entry per name).</summary>
+        List<OppositionBatterState> GetOppositionBatterStates(int matchId);
+        /// <summary>Returns all stored opposition ball-by-ball overs.</summary>
+        List<OppositionOver> GetOppositionBallByBallOvers(int matchId);
+        /// <summary>Deletes the given over number from opposition ball-by-ball tables (undo last over).</summary>
+        void DeleteOppositionBallByBallOver(int matchId, int overNumber);
     }
 }

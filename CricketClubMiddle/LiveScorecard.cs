@@ -51,6 +51,22 @@ namespace CricketClubMiddle
         /// VCC players who are yet to bat in the current innings, ordered by batting position.
         /// </summary>
         public List<CricketClubDomain.PlayerState> YetToBat { get; set; }
+
+        // ── Opposition ball-by-ball innings extras ───────────────────────────────
+        /// <summary>True when the opposition innings is in ball-by-ball mode.</summary>
+        public bool TheirInningsIsBallByBall { get; set; }
+        /// <summary>Over number of the last completed opposition over (ball-by-ball mode).</summary>
+        public int TheirLastCompletedOver { get; set; }
+        /// <summary>The opposition batter currently on strike (ball-by-ball mode).</summary>
+        public OppositionBatterState TheirOnStrikeBatsman { get; set; }
+        /// <summary>The other opposition batter at the crease (ball-by-ball mode).</summary>
+        public OppositionBatterState TheirOtherBatsman { get; set; }
+        /// <summary>Opposition batters yet to bat (ball-by-ball mode).</summary>
+        public List<OppositionBatterState> TheirYetToBat { get; set; }
+        /// <summary>Batting scorecard lines for each opposition batter who has faced a ball.</summary>
+        public List<OppositionBatterScorecardLine> TheirLiveBattingCard { get; set; }
+        /// <summary>Bowling figures for each of OUR players who has bowled in the opposition innings.</summary>
+        public List<OppositionBowlerDetails> TheirLiveBowlingCard { get; set; }
     }
 
     public class LiveBattingCard

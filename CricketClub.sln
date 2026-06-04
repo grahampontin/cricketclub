@@ -40,6 +40,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{EEF21053-F
 		docs\frontend-drops-spec.md = docs\frontend-drops-spec.md
 		docs\ui-agent-drops.md = docs\ui-agent-drops.md
 		docs\tech-debt-n-plus-one.md = docs\tech-debt-n-plus-one.md
+		docs\frontend-opposition-ball-by-ball-spec.md = docs\frontend-opposition-ball-by-ball-spec.md
+		docs\ui-agent-opposition-ball-by-ball.md = docs\ui-agent-opposition-ball-by-ball.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL", "SQL", "{B2F7F315-1224-4E71-ABDD-0C409A340F5B}"
@@ -49,6 +51,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL", "SQL", "{B2F7F315-122
 		database\migrations\004_venue_stats_cache.sql = database\migrations\004_venue_stats_cache.sql
 		database\migrations\005_venue_stats_won_lost.sql = database\migrations\005_venue_stats_won_lost.sql
 		database\migrations\006_match_drops.sql = database\migrations\006_match_drops.sql
+		database\migrations\007_opposition_ball_by_ball.sql = database\migrations\007_opposition_ball_by_ball.sql
 		scripts\cleanup-test-teams.sql = scripts\cleanup-test-teams.sql
 		scripts\cleanup-test-venues.sql = scripts\cleanup-test-venues.sql
 	EndProjectSection

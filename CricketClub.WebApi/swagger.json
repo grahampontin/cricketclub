@@ -707,6 +707,144 @@
         }
       }
     },
+    "/api/LiveScoring/{matchId}/start-opposition-ball-by-ball": {
+      "post": {
+        "tags": [
+          "LiveScoring"
+        ],
+        "parameters": [
+          {
+            "name": "matchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartOppositionBallByBallInningsV1"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchStateV1"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/LiveScoring/{matchId}/opposition-over": {
+      "post": {
+        "tags": [
+          "LiveScoring"
+        ],
+        "parameters": [
+          {
+            "name": "matchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OppositionInningsUpdateV1"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchStateV1"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/LiveScoring/{matchId}/last-opposition-over": {
+      "delete": {
+        "tags": [
+          "LiveScoring"
+        ],
+        "parameters": [
+          {
+            "name": "matchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchStateV1"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/LiveScoring/{matchId}/abandon": {
       "post": {
         "tags": [
@@ -3037,6 +3175,40 @@
               "$ref": "#/components/schemas/YetToBatEntryV1"
             },
             "nullable": true
+          },
+          "theirInningsIsBallByBall": {
+            "type": "boolean"
+          },
+          "theirOnStrikeBatsman": {
+            "$ref": "#/components/schemas/OppositionBatterStateV1"
+          },
+          "theirOtherBatsman": {
+            "$ref": "#/components/schemas/OppositionBatterStateV1"
+          },
+          "theirYetToBat": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OppositionBatterStateV1"
+            },
+            "nullable": true
+          },
+          "theirLiveBattingCard": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OppositionBatterScorecardLineV1"
+            },
+            "nullable": true
+          },
+          "theirLiveBowlingCard": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OppositionBowlerDetailsV1"
+            },
+            "nullable": true
+          },
+          "theirLastCompletedOver": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -3465,6 +3637,24 @@
           },
           "liveScorecard": {
             "$ref": "#/components/schemas/LiveScorecardV1"
+          },
+          "theirInningsIsBallByBall": {
+            "type": "boolean"
+          },
+          "oppositionPlayers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OppositionBatterStateV1"
+            },
+            "nullable": true
+          },
+          "oppositionOnStrikeBatsmanName": {
+            "type": "string",
+            "nullable": true
+          },
+          "oppositionLastCompletedOver": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -3512,6 +3702,165 @@
         ],
         "type": "string"
       },
+      "OppositionBallV1": {
+        "type": "object",
+        "properties": {
+          "ballNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "batsmanName": {
+            "type": "string",
+            "nullable": true
+          },
+          "bowlerPlayerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "thing": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "wicket": {
+            "$ref": "#/components/schemas/OppositionWicketV1"
+          },
+          "angle": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "isWide": {
+            "type": "boolean"
+          },
+          "isNoBall": {
+            "type": "boolean"
+          },
+          "isBoundary": {
+            "type": "boolean"
+          },
+          "isSix": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OppositionBatterScorecardLineV1": {
+        "type": "object",
+        "properties": {
+          "batsmanName": {
+            "type": "string",
+            "nullable": true
+          },
+          "score": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ballsFaced": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fours": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sixes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "strikeRate": {
+            "type": "number",
+            "format": "double"
+          },
+          "wicket": {
+            "$ref": "#/components/schemas/OppositionWicketV1"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OppositionBatterStateV1": {
+        "type": "object",
+        "properties": {
+          "batsmanName": {
+            "type": "string",
+            "nullable": true
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "currentScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ballsFaced": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fours": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sixes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "strikeRate": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OppositionBowlerDetailsV1": {
+        "type": "object",
+        "properties": {
+          "playerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "playerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "overs": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maidens": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "runs": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "wickets": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "wides": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "noBalls": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "economy": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
       "OppositionInningsDetailsV1": {
         "type": "object",
         "properties": {
@@ -3528,6 +3877,78 @@
             "format": "int32"
           },
           "commentary": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "OppositionInningsUpdateV1": {
+        "type": "object",
+        "properties": {
+          "lastCompletedOver": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "onStrikeBatsmanName": {
+            "type": "string",
+            "nullable": true
+          },
+          "over": {
+            "$ref": "#/components/schemas/OppositionOverV1"
+          },
+          "players": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OppositionBatterStateV1"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "OppositionOverV1": {
+        "type": "object",
+        "properties": {
+          "overNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "balls": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OppositionBallV1"
+            },
+            "nullable": true
+          },
+          "commentary": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "OppositionWicketV1": {
+        "type": "object",
+        "properties": {
+          "batsmanName": {
+            "type": "string",
+            "nullable": true
+          },
+          "bowlerPlayerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fielderPlayerId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "modeOfDismissal": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
             "type": "string",
             "nullable": true
           }
@@ -3998,6 +4419,19 @@
           },
           "tossWinnerElectedTo": {
             "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StartOppositionBallByBallInningsV1": {
+        "type": "object",
+        "properties": {
+          "batsmanNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
             "nullable": true
           }
         },

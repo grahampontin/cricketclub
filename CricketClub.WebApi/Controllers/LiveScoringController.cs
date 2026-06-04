@@ -244,6 +244,85 @@ namespace CricketClub.WebApi.Controllers
         }
 
         /// <summary>
+        /// Start ball-by-ball scoring for the opposition innings.
+        /// Call this when TheirInningsStatus is InProgress and the scorer chooses full ball-by-ball coverage.
+        /// Provide the opposition batting lineup (11 string names in batting order).
+        /// After this call NextState will be "OppositionBattingOver".
+        /// </summary>
+        [HttpPost("{matchId:int}/start-opposition-ball-by-ball")]
+        [Consumes("application/json")]
+        [ProducesResponseType(typeof(MatchStateV1), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult StartOppositionBallByBall([FromRoute] int matchId, [FromBody] StartOppositionBallByBallInningsV1 request)
+        {
+            try
+            {
+                if (request?.BatsmanNames == null || request.BatsmanNames.Length == 0)
+                    return BadRequest("BatsmanNames must contain at least one entry.");
+
+                var match = new Match(matchId, _database);
+                match.StartOppositionBallByBallInnings(request.BatsmanNames);
+                return Ok(BuildMatchState(match));
+            }
+            catch (InvalidOperationException ex)
+            {
+                Log.Error($"Bad request in LiveScoringController.StartOppositionBallByBall (matchId={matchId})", ex);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Submit one completed over in the opposition ball-by-ball innings.
+        /// Provide the full over (balls with BatsmanName string and BowlerPlayerId int)
+        /// and the updated batter state snapshot.
+        /// </summary>
+        [HttpPost("{matchId:int}/opposition-over")]
+        [Consumes("application/json")]
+        [ProducesResponseType(typeof(MatchStateV1), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult SubmitOppositionOver([FromRoute] int matchId, [FromBody] OppositionInningsUpdateV1 update)
+        {
+            try
+            {
+                if (update?.Over?.Balls == null || update.Over.Balls.Length == 0)
+                    return BadRequest("Over.Balls must not be empty.");
+                if (update.Players == null || update.Players.Length == 0)
+                    return BadRequest("Players must not be empty.");
+
+                var match = new Match(matchId, _database);
+                var (playerStates, balls) = LiveScoringRequestMapper.ToInternal(update, matchId);
+                match.UpdateOppositionBallByBallOver(update.Over.OverNumber, playerStates, balls);
+                return Ok(BuildMatchState(match));
+            }
+            catch (ArgumentException ex)
+            {
+                Log.Error($"Bad request in LiveScoringController.SubmitOppositionOver (matchId={matchId})", ex);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Delete the last completed opposition ball-by-ball over (undo).
+        /// </summary>
+        [HttpDelete("{matchId:int}/last-opposition-over")]
+        [ProducesResponseType(typeof(MatchStateV1), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult DeleteLastOppositionOver([FromRoute] int matchId)
+        {
+            try
+            {
+                var match = new Match(matchId, _database);
+                match.DeleteLastOppositionBallByBallOver();
+                return Ok(BuildMatchState(match));
+            }
+            catch (InvalidOperationException ex)
+            {
+                Log.Error($"Bad request in LiveScoringController.DeleteLastOppositionOver (matchId={matchId})", ex);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
         /// Abandon the match early (e.g. rain). Marks the match as abandoned, closes any in-progress innings,
         /// and writes ball-by-ball data to the static scorecard for any elements not already present.
         /// Existing scorecard data is never overwritten.
@@ -335,7 +414,7 @@ namespace CricketClub.WebApi.Controllers
         {
             var ballByBallMatch = match.GetCurrentBallByBallState();
             var matchState = ballByBallMatch.GetMatchState();
-            var matchStateV1 = MatchStateMapper.MapToMatchStateV1(matchState);
+            var matchStateV1 = MatchStateMapper.MapToMatchStateV1(matchState, ballByBallMatch);
             matchStateV1.LiveScorecard = FromLiveScorecard(match);
             return matchStateV1;
         }

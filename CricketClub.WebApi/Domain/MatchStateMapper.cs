@@ -1,5 +1,6 @@
 ﻿using CricketClubDomain;
 using CricketClubMiddle;
+using CricketClubMiddle.Stats;
 
 namespace CricketClub.WebApi.Domain
 {
@@ -9,7 +10,7 @@ namespace CricketClub.WebApi.Domain
         {
             if (scorecard == null) return null;
 
-            return new InPlayScorecardV1
+            var result = new InPlayScorecardV1
             {
                 OnStrikeBatsman = BatsmanInningsDetailsV1.FromInternal(scorecard.OnStrikeBatsman),
                 OtherBatsman = BatsmanInningsDetailsV1.FromInternal(scorecard.OtherBatsman),
@@ -46,7 +47,86 @@ namespace CricketClub.WebApi.Domain
                 TheirInningsCommentary = scorecard.TheirInningsCommentary,
                 LiveBowlingCard = scorecard.LiveBowlingCard?.Select(MapBowlerDetailsToBowlerInningsDetailsV1).ToList(),
                 Partnerships = scorecard.Partnerships?.Select(PartnershipV1.FromInternal).ToList(),
-                YetToBat = scorecard.YetToBat?.Select(p => new YetToBatEntryV1 { PlayerId = p.PlayerId, PlayerName = p.PlayerName }).ToList()
+                YetToBat = scorecard.YetToBat?.Select(p => new YetToBatEntryV1 { PlayerId = p.PlayerId, PlayerName = p.PlayerName }).ToList(),
+                // Opposition ball-by-ball
+                TheirInningsIsBallByBall = scorecard.TheirInningsIsBallByBall,
+                TheirLastCompletedOver = scorecard.TheirLastCompletedOver,
+                TheirOnStrikeBatsman = MapOppositionBatterStateToV1(scorecard.TheirOnStrikeBatsman),
+                TheirOtherBatsman = MapOppositionBatterStateToV1(scorecard.TheirOtherBatsman),
+                TheirYetToBat = scorecard.TheirYetToBat?.Select(MapOppositionBatterStateToV1).ToList(),
+                TheirLiveBattingCard = scorecard.TheirLiveBattingCard?.Select(MapOppositionBatterScorecardLine).ToList(),
+                TheirLiveBowlingCard = scorecard.TheirLiveBowlingCard?.Select(MapOppositionBowlerDetails).ToList()
+            };
+
+            return result;
+        }
+
+        private static OppositionBatterStateV1 MapOppositionBatterStateToV1(CricketClubMiddle.OppositionBatterScorecardLine line)
+        {
+            if (line == null) return null;
+            return new OppositionBatterStateV1
+            {
+                BatsmanName = line.BatsmanName,
+                CurrentScore = line.Score,
+                BallsFaced = line.BallsFaced,
+                Fours = line.Fours,
+                Sixes = line.Sixes,
+                StrikeRate = line.StrikeRate
+            };
+        }
+
+        private static OppositionBatterStateV1 MapOppositionBatterStateToV1(CricketClubDomain.OppositionBatterState state)
+        {
+            if (state == null) return null;
+            return new OppositionBatterStateV1
+            {
+                BatsmanName = state.BatsmanName,
+                Position = state.Position,
+                State = state.State,
+                CurrentScore = state.CurrentScore,
+                BallsFaced = state.BallsFaced,
+                Fours = state.Fours,
+                Sixes = state.Sixes,
+                StrikeRate = state.StrikeRate
+            };
+        }
+
+        private static OppositionBatterScorecardLineV1 MapOppositionBatterScorecardLine(CricketClubMiddle.OppositionBatterScorecardLine line)
+        {
+            if (line == null) return null;
+            return new OppositionBatterScorecardLineV1
+            {
+                BatsmanName = line.BatsmanName,
+                Score = line.Score,
+                BallsFaced = line.BallsFaced,
+                Fours = line.Fours,
+                Sixes = line.Sixes,
+                StrikeRate = line.StrikeRate,
+                Wicket = line.Wicket == null ? null : new OppositionWicketV1
+                {
+                    BatsmanName = line.Wicket.BatsmanName,
+                    BowlerPlayerId = line.Wicket.BowlerPlayerId,
+                    FielderPlayerId = line.Wicket.FielderPlayerId,
+                    ModeOfDismissal = line.Wicket.ModeOfDismissal,
+                    Description = line.Wicket.Description
+                }
+            };
+        }
+
+        private static OppositionBowlerDetailsV1 MapOppositionBowlerDetails(CricketClubMiddle.OppositionBowlerDetails d)
+        {
+            if (d == null) return null;
+            return new OppositionBowlerDetailsV1
+            {
+                PlayerId = d.PlayerId,
+                PlayerName = d.PlayerName,
+                Overs = d.Overs,
+                Maidens = d.Maidens,
+                Runs = d.Runs,
+                Wickets = d.Wickets,
+                Wides = d.Wides,
+                NoBalls = d.NoBalls,
+                Economy = d.Economy
             };
         }
 
@@ -76,9 +156,9 @@ namespace CricketClub.WebApi.Domain
         }
 
 
-        public static MatchStateV1 MapToMatchStateV1(MatchState matchState)
+        public static MatchStateV1 MapToMatchStateV1(MatchState matchState, BallByBallMatch ballByBallMatch = null)
         {
-            return new MatchStateV1
+            var v1 = new MatchStateV1
             {
                 LastCompletedOver = matchState.LastCompletedOver,
                 OnStrikeBatsmanId = matchState.OnStrikeBatsmanId,
@@ -98,6 +178,33 @@ namespace CricketClub.WebApi.Domain
                 OppositionShortName = matchState.OppositionShortName,
                 BowlerDetails = matchState.BowlerDetails != null ? matchState.BowlerDetails.Select(MapBowlerDetailsToBowlerInningsDetailsV1).ToArray() : null
             };
+
+            // Populate opposition ball-by-ball extras when in that mode
+            if (ballByBallMatch != null && ballByBallMatch.TheirInningsIsBallByBall)
+            {
+                v1.TheirInningsIsBallByBall = true;
+                v1.OppositionLastCompletedOver = ballByBallMatch.OppositionBallByBallLastCompletedOver;
+                var onStrike = ballByBallMatch.GetOppositionOnStrikeBatter();
+                v1.OppositionOnStrikeBatsmanName = onStrike?.BatsmanName;
+                v1.OppositionPlayers = ballByBallMatch.OppositionBatterStates
+                    .Select(s =>
+                    {
+                        var details = ballByBallMatch.GetOppositionBatterDetails(s.BatsmanName);
+                        return new OppositionBatterStateV1
+                        {
+                            BatsmanName = s.BatsmanName,
+                            Position = s.Position,
+                            State = s.State,
+                            CurrentScore = details.Score,
+                            BallsFaced = details.BallsFaced,
+                            Fours = details.Fours,
+                            Sixes = details.Sixes,
+                            StrikeRate = details.StrikeRate
+                        };
+                    }).ToArray();
+            }
+
+            return v1;
         }
 
         private static OverV1 MapOverToOverV1(Over over)

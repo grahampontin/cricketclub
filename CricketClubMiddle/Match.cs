@@ -919,6 +919,44 @@ namespace CricketClubMiddle
                     ? 0
                     : Math.Round(liveScorecard.TheirScore / (decimal) liveScorecard.TheirOver, 2);
                 liveScorecard.TheirCompletedOvers = currentBallByBallState.OppositionOvers;
+
+                // Opposition ball-by-ball extras
+                if (currentBallByBallState.TheirInningsIsBallByBall)
+                {
+                    liveScorecard.TheirInningsIsBallByBall = true;
+                    liveScorecard.TheirLastCompletedOver = currentBallByBallState.OppositionBallByBallLastCompletedOver;
+
+                    var onStrike = currentBallByBallState.GetOppositionOnStrikeBatter();
+                    var otherBatter = currentBallByBallState.GetOppositionOtherBatter();
+                    liveScorecard.TheirOnStrikeBatsman = onStrike;
+                    liveScorecard.TheirOtherBatsman = otherBatter;
+
+                    liveScorecard.TheirYetToBat = currentBallByBallState.OppositionBatterStates
+                        .Where(s => s.State == OppositionBatterState.Waiting)
+                        .OrderBy(s => s.Position)
+                        .ToList();
+
+                    // Batting card: all batters who have batted (not Waiting)
+                    liveScorecard.TheirLiveBattingCard = currentBallByBallState.OppositionBatterStates
+                        .Where(s => s.State != OppositionBatterState.Waiting)
+                        .OrderBy(s => s.Position)
+                        .Select(s => currentBallByBallState.GetOppositionBatterDetails(s.BatsmanName))
+                        .ToList();
+
+                    // Bowling card: distinct bowler IDs from the opposition balls
+                    var bowlerIds = currentBallByBallState.OppositionBallByBallOvers
+                        .SelectMany(o => o.Balls)
+                        .Select(b => b.BowlerPlayerId)
+                        .Distinct()
+                        .ToList();
+                    liveScorecard.TheirLiveBowlingCard = bowlerIds
+                        .Select(id =>
+                        {
+                            var player = new Player(id, dao);
+                            return currentBallByBallState.GetOppositionInningsBowlerDetails(id, player.Name);
+                        })
+                        .ToList();
+                }
             }
 
             return liveScorecard;
@@ -1216,6 +1254,47 @@ namespace CricketClubMiddle
         {
             var myDao = dao ?? new Dao();
             myDao.DeleteBallByBallOver(ID, GetCurrentBallByBallState().LastCompletedOver);
+            BallByBallMatch.InvalidateCache(ID);
+        }
+
+        /// <summary>
+        /// Switches the opposition innings to ball-by-ball mode and saves their initial batting lineup.
+        /// Must be called when TheirInningsStatus == InProgress and no ball-by-ball mode has been set yet.
+        /// </summary>
+        public void StartOppositionBallByBallInnings(IEnumerable<string> batsmanNames)
+        {
+            var myDao = dao ?? new Dao();
+            var inningsStatus = myDao.GetInningsStatus(ID);
+            if (inningsStatus.TheirInningsStatus != InningsStatus.InProgress)
+                throw new InvalidOperationException("Cannot start opposition ball-by-ball innings: their innings is not in progress.");
+            if (inningsStatus.TheirInningsIsBallByBall)
+                throw new InvalidOperationException("Opposition innings is already in ball-by-ball mode.");
+
+            myDao.StartOppositionBallByBallInnings(ID, batsmanNames);
+            inningsStatus.TheirInningsIsBallByBall = true;
+            myDao.UpdateInningsStatus(inningsStatus);
+            BallByBallMatch.InvalidateCache(ID);
+        }
+
+        /// <summary>
+        /// Persists one completed over in the opposition ball-by-ball innings,
+        /// along with the updated batter states as of that over.
+        /// </summary>
+        public void UpdateOppositionBallByBallOver(int overNumber, IEnumerable<OppositionBatterState> batsmenStates, IEnumerable<OppositionBall> balls)
+        {
+            var myDao = dao ?? new Dao();
+            myDao.UpdateOppositionBallByBallState(ID, overNumber, batsmenStates, balls);
+            BallByBallMatch.InvalidateCache(ID);
+        }
+
+        /// <summary>Deletes the last submitted opposition ball-by-ball over (undo).</summary>
+        public void DeleteLastOppositionBallByBallOver()
+        {
+            var myDao = dao ?? new Dao();
+            var lastOver = GetCurrentBallByBallState().OppositionBallByBallLastCompletedOver;
+            if (lastOver == 0)
+                throw new InvalidOperationException("No opposition ball-by-ball overs to delete.");
+            myDao.DeleteOppositionBallByBallOver(ID, lastOver);
             BallByBallMatch.InvalidateCache(ID);
         }
 
