@@ -70,6 +70,100 @@ namespace CricketClub.WebApi.Tests.Domain
             Assert.Null(result);
         }
 
+        // ── Opposition ball-by-ball innings tests ─────────────────────────────────
+
+        /// <summary>
+        /// When GetLiveScorecard() produces a scorecard with null OnStrikeBatsman / OtherBatsman
+        /// (because our innings is Completed and it's now their ball-by-ball innings), the mapper
+        /// must return null for those fields rather than throwing or producing a default.
+        /// </summary>
+        [Fact]
+        public void MapToInPlayScorecardV1_WhenOurInningsCompleteAndTheirsBallByBall_OurLiveBattingFieldsAreNull()
+        {
+            // This simulates the output of Match.GetLiveScorecard() when VCC has completed
+            // their innings and the opposition is now batting ball-by-ball.
+            var scorecard = new LiveScorecard
+            {
+                OurInningsStatus = "Completed",
+                TheirInningsStatus = "InProgress",
+                TheirInningsIsBallByBall = true,
+                // VCC live batting fields are not set (null) when innings is complete
+                OnStrikeBatsman = null,
+                OtherBatsman = null,
+                BowlerOneDetails = null,
+                BowlerTwoDetails = null,
+                CurrentPartnership = null,
+                PreviousPartnership = null,
+                // VCC historical batting data is still populated
+                Score = 145,
+                Wickets = 9,
+                OurLastCompletedOver = 20,
+                // Opposition ball-by-ball data
+                TheirScore = 60,
+                TheirWickets = 3,
+                TheirLastCompletedOver = 8,
+                TheirRunRate = 7.5m
+            };
+
+            var result = MatchStateMapper.MapToInPlayScorecardV1(scorecard);
+
+            // Live batting fields should be null — we are not currently batting
+            Assert.Null(result.OnStrikeBatsman);
+            Assert.Null(result.OtherBatsman);
+            Assert.Null(result.BowlerOneDetails);
+            Assert.Null(result.BowlerTwoDetails);
+            Assert.Null(result.CurrentPartnership);
+            Assert.Null(result.PreviousPartnership);
+
+            // Historical batting data must still be present
+            Assert.Equal(145, result.Score);
+            Assert.Equal(9, result.Wickets);
+            Assert.Equal(20, result.OurLastCompletedOver);
+
+            // Opposition ball-by-ball data must be correctly surfaced
+            Assert.True(result.TheirInningsIsBallByBall);
+            Assert.Equal(60, result.TheirScore);
+            Assert.Equal(3, result.TheirWickets);
+            Assert.Equal(8, result.TheirLastCompletedOver);
+            Assert.Equal(7.5m, result.TheirRunRate);
+        }
+
+        /// <summary>
+        /// TheirRunRate should be passed through from the scorecard regardless of mode.
+        /// When the opposition innings is in progress using per-over summary mode, the run rate
+        /// is computed from TheirOver in GetLiveScorecard(); the mapper just passes it through.
+        /// </summary>
+        [Fact]
+        public void MapToInPlayScorecardV1_TheirRunRate_IsMappedDirectlyFromScorecard()
+        {
+            var scorecard = new LiveScorecard
+            {
+                TheirScore = 100,
+                TheirOver = 10,
+                TheirRunRate = 10.0m,
+                TheirInningsIsBallByBall = false
+            };
+
+            var result = MatchStateMapper.MapToInPlayScorecardV1(scorecard);
+
+            Assert.Equal(10.0m, result.TheirRunRate);
+        }
+
+        /// <summary>
+        /// OversRemaining is passed straight through from the scorecard. The calculation
+        /// (using ball-by-ball vs per-over data) happens in Match.GetLiveScorecard() before
+        /// reaching the mapper.
+        /// </summary>
+        [Fact]
+        public void MapToInPlayScorecardV1_OversRemaining_IsMappedDirectlyFromScorecard()
+        {
+            var scorecard = new LiveScorecard { OversRemaining = 12 };
+
+            var result = MatchStateMapper.MapToInPlayScorecardV1(scorecard);
+
+            Assert.Equal(12, result.OversRemaining);
+        }
+
         [Theory]
         [InlineData(ModesOfDismissalV1.Bowled, "bowled")]
         [InlineData(ModesOfDismissalV1.Caught, "caught")]

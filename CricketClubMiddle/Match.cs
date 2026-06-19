@@ -840,7 +840,9 @@ namespace CricketClubMiddle
             liveScorecard.Overs = Overs;
             liveScorecard.OversRemaining = OurInningsInProgress
                 ? Overs - currentBallByBallState.LastCompletedOver
-                : Overs - OppositionBallByBallOver;
+                : currentBallByBallState.TheirInningsIsBallByBall
+                    ? Overs - currentBallByBallState.OppositionBallByBallLastCompletedOver
+                    : Overs - currentBallByBallState.OppositionOver;
             liveScorecard.IsFirstInnings = inningsStatus.OurInningsStatus == InningsStatus.NotStarted ||
                                            inningsStatus.TheirInningsStatus == InningsStatus.NotStarted;
 
@@ -861,8 +863,7 @@ namespace CricketClubMiddle
             if (liveScorecard.OurInningsStatus != InningsStatus.NotStarted.ToString() &&
                 currentBallByBallState.Overs.Any())
             {
-                liveScorecard.OnStrikeBatsman = currentBallByBallState.GetOnStrikeBatsmanDetails();
-                liveScorecard.OtherBatsman = currentBallByBallState.GetOtherBatsmanDetails();
+                // Fields populated whenever our innings has started (includes completed innings).
                 liveScorecard.LastBatsmanOut = currentBallByBallState.GetLastBatsmanOutDetails();
                 liveScorecard.OurLastCompletedOver = currentBallByBallState.LastCompletedOver;
                 liveScorecard.Score = matchState.Score;
@@ -872,30 +873,10 @@ namespace CricketClubMiddle
                     : Math.Round((decimal) matchState.Score / matchState.LastCompletedOver, 2);
 
                 var partnershipsAndFallOfWickets = currentBallByBallState.GetPartnershipsAndFallOfWickets();
-
-                liveScorecard.CurrentPartnership =
-                    partnershipsAndFallOfWickets.GetPartnershipData(liveScorecard.OnStrikeBatsman.PlayerId,
-                        liveScorecard.OtherBatsman.PlayerId);
-
-                var currentPartnershipIndex =
-                    partnershipsAndFallOfWickets.Partnerships.IndexOf(liveScorecard.CurrentPartnership);
-
-                try
-                {
-                    liveScorecard.PreviousPartnership = currentPartnershipIndex == 0
-                        ? null
-                        : partnershipsAndFallOfWickets.Partnerships[currentPartnershipIndex - 1];
-                }
-                catch (Exception)
-                {
-                    //
-                }
                 var fallOfWickets = partnershipsAndFallOfWickets.FallOfWickets;
                 liveScorecard.LastManOut = fallOfWickets.Any() ? fallOfWickets.Last() : null;
-
                 liveScorecard.FallOfWickets = fallOfWickets;
                 liveScorecard.Partnerships = partnershipsAndFallOfWickets.Partnerships;
-
                 liveScorecard.LiveBattingCard = GetLiveBattingCard(currentBallByBallState, fallOfWickets);
 
                 liveScorecard.YetToBat = matchState.Players
@@ -904,10 +885,35 @@ namespace CricketClubMiddle
                     .ToList();
 
                 liveScorecard.CompletedOvers = currentBallByBallState.GetOverSummaries();
-
-                liveScorecard.BowlerOneDetails = currentBallByBallState.GetBowlerOneDetails();
-                liveScorecard.BowlerTwoDetails = currentBallByBallState.GetBowlerTwoDetails();
                 liveScorecard.LiveBowlingCard = GetLiveBowlingCard(currentBallByBallState);
+
+                // Live in-play fields — only meaningful while we are actively batting.
+                if (inningsStatus.OurInningsStatus == InningsStatus.InProgress)
+                {
+                    liveScorecard.OnStrikeBatsman = currentBallByBallState.GetOnStrikeBatsmanDetails();
+                    liveScorecard.OtherBatsman = currentBallByBallState.GetOtherBatsmanDetails();
+
+                    liveScorecard.CurrentPartnership =
+                        partnershipsAndFallOfWickets.GetPartnershipData(liveScorecard.OnStrikeBatsman.PlayerId,
+                            liveScorecard.OtherBatsman.PlayerId);
+
+                    var currentPartnershipIndex =
+                        partnershipsAndFallOfWickets.Partnerships.IndexOf(liveScorecard.CurrentPartnership);
+
+                    try
+                    {
+                        liveScorecard.PreviousPartnership = currentPartnershipIndex == 0
+                            ? null
+                            : partnershipsAndFallOfWickets.Partnerships[currentPartnershipIndex - 1];
+                    }
+                    catch (Exception)
+                    {
+                        //
+                    }
+
+                    liveScorecard.BowlerOneDetails = currentBallByBallState.GetBowlerOneDetails();
+                    liveScorecard.BowlerTwoDetails = currentBallByBallState.GetBowlerTwoDetails();
+                }
             }
 
             if (liveScorecard.TheirInningsStatus != InningsStatus.NotStarted.ToString())
@@ -915,9 +921,6 @@ namespace CricketClubMiddle
                 liveScorecard.TheirScore = currentBallByBallState.OppositionScore;
                 liveScorecard.TheirWickets = currentBallByBallState.OppositionWickets;
                 liveScorecard.TheirOver = currentBallByBallState.OppositionOver;
-                liveScorecard.TheirRunRate = liveScorecard.TheirOver == 0
-                    ? 0
-                    : Math.Round(liveScorecard.TheirScore / (decimal) liveScorecard.TheirOver, 2);
                 liveScorecard.TheirCompletedOvers = currentBallByBallState.OppositionOvers;
 
                 // Opposition ball-by-ball extras
@@ -925,6 +928,10 @@ namespace CricketClubMiddle
                 {
                     liveScorecard.TheirInningsIsBallByBall = true;
                     liveScorecard.TheirLastCompletedOver = currentBallByBallState.OppositionBallByBallLastCompletedOver;
+                    // Use the ball-by-ball over count for run rate when in that mode
+                    liveScorecard.TheirRunRate = liveScorecard.TheirLastCompletedOver == 0
+                        ? 0
+                        : Math.Round(liveScorecard.TheirScore / (decimal) liveScorecard.TheirLastCompletedOver, 2);
 
                     var onStrike = currentBallByBallState.GetOppositionOnStrikeBatter();
                     var otherBatter = currentBallByBallState.GetOppositionOtherBatter();
@@ -956,6 +963,13 @@ namespace CricketClubMiddle
                             return currentBallByBallState.GetOppositionInningsBowlerDetails(id, player.Name);
                         })
                         .ToList();
+                }
+                else
+                {
+                    // Per-over summary mode: run rate uses TheirOver (the last completed per-over summary over)
+                    liveScorecard.TheirRunRate = liveScorecard.TheirOver == 0
+                        ? 0
+                        : Math.Round(liveScorecard.TheirScore / (decimal) liveScorecard.TheirOver, 2);
                 }
             }
 
