@@ -933,10 +933,18 @@ namespace CricketClubMiddle
                         ? 0
                         : Math.Round(liveScorecard.TheirScore / (decimal) liveScorecard.TheirLastCompletedOver, 2);
 
-                    var onStrike = currentBallByBallState.GetOppositionOnStrikeBatter();
-                    var otherBatter = currentBallByBallState.GetOppositionOtherBatter();
-                    liveScorecard.TheirOnStrikeBatsman = onStrike;
-                    liveScorecard.TheirOtherBatsman = otherBatter;
+                    // On-strike and non-striking batters — use full scorecard details
+                    var onStrikeState = currentBallByBallState.GetOppositionOnStrikeBatter();
+                    var otherBatterState = currentBallByBallState.GetOppositionOtherBatter();
+                    liveScorecard.TheirOnStrikeBatsman = onStrikeState != null
+                        ? currentBallByBallState.GetOppositionBatterDetails(onStrikeState.BatsmanName)
+                        : null;
+                    liveScorecard.TheirOtherBatsman = otherBatterState != null
+                        ? currentBallByBallState.GetOppositionBatterDetails(otherBatterState.BatsmanName)
+                        : null;
+
+                    // Last batter out
+                    liveScorecard.TheirLastBatsmanOut = currentBallByBallState.GetOppositionLastBatsmanOut();
 
                     liveScorecard.TheirYetToBat = currentBallByBallState.OppositionBatterStates
                         .Where(s => s.State == OppositionBatterState.Waiting)
@@ -956,13 +964,41 @@ namespace CricketClubMiddle
                         .Select(b => b.BowlerPlayerId)
                         .Distinct()
                         .ToList();
-                    liveScorecard.TheirLiveBowlingCard = bowlerIds
-                        .Select(id =>
-                        {
-                            var player = new Player(id, dao);
-                            return currentBallByBallState.GetOppositionInningsBowlerDetails(id, player.Name);
-                        })
-                        .ToList();
+                    var bowlerDetailsById = bowlerIds
+                        .ToDictionary(
+                            id => id,
+                            id => currentBallByBallState.GetOppositionInningsBowlerDetails(id, new Player(id, dao).Name));
+                    liveScorecard.TheirLiveBowlingCard = bowlerDetailsById.Values.ToList();
+
+                    // Current and previous bowlers (VCC players bowling in opp innings)
+                    var bowlerOneId = currentBallByBallState.GetOppositionBowlerOneId();
+                    var bowlerTwoId = currentBallByBallState.GetOppositionBowlerTwoId();
+                    liveScorecard.TheirBowlerOneDetails = bowlerOneId != 0 && bowlerDetailsById.TryGetValue(bowlerOneId, out var b1) ? b1 : null;
+                    liveScorecard.TheirBowlerTwoDetails = bowlerTwoId != 0 && bowlerDetailsById.TryGetValue(bowlerTwoId, out var b2) ? b2 : null;
+
+                    // Over-by-over summaries
+                    liveScorecard.TheirBallByBallCompletedOvers = currentBallByBallState.GetOppositionOverSummaries();
+
+                    // Partnerships and fall of wickets
+                    var (theirPartnerships, theirFoW) = currentBallByBallState.GetOppositionPartnershipsAndFallOfWickets();
+                    liveScorecard.TheirPartnerships = theirPartnerships;
+                    liveScorecard.TheirFallOfWickets = theirFoW;
+
+                    // Current and previous partnership
+                    var onStrikeName = liveScorecard.TheirOnStrikeBatsman?.BatsmanName;
+                    var otherName = liveScorecard.TheirOtherBatsman?.BatsmanName;
+                    liveScorecard.TheirCurrentPartnership = onStrikeName != null && otherName != null
+                        ? theirPartnerships.LastOrDefault(p =>
+                            (p.BatsmanOneName == onStrikeName || p.BatsmanTwoName == onStrikeName) &&
+                            (p.BatsmanOneName == otherName   || p.BatsmanTwoName == otherName))
+                        : theirPartnerships.LastOrDefault();
+
+                    var currentIdx = liveScorecard.TheirCurrentPartnership != null
+                        ? theirPartnerships.IndexOf(liveScorecard.TheirCurrentPartnership)
+                        : -1;
+                    liveScorecard.TheirPreviousPartnership = currentIdx > 0
+                        ? theirPartnerships[currentIdx - 1]
+                        : null;
                 }
                 else
                 {

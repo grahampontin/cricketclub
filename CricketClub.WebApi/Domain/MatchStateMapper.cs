@@ -51,11 +51,19 @@ namespace CricketClub.WebApi.Domain
                 // Opposition ball-by-ball
                 TheirInningsIsBallByBall = scorecard.TheirInningsIsBallByBall,
                 TheirLastCompletedOver = scorecard.TheirLastCompletedOver,
-                TheirOnStrikeBatsman = MapOppositionBatterStateToV1(scorecard.TheirOnStrikeBatsman),
-                TheirOtherBatsman = MapOppositionBatterStateToV1(scorecard.TheirOtherBatsman),
+                TheirOnStrikeBatsman = MapOppositionBatterScorecardLine(scorecard.TheirOnStrikeBatsman),
+                TheirOtherBatsman = MapOppositionBatterScorecardLine(scorecard.TheirOtherBatsman),
+                TheirLastBatsmanOut = MapOppositionBatterScorecardLine(scorecard.TheirLastBatsmanOut),
                 TheirYetToBat = scorecard.TheirYetToBat?.Select(MapOppositionBatterStateToV1).ToList(),
                 TheirLiveBattingCard = scorecard.TheirLiveBattingCard?.Select(MapOppositionBatterScorecardLine).ToList(),
-                TheirLiveBowlingCard = scorecard.TheirLiveBowlingCard?.Select(MapOppositionBowlerDetails).ToList()
+                TheirLiveBowlingCard = scorecard.TheirLiveBowlingCard?.Select(MapOppositionBowlerDetails).ToList(),
+                TheirBowlerOneDetails = MapOppositionBowlerDetails(scorecard.TheirBowlerOneDetails),
+                TheirBowlerTwoDetails = MapOppositionBowlerDetails(scorecard.TheirBowlerTwoDetails),
+                TheirBallByBallCompletedOvers = scorecard.TheirBallByBallCompletedOvers?.Select(MapOppositionOverSummary).ToList(),
+                TheirCurrentPartnership = MapOppositionPartnership(scorecard.TheirCurrentPartnership),
+                TheirPreviousPartnership = MapOppositionPartnership(scorecard.TheirPreviousPartnership),
+                TheirPartnerships = scorecard.TheirPartnerships?.Select(MapOppositionPartnership).ToList(),
+                TheirFallOfWickets = scorecard.TheirFallOfWickets?.Select(MapOppositionFallOfWicket).ToList()
             };
 
             return result;
@@ -127,6 +135,94 @@ namespace CricketClub.WebApi.Domain
                 Wides = d.Wides,
                 NoBalls = d.NoBalls,
                 Economy = d.Economy
+            };
+        }
+
+        private static OppositionOverSummaryV1 MapOppositionOverSummary(CricketClubMiddle.Stats.OppositionOverSummary s)
+        {
+            if (s == null) return null;
+            var over = s.Over;
+            return new OppositionOverSummaryV1
+            {
+                Over = over == null ? null : new OppositionOverV1
+                {
+                    OverNumber = over.OverNumber,
+                    Commentary = over.Commentary,
+                    Balls = over.Balls?.Select(MapOppositionBallToV1).ToArray()
+                },
+                ScoreAtEndOfOver = s.ScoreAtEndOfOver,
+                WicketsAtEndOfOver = s.WicketsAtEndOfOver,
+                ScoreForThisOver = s.ScoreForThisOver
+            };
+        }
+
+        private static OppositionBallV1 MapOppositionBallToV1(CricketClubDomain.OppositionBall b)
+        {
+            if (b == null) return null;
+            return new OppositionBallV1
+            {
+                BallNumber = b.BallNumber,
+                BatsmanName = b.BatsmanName,
+                BowlerPlayerId = b.BowlerPlayerId,
+                Thing = b.Thing,
+                Amount = b.Amount,
+                Wicket = b.Wicket == null ? null : new OppositionWicketV1
+                {
+                    BatsmanName = b.Wicket.BatsmanName,
+                    BowlerPlayerId = b.Wicket.BowlerPlayerId,
+                    FielderPlayerId = b.Wicket.FielderPlayerId,
+                    ModeOfDismissal = b.Wicket.ModeOfDismissal,
+                    Description = b.Wicket.Description
+                },
+                Angle = b.Angle,
+                IsWide = b.IsWide,
+                IsNoBall = b.IsNoBall,
+                IsBoundary = b.IsBoundary(),
+                IsSix = b.IsSix()
+            };
+        }
+
+        private static OppositionPartnershipV1 MapOppositionPartnership(CricketClubMiddle.Stats.OppositionPartnership p)
+        {
+            if (p == null) return null;
+            return new OppositionPartnershipV1
+            {
+                BatsmanOneName = p.BatsmanOneName,
+                BatsmanTwoName = p.BatsmanTwoName,
+                Score = p.Score,
+                BallCount = p.BallCount,
+                BatsmanOneScore = p.BatsmanOneScore,
+                BatsmanTwoScore = p.BatsmanTwoScore,
+                Fours = p.Fours,
+                Sixes = p.Sixes,
+                RunRate = p.RunRate,
+                OversAsString = p.OversAsString
+            };
+        }
+
+        private static OppositionFallOfWicketV1 MapOppositionFallOfWicket(CricketClubMiddle.Stats.OppositionFallOfWicket fow)
+        {
+            if (fow == null) return null;
+            return new OppositionFallOfWicketV1
+            {
+                WicketNumber = fow.WicketNumber,
+                TeamScore = fow.TeamScore,
+                OverAsString = fow.OverAsString,
+                BowlerPlayerId = fow.BowlerPlayerId,
+                BowlerName = fow.BowlerName,
+                OutgoingBatsmanName = fow.OutgoingBatsmanName,
+                OutgoingBatsmanScore = fow.OutgoingBatsmanScore,
+                NotOutBatsmanName = fow.NotOutBatsmanName,
+                NotOutBatsmanScore = fow.NotOutBatsmanScore,
+                Wicket = fow.Wicket == null ? null : new OppositionWicketV1
+                {
+                    BatsmanName = fow.Wicket.BatsmanName,
+                    BowlerPlayerId = fow.Wicket.BowlerPlayerId,
+                    FielderPlayerId = fow.Wicket.FielderPlayerId,
+                    ModeOfDismissal = fow.Wicket.ModeOfDismissal,
+                    Description = fow.Wicket.Description
+                },
+                Partnership = MapOppositionPartnership(fow.Partnership)
             };
         }
 

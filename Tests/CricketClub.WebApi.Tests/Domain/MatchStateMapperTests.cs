@@ -2,6 +2,7 @@ using CricketClub.WebApi.Domain;
 using CricketClub.WebApi.Tests.Utils;
 using CricketClubDomain;
 using CricketClubMiddle;
+using CricketClubMiddle.Stats;
 using Xunit;
 
 namespace CricketClub.WebApi.Tests.Domain
@@ -126,6 +127,77 @@ namespace CricketClub.WebApi.Tests.Domain
             Assert.Equal(3, result.TheirWickets);
             Assert.Equal(8, result.TheirLastCompletedOver);
             Assert.Equal(7.5m, result.TheirRunRate);
+        }
+
+        /// <summary>
+        /// When the opposition innings has a full scorecard (batters, bowlers, partnerships, FoW, over summaries),
+        /// all new "Their" fields must be correctly mapped through to V1.
+        /// </summary>
+        [Fact]
+        public void MapToInPlayScorecardV1_WhenTheirInningsHasFullData_AllOppositionFieldsMapped()
+        {
+            var onStrike = new OppositionBatterScorecardLine { BatsmanName = "Smith", Score = 34, BallsFaced = 28, Fours = 3, Sixes = 1, StrikeRate = 121.4m };
+            var other   = new OppositionBatterScorecardLine { BatsmanName = "Jones", Score = 12, BallsFaced = 18, Fours = 1, Sixes = 0, StrikeRate = 66.7m };
+            var lastOut = new OppositionBatterScorecardLine { BatsmanName = "Brown", Score = 8 };
+
+            var partnership = new OppositionPartnership("Smith", "Jones");
+
+            var scorecard = new LiveScorecard
+            {
+                TheirInningsIsBallByBall = true,
+                TheirOnStrikeBatsman = onStrike,
+                TheirOtherBatsman = other,
+                TheirLastBatsmanOut = lastOut,
+                TheirCurrentPartnership = partnership,
+                TheirPreviousPartnership = null,
+                TheirPartnerships = new List<OppositionPartnership> { partnership },
+                TheirFallOfWickets = new List<OppositionFallOfWicket>(),
+                TheirLiveBowlingCard = new List<OppositionBowlerDetails>
+                {
+                    new OppositionBowlerDetails { PlayerId = 5, PlayerName = "VCC Bowler", Overs = 4, Runs = 22, Wickets = 1, Economy = 5.5m }
+                },
+                TheirBowlerOneDetails = new OppositionBowlerDetails { PlayerId = 5, PlayerName = "VCC Bowler", Overs = 4, Runs = 22, Wickets = 1 },
+                TheirBallByBallCompletedOvers = new List<CricketClubMiddle.Stats.OppositionOverSummary>()
+            };
+
+            var result = MatchStateMapper.MapToInPlayScorecardV1(scorecard);
+
+            Assert.True(result.TheirInningsIsBallByBall);
+
+            // On-strike and other batters
+            Assert.NotNull(result.TheirOnStrikeBatsman);
+            Assert.Equal("Smith", result.TheirOnStrikeBatsman.BatsmanName);
+            Assert.Equal(34, result.TheirOnStrikeBatsman.Score);
+            Assert.NotNull(result.TheirOtherBatsman);
+            Assert.Equal("Jones", result.TheirOtherBatsman.BatsmanName);
+
+            // Last batsman out
+            Assert.NotNull(result.TheirLastBatsmanOut);
+            Assert.Equal("Brown", result.TheirLastBatsmanOut.BatsmanName);
+
+            // Current partnership
+            Assert.NotNull(result.TheirCurrentPartnership);
+            Assert.Equal("Smith", result.TheirCurrentPartnership.BatsmanOneName);
+            Assert.Equal("Jones", result.TheirCurrentPartnership.BatsmanTwoName);
+
+            // All partnerships list
+            Assert.Single(result.TheirPartnerships);
+
+            // Fall of wickets
+            Assert.NotNull(result.TheirFallOfWickets);
+            Assert.Empty(result.TheirFallOfWickets);
+
+            // Bowling card
+            Assert.Single(result.TheirLiveBowlingCard);
+            Assert.Equal(5, result.TheirLiveBowlingCard[0].PlayerId);
+
+            // Bowler one details
+            Assert.NotNull(result.TheirBowlerOneDetails);
+            Assert.Equal(5, result.TheirBowlerOneDetails.PlayerId);
+
+            // Over summaries
+            Assert.NotNull(result.TheirBallByBallCompletedOvers);
+            Assert.Empty(result.TheirBallByBallCompletedOvers);
         }
 
         /// <summary>

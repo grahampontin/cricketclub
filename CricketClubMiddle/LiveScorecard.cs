@@ -57,16 +57,32 @@ namespace CricketClubMiddle
         public bool TheirInningsIsBallByBall { get; set; }
         /// <summary>Over number of the last completed opposition over (ball-by-ball mode).</summary>
         public int TheirLastCompletedOver { get; set; }
-        /// <summary>The opposition batter currently on strike (ball-by-ball mode).</summary>
-        public OppositionBatterState TheirOnStrikeBatsman { get; set; }
-        /// <summary>The other opposition batter at the crease (ball-by-ball mode).</summary>
-        public OppositionBatterState TheirOtherBatsman { get; set; }
+        /// <summary>The opposition batter currently on strike (ball-by-ball mode) — full scorecard line.</summary>
+        public OppositionBatterScorecardLine TheirOnStrikeBatsman { get; set; }
+        /// <summary>The other opposition batter at the crease (ball-by-ball mode) — full scorecard line.</summary>
+        public OppositionBatterScorecardLine TheirOtherBatsman { get; set; }
+        /// <summary>The last opposition batter to be dismissed (ball-by-ball mode).</summary>
+        public OppositionBatterScorecardLine TheirLastBatsmanOut { get; set; }
         /// <summary>Opposition batters yet to bat (ball-by-ball mode).</summary>
         public List<OppositionBatterState> TheirYetToBat { get; set; }
         /// <summary>Batting scorecard lines for each opposition batter who has faced a ball.</summary>
         public List<OppositionBatterScorecardLine> TheirLiveBattingCard { get; set; }
         /// <summary>Bowling figures for each of OUR players who has bowled in the opposition innings.</summary>
         public List<OppositionBowlerDetails> TheirLiveBowlingCard { get; set; }
+        /// <summary>Current bowler details (VCC player) for the opposition innings.</summary>
+        public OppositionBowlerDetails TheirBowlerOneDetails { get; set; }
+        /// <summary>Previous bowler details (VCC player) for the opposition innings.</summary>
+        public OppositionBowlerDetails TheirBowlerTwoDetails { get; set; }
+        /// <summary>Per-over cumulative summaries for the opposition ball-by-ball innings.</summary>
+        public List<Stats.OppositionOverSummary> TheirBallByBallCompletedOvers { get; set; }
+        /// <summary>Current batting partnership in the opposition innings.</summary>
+        public Stats.OppositionPartnership TheirCurrentPartnership { get; set; }
+        /// <summary>Previous batting partnership in the opposition innings.</summary>
+        public Stats.OppositionPartnership TheirPreviousPartnership { get; set; }
+        /// <summary>All batting partnerships in the opposition innings.</summary>
+        public List<Stats.OppositionPartnership> TheirPartnerships { get; set; }
+        /// <summary>Fall of wickets for the opposition innings.</summary>
+        public List<Stats.OppositionFallOfWicket> TheirFallOfWickets { get; set; }
     }
 
     public class LiveBattingCard
