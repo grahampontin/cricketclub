@@ -3180,10 +3180,13 @@
             "type": "boolean"
           },
           "theirOnStrikeBatsman": {
-            "$ref": "#/components/schemas/OppositionBatterStateV1"
+            "$ref": "#/components/schemas/OppositionBatterScorecardLineV1"
           },
           "theirOtherBatsman": {
-            "$ref": "#/components/schemas/OppositionBatterStateV1"
+            "$ref": "#/components/schemas/OppositionBatterScorecardLineV1"
+          },
+          "theirLastBatsmanOut": {
+            "$ref": "#/components/schemas/OppositionBatterScorecardLineV1"
           },
           "theirYetToBat": {
             "type": "array",
@@ -3209,6 +3212,39 @@
           "theirLastCompletedOver": {
             "type": "integer",
             "format": "int32"
+          },
+          "theirBowlerOneDetails": {
+            "$ref": "#/components/schemas/OppositionBowlerDetailsV1"
+          },
+          "theirBowlerTwoDetails": {
+            "$ref": "#/components/schemas/OppositionBowlerDetailsV1"
+          },
+          "theirBallByBallCompletedOvers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OppositionOverSummaryV1"
+            },
+            "nullable": true
+          },
+          "theirCurrentPartnership": {
+            "$ref": "#/components/schemas/OppositionPartnershipV1"
+          },
+          "theirPreviousPartnership": {
+            "$ref": "#/components/schemas/OppositionPartnershipV1"
+          },
+          "theirPartnerships": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OppositionPartnershipV1"
+            },
+            "nullable": true
+          },
+          "theirFallOfWickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OppositionFallOfWicketV1"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -3861,6 +3897,54 @@
         },
         "additionalProperties": false
       },
+      "OppositionFallOfWicketV1": {
+        "type": "object",
+        "properties": {
+          "wicketNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "teamScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "overAsString": {
+            "type": "string",
+            "nullable": true
+          },
+          "bowlerPlayerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "bowlerName": {
+            "type": "string",
+            "nullable": true
+          },
+          "outgoingBatsmanName": {
+            "type": "string",
+            "nullable": true
+          },
+          "outgoingBatsmanScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "notOutBatsmanName": {
+            "type": "string",
+            "nullable": true
+          },
+          "notOutBatsmanScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "wicket": {
+            "$ref": "#/components/schemas/OppositionWicketV1"
+          },
+          "partnership": {
+            "$ref": "#/components/schemas/OppositionPartnershipV1"
+          }
+        },
+        "additionalProperties": false
+      },
       "OppositionInningsDetailsV1": {
         "type": "object",
         "properties": {
@@ -3907,6 +3991,27 @@
         },
         "additionalProperties": false
       },
+      "OppositionOverSummaryV1": {
+        "type": "object",
+        "properties": {
+          "over": {
+            "$ref": "#/components/schemas/OppositionOverV1"
+          },
+          "scoreAtEndOfOver": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "wicketsAtEndOfOver": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "scoreForThisOver": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "OppositionOverV1": {
         "type": "object",
         "properties": {
@@ -3922,6 +4027,52 @@
             "nullable": true
           },
           "commentary": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "OppositionPartnershipV1": {
+        "type": "object",
+        "properties": {
+          "batsmanOneName": {
+            "type": "string",
+            "nullable": true
+          },
+          "batsmanTwoName": {
+            "type": "string",
+            "nullable": true
+          },
+          "score": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ballCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "batsmanOneScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "batsmanTwoScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fours": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sixes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "runRate": {
+            "type": "number",
+            "format": "double"
+          },
+          "oversAsString": {
             "type": "string",
             "nullable": true
           }
