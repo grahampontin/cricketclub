@@ -3,6 +3,8 @@ using CricketClub.WebApi.Controllers;
 using CricketClub.WebApi.Domain;
 using CricketClubDAL;
 using CricketClubDomain;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -13,6 +15,7 @@ namespace CricketClub.WebApi.Tests.Controllers
     public class CommitteeControllerTests
     {
         private readonly Mock<IDao> _mockDao;
+        private readonly Mock<IWebHostEnvironment> _mockEnvironment;
         private readonly CommitteeController _controller;
 
         public CommitteeControllerTests()
@@ -22,7 +25,15 @@ namespace CricketClub.WebApi.Tests.Controllers
             _mockDao = new Mock<IDao>();
             TestDefaults.SetupSafeVenueAndTeamLookups(_mockDao);
 
-            _controller = new CommitteeController(_mockDao.Object);
+            _mockEnvironment = new Mock<IWebHostEnvironment>();
+            _mockEnvironment.SetupGet(e => e.ContentRootPath).Returns("/tmp/cricketclub-test-no-images");
+
+            _controller = new CommitteeController(_mockDao.Object, _mockEnvironment.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Scheme = "http";
+            httpContext.Request.Host = new HostString("localhost");
+            _controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
         }
 
         [Fact]
@@ -39,6 +50,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             var okResult = Assert.IsType<OkObjectResult>(result);
             var members = Assert.IsAssignableFrom<List<CommitteePostV1>>(okResult.Value);
             Assert.Single(members);
+            Assert.NotNull(members[0].PlayerImageUrl);
             _mockDao.Verify(d => d.GetAllCommitteeData(), Times.Once);
         }
 
@@ -98,6 +110,7 @@ namespace CricketClub.WebApi.Tests.Controllers
             var okResult = Assert.IsType<OkObjectResult>(result);
             var member = Assert.IsType<CommitteePostV1>(okResult.Value);
             Assert.Equal(123, member.Id);
+            Assert.NotNull(member.PlayerImageUrl);
             _mockDao.Verify(d => d.GetCommitteeData(123), Times.Once);
         }
 
@@ -187,6 +200,24 @@ namespace CricketClub.WebApi.Tests.Controllers
             var okResult = Assert.IsType<OkObjectResult>(result);
             var members = Assert.IsAssignableFrom<List<CommitteePostV1>>(okResult.Value);
             Assert.Empty(members);
+        }
+
+        [Fact]
+        public void GetAllCommitteeMembers_PlayerImageUrl_PointsToDefaultWhenNoImageExists()
+        {
+            // Arrange - using temp path where no player image file exists
+            var committeeData = new CommitteeData { Id = 1, Year = 2023, Post = Post.Captain, PlayerId = 42 };
+            _mockDao.Setup(d => d.GetAllCommitteeData()).Returns(new List<CommitteeData> { committeeData });
+
+            // Act
+            var result = _controller.GetAllCommitteeMembers(null, null);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var members = Assert.IsAssignableFrom<List<CommitteePostV1>>(okResult.Value);
+            Assert.Single(members);
+            // When no image exists for playerId 42, falls back to player 0 (default image)
+            Assert.Contains("/images/players/0.png", members[0].PlayerImageUrl);
         }
     }
 }
